@@ -216,9 +216,8 @@ public class SQLDatabase implements Serializable {
 	            	statement.close();
 	            } catch (SQLException ignore) {}
 	        }
-	    	
-	        if (connection.isOpen())
-        		connection.close();
+
+    		connection.release();
             
 	    }
 		
@@ -260,9 +259,8 @@ public class SQLDatabase implements Serializable {
 					statement.close();
 				} catch (SQLException ignore) {}
 			}
-    	
-			if (connection.isOpen())
-				connection.close();
+			
+			connection.release();
 			
 		}
 		
@@ -310,9 +308,8 @@ public class SQLDatabase implements Serializable {
 					statement.close();
 				} catch (SQLException ignore) {}
 			}
-    	
-			if (connection.isOpen())
-				connection.close();
+			
+			connection.release();
 			
 		}
 		
@@ -387,9 +384,8 @@ public class SQLDatabase implements Serializable {
 					statement.close();
 				} catch (SQLException ignore) {}
 			}
-    	
-			if (connection.isOpen())
-				connection.close();
+			
+			connection.release();
 			
 		}
 	    
@@ -505,8 +501,7 @@ public class SQLDatabase implements Serializable {
 				} catch (SQLException ignore) {}
 			}
 	    	
-			if (connection.isOpen())
-				connection.close();
+	    	connection.release();
 				
 		}
 		
@@ -561,8 +556,7 @@ public class SQLDatabase implements Serializable {
 				} catch (SQLException ignore) {}
 			}
 	    	
-			if (connection.isOpen())
-				connection.close();
+	    	connection.release();
 				
 		}
 	}
@@ -620,8 +614,7 @@ public class SQLDatabase implements Serializable {
 				} catch (SQLException ignore) {}
 			}
 	    	
-			if (connection.isOpen())
-				connection.close();
+	    	connection.release();
 				
 		}
 	}
@@ -786,8 +779,7 @@ public class SQLDatabase implements Serializable {
 	        
 	    } finally {
 	    	
-	        if (connection.isOpen())
-	            connection.close();
+	    	connection.release();
 	        
 	    }
 	}

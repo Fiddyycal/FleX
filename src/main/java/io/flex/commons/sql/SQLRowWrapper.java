@@ -278,8 +278,7 @@ public class SQLRowWrapper implements Cacheable {
 				} catch (SQLException ignore) {}
 			}
 	    	
-			if (connection.isOpen())
-				connection.close();
+			connection.release();
 				
 		}
 	    

@@ -270,27 +270,16 @@ public class SQLConnection {
 		}
 		
 	}
-
-	public void close() {
-		
-		try {
-			
-			if (this.connection != null)
-				this.connection.close();
-			
-			this.available = true;
-			
-		} catch (SQLException e) {
-			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to close connection: " + e.getMessage());
-		}
-		
+	
+	public void release() {
+		this.available = true;
 	}
 
 	public boolean isEstablished() {
 		return this.connection != null;
 	}
 	
-	public boolean isOpen() {
+	public boolean isValid() {
 		try {
 			return this.connection != null && !this.connection.isClosed();
 		} catch (SQLException e) {
