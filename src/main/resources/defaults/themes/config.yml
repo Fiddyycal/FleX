@@ -1,0 +1,12 @@
+# Theme players will start to see by default.
+# If no themes are present, all default themes will be generated again.
+# If no default is specified then a gui will open on first join, telling the player to select a theme.
+# This can also be used as an anti-spam/anti-bot stratergy as it requires theme selection before anything else.
+Default: 'Default'
+
+# Enable/Disable theme selection.
+Theme-Selection:
+
+  # Enable/Disable the ability for players to select their own theme.
+  # The theme in the "Default" setting will always be used regardless of this setting.
+  Enabled: true

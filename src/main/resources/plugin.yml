@@ -1,0 +1,31 @@
+name: FleX
+version: 3.0.1b-SNAPSHOT
+description: Used on all revisions of the Luminous Minecraft server.
+
+main: org.fukkit.Fukkit
+api-version: 1.20.6
+
+# author: Team FDev
+authors:
+- (FDev) 5Ocal
+- (FDev) LFW
+- Comphenix
+- graywolf336
+
+# Implementation is defined below, version specific
+# implementation needs to be loaded first.
+
+# Hopefully won't need to do this for long, dependencies
+# will be shaded into the jar on build-time when the
+# respective Fukkit repos are uploaded to nexus.
+
+# Package trees from local jars can't be shaded
+# in as that requires decomposition. Trust me, I've tried.
+
+soft-depend: [Fukkit]
+
+flex:
+  stand-alone: true
+  config:
+    path: plugins/aFleX
+    name: config

@@ -1,0 +1,9 @@
+name: FleX-Proxy
+version: 1.0.1a-SNAPSHOT
+
+main: net.md_5.fungee.FungeeCord
+# author: Team FDev
+authors:
+- (FDev) 5Ocal
+- (FDev) LFW
+- md_5

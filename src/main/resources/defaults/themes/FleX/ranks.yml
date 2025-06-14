@@ -1,0 +1,8 @@
+Ranks:
+  Probation: <pp>[&fMember<sp>(<failure>P<sp>)<pp>]<reset> <reset>
+  Bot: <pp>[&f%rank%<pp>]<reset> <reset>
+  Member: <pp>[&f%rank%<pp>]<reset> <reset>
+  Moderator: <pp>[&f%rank%<pp>]<reset> <reset>
+  Developer: <pp>[&f%rank%<pp>]<reset> <reset>
+  Administrator: <pp>[&f%rank%<pp>]<reset> <reset>
+  Owner: <pp>[&4%rank%<pp>]<reset> <reset>

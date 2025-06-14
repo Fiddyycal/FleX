@@ -1,0 +1,25 @@
+# Driver support for "MYSQL" and "SQLITE".
+# Use of the "SQLITE" driver WILL put more load onto the server as data is stored within the servers walls.
+# The driver below not working as intended will result in the "SQLITE" driver being used automatically.
+Driver: 'SQLITE'
+
+# SQL Credentials, please double check these before starting the server.
+# Incorrect credentials will result in the "SQLITE" driver being used automatically.
+Credentials:
+  Host: 'localhost'
+  Port: 3306
+  Database: 'flex_db'
+  Username: 'root'
+  Password: 'foobar'
+
+# Variable key:
+# ${server_absolute_path}: Path to the server.properties file container.
+# ${volumes_absolute_path}: Path to this server folders container, could include other server folders.
+
+# In the case of the SQLITE driver, the default database file path is "{Server}/flex/data/sqlite/"
+# If you want all your servers to pull from the same SQLITE file, specify the ${volumes_absolute_path} here.
+SQLite-Path: '${server_absolute_path}/flex/data/sqlite/'
+  
+# The FloW path should be a path all servers can access. The default is "{Server}/flex/data/flow/"
+# If you want all your servers to pull from the same SQLITE file, specify the ${volumes_absolute_path} here.
+FloW-Path: '${server_absolute_path}/flex/data/flow/'

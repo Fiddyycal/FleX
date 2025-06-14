@@ -1,0 +1,808 @@
+package io.flex.commons.sql;
+
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+
+import io.flex.FleX;
+import io.flex.FleX.Task;
+import io.flex.commons.Nullable;
+import io.flex.commons.Severity;
+import io.flex.commons.StopWatch;
+import io.flex.commons.console.Console;
+
+import java.io.File;
+import java.io.Serializable;
+
+public class SQLDatabase implements Serializable {
+	
+	private static final long
+	
+	serialVersionUID = -736068188882394525L,
+	max_connections = 5;
+	
+	int port;
+	
+	private String
+	
+	ip, database, username, password, sqlite = FleX.EXE_PATH.replace(File.separator, "/") + "/flex/data/sqlite";
+	
+	private Set<SQLConnectionListener> listeners = new HashSet<SQLConnectionListener>();
+
+	private List<SQLConnection> pool = new ArrayList<SQLConnection>();
+	
+	private SQLDriverType driver;
+	
+	public SQLDatabase(String ip, int port, String database, String username, String password, SQLDriverType driver) {
+		this(ip, port, database, username, password, driver, null);
+	}
+	
+	public SQLDatabase(String ip, int port, String database, String username, String password, @Nullable String sqlite) {
+		this(ip, port, database, username, password, SQLDriverType.SQLITE, sqlite);
+	}
+	
+	private SQLDatabase(String ip, int port, String database, String username, String password, SQLDriverType driver, @Nullable String sqlite) {
+		
+		this.driver = driver;
+		
+		this.ip = ip;
+		this.port = port;
+		this.database = database;
+		this.username = username;
+		this.password = password;
+		this.sqlite = sqlite;
+		
+		for (int i = 0; i < max_connections; i++)
+			this.pool.add(this.connect());
+		
+	}
+
+	public String getHost() {
+		
+		if (this.driver == SQLDriverType.SQLITE)
+			return this.sqlite;
+		
+		return this.ip + ":" + this.port;
+		
+	}
+	
+	private SQLConnection connect() {
+		return this.driver == SQLDriverType.SQLITE ?
+				
+				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.sqlite) :
+				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.driver);
+	}
+	
+	public SQLDriverType getDriver() {
+		return this.driver;
+	}
+	
+	public SQLConnection open() throws SQLException {
+		
+		new UnsupportedOperationException().printStackTrace();
+		
+		for (SQLConnection connection : this.pool) {
+			
+			if (connection.isAvailable()) {
+				connection.open();
+				return connection;
+			}
+				
+		}
+		
+		Task.print("SQL",
+				
+				"No available connections in connection pool, creating new connection...",
+				"Consider making the max_connections variable higher.");
+		
+		SQLConnection connection = this.connect();
+		
+		connection.open();
+		
+		this.pool.add(connection);
+		
+		return connection;
+		
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public SQLRowWrapper getRow(String table, SQLCondition<?> condition) throws SQLException {
+		return this.getRows(table, condition).stream().findFirst().orElse(null);
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public Set<SQLRowWrapper> getRows(String table) throws SQLException {
+		return this.getRows(table, null);
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public Set<SQLRowWrapper> getRows(String table, @Nullable SQLCondition<?> condition) throws SQLException {
+		
+		Set<SQLRowWrapper> rows = new HashSet<SQLRowWrapper>();
+		
+		SQLConnection connection = this.open();
+		
+		PreparedStatement statement = null;
+		
+		try {
+			
+			String query = "SELECT * FROM " + table;
+
+			if (condition != null)
+			    query += " WHERE " + condition.key() + " = ?";
+
+			statement = connection.getDriverConnection().prepareStatement(query);
+
+			if (condition != null)
+			    statement.setObject(1, condition.value() instanceof UUID ? condition.value().toString() : condition.value());
+		    
+		    ResultSet result = statement.executeQuery();
+	    	
+		    if (result != null && !result.isClosed()) {
+				
+				ResultSetMetaData meta = result.getMetaData();
+				
+				if (meta.getColumnCount() > 0 && result.isBeforeFirst() && result.getType() != ResultSet.TYPE_FORWARD_ONLY)
+					result.first();
+				
+			}
+			
+			ResultSetMetaData meta = result.getMetaData();
+			
+			while(result.next()) {
+				
+				Map<String, Object> entries = new HashMap<String, Object>();
+				
+				for (int i = 1; i <= meta.getColumnCount(); i++) {
+					
+					String column = meta.getColumnName(i);
+			        Object value = result.getObject(i);
+			        
+			        entries.put(column, value);
+			        
+			    }
+				
+				String primary = null;
+				
+		        DatabaseMetaData databaseMeta = connection.getDriverConnection().getMetaData();
+		        
+		        try (ResultSet rs = databaseMeta.getPrimaryKeys(null, null, table)) {
+		            if (rs.next())
+		            	primary = rs.getString("COLUMN_NAME");
+		        }
+				
+				if (primary == null)
+					throw new SQLException("The table \"" + table + "\" does not have a primary column, FleX cannot reliably identify row without a primary column.");
+		        
+				rows.add(new SQLRowWrapper(this, table, primary, entries));
+				
+			}
+			
+		} catch (SQLException e) {
+	    	
+	    	Console.log("SQL", Severity.ERROR, e);
+	        throw e;
+	        
+	    } finally {
+	    	
+	        if (statement != null) {
+	            try {
+	            	statement.close();
+	            } catch (SQLException ignore) {}
+	        }
+	    	
+	        if (connection.isOpen())
+        		connection.close();
+            
+	    }
+		
+		return rows;
+	    
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public int getTableSize(String table) throws SQLException {
+		
+		SQLConnection connection = this.open();
+		
+		PreparedStatement statement = null;
+		
+		try {
+			
+			String query = "SELECT COUNT(*) FROM " + table;
+			
+		    statement = connection.getDriverConnection().prepareStatement(query);
+		    	
+		    ResultSet result = statement.executeQuery();
+		    	
+		    if (result.next())
+		    	return result.getInt(1);
+			
+		} catch (SQLException e) {
+    	
+			Console.log("SQL", Severity.ERROR, e);
+			throw e;
+        
+		} finally {
+    	
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException ignore) {}
+			}
+    	
+			if (connection.isOpen())
+				connection.close();
+			
+		}
+		
+	    return 0;
+	    
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public List<String> getColumns(String table) throws SQLException {
+		
+		List<String> columns = new LinkedList<String>();
+	    
+	    SQLConnection connection = this.open();
+		
+		PreparedStatement statement = null;
+		
+		try {
+			
+			String query = "SELECT * FROM " + table + " LIMIT 1";
+			
+		    statement = connection.getDriverConnection().prepareStatement(query);
+
+	        ResultSet result = statement.executeQuery();
+	        
+	        ResultSetMetaData meta = result.getMetaData();
+	        
+	        int count = meta.getColumnCount();
+	        
+	        for (int i = 1; i <= count; i++)
+	        	columns.add(meta.getColumnName(i));
+	        
+		} catch (SQLException e) {
+    	
+			Console.log("SQL", Severity.ERROR, e);
+			throw e;
+        
+		} finally {
+    	
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException ignore) {}
+			}
+    	
+			if (connection.isOpen())
+				connection.close();
+			
+		}
+		
+		return columns;
+		
+	}
+
+	public void addListener(SQLConnectionListener listener) {
+		this.listeners.add(listener);
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public SQLRowWrapper addRow(String table, LinkedHashMap<String, Object> entries) throws SQLException {
+		
+	    if (entries == null || entries.size() == 0)
+	        throw new SQLException("Cannot insert an empty row into table " + table + ", please provide values.");
+	    
+	    SQLConnection connection = this.open();
+		
+		PreparedStatement statement = null;
+		
+		try {
+			
+			List<String> columns = this.getColumns(table);
+	        
+	        Map<String, Object> filtered = new LinkedHashMap<String, Object>();
+	        
+	        for (String col : columns)
+	            if (entries.containsKey(col))
+	            	filtered.put(col, entries.get(col) instanceof UUID ? entries.get(col).toString() : entries.get(col));
+	        
+	        if (filtered.isEmpty())
+	            throw new SQLException("No valid columns provided for table " + table + ".");
+	        
+	        StringBuilder query = new StringBuilder("INSERT INTO ").append(table).append(" (");
+	        StringBuilder placeholders = new StringBuilder();
+	        
+	        for (String col : filtered.keySet()) {
+	            query.append(col).append(", ");
+	            placeholders.append("?, ");
+	        }
+	        
+	        query.setLength(query.length() - 2);
+	        placeholders.setLength(placeholders.length() - 2);
+	        
+	        query.append(") VALUES (").append(placeholders).append(")");
+	        
+	        statement = connection.getDriverConnection().prepareStatement(query.toString());
+	        
+	        int index = 1;
+	        
+	        for (Object value : filtered.values())
+	            statement.setObject(index++, value);
+	        
+	        statement.executeUpdate();
+	        
+	        return new SQLRowWrapper(this, table, columns.get(0), filtered);
+	        
+		} catch (SQLException e) {
+    	
+			Console.log("SQL", Severity.ERROR, e);
+			throw e;
+        
+		} finally {
+    	
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException ignore) {}
+			}
+    	
+			if (connection.isOpen())
+				connection.close();
+			
+		}
+	    
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public void createTable(String table, String primary, LinkedHashMap<String, SQLDataType> columns, SQLSetting... settings) throws SQLException {
+		
+	    SQLConnection connection = this.open();
+		
+		PreparedStatement statement = null;
+		
+	    try {
+	    	
+			this.open();
+	    	
+	    	if (columns == null || columns.isEmpty())
+		        throw new SQLException("Column definitions must not be empty.");
+	    	
+	    	if (!columns.containsKey(primary))
+	    	    throw new SQLException("Primary column \"" + primary + "\" is not defined in column definitions.");
+		    
+		    DatabaseMetaData meta = connection.getDriverConnection().getMetaData();
+		    
+	    	Task.debug("SQL", "Creating table " + table + "...");
+	    	
+			StopWatch timer = new StopWatch();
+		    
+			/**
+			 * 
+			 * } catch (SQLException e) {
+			
+					if (!e.getMessage().equals("Table '" + table + "' already exists"))
+						throw e;
+						
+				}
+			 * 
+			 */
+			
+		    try (ResultSet tables = meta.getTables(null, null, table, new String[]{ "TABLE" })) {
+		    	
+		        if (tables.next()) {
+		        	
+			    	Task.debug("SQL", "Returning pre-existing " + table + " table.");
+		            return;
+		            
+		        }
+		        
+		    }
+		    
+			Task.print("SQL", "Builing structured query language table " + table + "...");
+		    
+	        boolean autoIncrement = false;
+		    
+		    for (SQLSetting setting : settings)
+		    	if (setting == SQLSetting.AUTO_INCREMENT)
+		    		autoIncrement = true;
+		    
+		    StringBuilder query = new StringBuilder("CREATE TABLE IF NOT EXISTS `" + table + "` (");
+
+		    for (Entry<String, SQLDataType> entry : columns.entrySet()) {
+		    	
+		        String column = entry.getKey();
+		        
+		        SQLDataType type = entry.getValue();
+
+		        query.append(SQLDataType.IDENTIFIER_QUOTE + column + SQLDataType.IDENTIFIER_QUOTE + " " + type);
+		        
+		        if (type.getLength() > 0)
+		        	query.append("(" + type.getLength() + ")");
+		        
+		        if (column.equals(primary))
+		        	query.append(" PRIMARY KEY");
+		        
+		        if (autoIncrement && column.equals(primary) && type.name().contains("INT"))
+		            query.append(" NOT NULL AUTO_INCREMENT");
+		        
+		        query.append(", ");
+		        
+		    }
+		    
+		    int length = query.length();
+		    
+		    if (query.substring(length - 2).equals(", "))
+		        query.setLength(length - 2);
+		    
+		    query.append(");");
+		    
+			Task.print("SQL", "Attempting CREATE -> base; " + query.toString());
+			
+		    statement = connection.getDriverConnection().prepareStatement(query.toString());
+		    statement.execute();
+			
+			for (SQLConnectionListener listener : this.listeners)
+				listener.onCreate(table);
+		    
+			Task.print("SQL", "Table created. (" + timer.getTime(TimeUnit.MILLISECONDS) + "ms)");
+
+	    } catch (SQLException e) {
+	    	
+	    	Console.log("SQL", Severity.ERROR, e);
+	        throw e;
+	        
+	    } finally {
+	    	
+	    	if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException ignore) {}
+			}
+	    	
+			if (connection.isOpen())
+				connection.close();
+				
+		}
+		
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 *  
+	 * @param query Structured Query Language to parse to database.
+	 * @return If query was successfully executed.
+	 * @throws SQLException
+	 */
+	public boolean execute(String query) throws SQLException {
+		
+	    SQLConnection connection = this.open();
+		
+		PreparedStatement statement = null;
+		
+		try {
+			
+			if (this.driver == SQLDriverType.SQLITE)
+				query = query.replace(SQLDataType.IDENTIFIER_QUOTE, "");
+			
+			this.open();
+			Task.debug("SQL", "Attempting EXECUTE -|- base; " + query);
+			
+			statement = connection.getDriverConnection().prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			
+			boolean resultSet = statement.execute();
+			
+			if (resultSet)
+				Task.debug("SQL", "Execute first(); returned java.sql.ResultSet.");
+			
+			for (SQLConnectionListener listener : listeners)
+				listener.onExecute(query, resultSet);
+			
+			Task.debug("SQL", "EXECUTE successful.");
+			return true;
+			
+		} catch (SQLException e) {
+			
+			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to execute: " + query);
+	    	Console.log("SQL", Severity.ERROR, e);
+			return false;
+			
+		} finally {
+	    	
+	    	if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException ignore) {}
+			}
+	    	
+			if (connection.isOpen())
+				connection.close();
+				
+		}
+	}
+
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 *  
+	 * @param query Structured Query Language to parse to database.
+	 * @return Number of affected rows.
+	 * @throws SQLException
+	 */
+	public int update(String query) throws SQLException {
+		
+	    SQLConnection connection = this.open();
+		
+		PreparedStatement statement = null;
+		
+		try {
+			
+			if (this.driver == SQLDriverType.SQLITE)
+				query = query.replace(SQLDataType.IDENTIFIER_QUOTE, "");
+			
+			this.open();
+			Task.debug("SQL", "Attempting UPDATE -> base; " + query);
+			
+			statement = connection.getDriverConnection().prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			
+			int affected = statement.executeUpdate();
+			
+			for (SQLConnectionListener listener : listeners)
+				listener.onUpdate(query, affected);
+			
+			Task.debug("SQL", "UPDATE successful.");
+			
+			return affected;
+			
+		} catch (SQLSyntaxErrorException e) {
+			
+			Task.error("SQL (" + Severity.NOTICE.name() + ")", "Failed to update: " + e.getMessage());
+	    	Console.log("SQL", Severity.NOTICE, e);
+			return -1;
+			
+		} catch (SQLException e) {
+			
+			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to update: " + query);
+	    	Console.log("SQL", Severity.ERROR, e);
+			return -1;
+			
+		} finally {
+	    	
+	    	if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException ignore) {}
+			}
+	    	
+			if (connection.isOpen())
+				connection.close();
+				
+		}
+	}
+	
+	public boolean hasConnection() {
+		return !this.pool.isEmpty();
+	}
+	
+	/*
+	private int attempt = 0;
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 *  
+	 * @param query Structured Query Language to parse to database.
+	 * @return SQLResultWrapper with pointer at first row.
+	 * @throws SQLException
+	 *
+	public SQLResultWrapper result(String query) throws SQLException {
+		
+	    SQLConnection connection = this.open();
+		
+		PreparedStatement statement = null;
+		
+		try {
+			
+			this.attempt++;
+			
+			if (this.driver == SQLDriverType.SQLITE)
+				query = query.replace(SQLDataType.IDENTIFIER_QUOTE, "");
+			
+			this.open();
+			
+			Task.debug("SQL", "Attempting RESULT <- base; " + query);
+			
+			PreparedStatement statement = this.connection.prepareStatement(query, this.driver == SQLDriverType.SQLITE ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			ResultSet result = statement.executeQuery();
+			
+			for (SQLConnectionListener listener : listeners)
+				listener.onResult(query, result);
+			
+			Task.debug("SQL", "RESULT successful.");
+			
+			SQLResultWrapper wrapper = new SQLResultWrapper() {
+				
+				@Override
+				public Statement getStatement() {
+					return statement;
+				}
+				
+				@Override
+				public ResultSet asSet() {
+					return result;
+				}
+				
+			};
+			
+			wrapper.asSetAsFirst();
+			
+			return wrapper;
+			
+		} catch (SQLSyntaxErrorException e) {
+			
+			Task.error("SQL (" + Severity.NOTICE.name() + ")", "Failed to fetch result: " + e.getMessage());
+	    	Console.log("SQL", Severity.NOTICE, e);
+			return null;
+			
+		} catch (SQLException e) {
+
+			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to fetch result: " + query);
+			
+			if (this.attempt == 1 && e.getMessage().contains("You should consider either expiring and/or testing connection validity before use in your application, increasing the server configured values for client timeouts, or using the Connector/J connection property 'autoReconnect=true' to avoid this problem.")) {
+				
+				Task.debug("SQL", "Attempting RESULT <-x (re-connect) base; " + query);
+				
+				// Reconnect
+				this.close();
+				this.open();
+				
+				return this.result(query);
+				
+			}
+			
+	    	Console.log("SQL", Severity.ERROR, e);
+			return null;
+			
+		} finally {
+			
+			if (this.attempt > 1)
+				this.attempt = 0;
+			
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException ignore) {}
+			}
+	    	
+			if (connection.isOpen())
+				connection.close();
+				
+		}
+		
+	}*/
+	
+	public void print(String table, String... columns) throws SQLException {
+		
+	    if (columns == null || columns.length == 0)
+	        throw new IllegalArgumentException("No columns specified to print.");
+
+	    SQLConnection connection = this.open();
+	    String cols = String.join(", ", columns);
+	    String query = "SELECT " + cols + " FROM " + table;
+	    
+	    try (PreparedStatement stmt = connection.getDriverConnection().prepareStatement(query);
+	         ResultSet rs = stmt.executeQuery()) {
+	    	
+	        ResultSetMetaData meta = rs.getMetaData();
+	        int colCount = meta.getColumnCount();
+	        
+	        // Determine max width per column for formatting
+	        int[] maxWidths = new int[colCount];
+	        
+	        for (int i = 0; i < colCount; i++)
+	            maxWidths[i] = meta.getColumnLabel(i + 1).length();
+	        
+	        // Buffer rows for formatting
+	        List<String[]> rows = new ArrayList<String[]>();
+	        
+	        while (rs.next()) {
+	            String[] row = new String[colCount];
+	            for (int i = 0; i < colCount; i++) {
+	                String val = rs.getString(i + 1);
+	                if (val == null) val = "NULL";
+	                row[i] = val;
+	                maxWidths[i] = Math.max(maxWidths[i], val.length());
+	            }
+	            rows.add(row);
+	        }
+	        
+	        // Print header
+	        for (int i = 0; i < colCount; i++)
+	            System.out.print(padRight(meta.getColumnLabel(i + 1), maxWidths[i]) + " | ");
+	        
+	        System.out.println();
+	        
+	        // Print separator line
+	        for (int i = 0; i < colCount; i++)
+	            System.out.print(repeat("-", maxWidths[i]) + "-+-");
+	        
+	        System.out.println();
+	        
+	        // Print rows
+	        for (String[] row : rows) {
+	        	
+	            for (int i = 0; i < colCount; i++)
+	                System.out.print(padRight(row[i], maxWidths[i]) + " | ");
+	            
+	            System.out.println();
+	            
+	        }
+	        
+	    } finally {
+	    	
+	        if (connection.isOpen())
+	            connection.close();
+	        
+	    }
+	}
+
+	private String padRight(String s, int n) {
+	    return String.format("%-" + n + "s", s);
+	}
+
+	private String repeat(String s, int n) {
+	    return new String(new char[n]).replace("\0", s);
+	}
+	
+	@Override
+	public String toString() {
+		return this.getHost() + "/" + this.database;
+	}
+	
+}

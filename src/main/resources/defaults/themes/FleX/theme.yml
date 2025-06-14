@@ -1,0 +1,141 @@
+Enabled: true
+Display:
+  Category: FleX Engine
+  Blocks:
+    Primary:
+      Data: 14
+    Secondary:
+      Data: 6
+  Icon:
+    Material: REDSTONE
+    Data: 0
+Tags:
+  Success:
+    Tag: <success>
+    Sequence:
+      ChatColor: GREEN
+      Italic: true
+  Failure:
+    Tag: <failure>
+    Sequence:
+      ChatColor: RED
+  Severe:
+    Tag: <severe>
+    Sequence:
+      ChatColor: DARK_RED
+  Reset:
+    Tag: <reset>
+    Sequence:
+      ChatColor: RESET
+  Server Prefix:
+    Tag: <prefix>
+    Sequence:
+      Advanced: '&4&lFleX&f&lEngine&8&l:&r &f'
+  Engine Prefix:
+    Tag: <engine>
+    Sequence:
+      Advanced: '&4&lFleX&8&l:&r &f'
+  FloW Prefix:
+    Tag: <flow>
+    Sequence:
+      Advanced: '&8&l<&4&lFl&c&low&8&l>&r &f'
+  Primary Color:
+    Tag: <pc>
+    Sequence:
+      Advanced: '&f'
+  Secondary Color:
+    Tag: <sc>
+    Sequence:
+      Advanced: '&4'
+  Tertiary Color:
+    Tag: <tc>
+    Sequence:
+      Advanced: '&c'
+  Quaternary Color:
+    Tag: <qc>
+    Sequence:
+      Advanced: '&c'
+  Special Color:
+    Tag: <spc>
+    Sequence:
+      Advanced: '&b'
+  Primary Punctuation:
+    Tag: <pp>
+    Sequence:
+      Advanced: '&8'
+  Secondary Punctuation:
+    Tag: <sp>
+    Sequence:
+      Advanced: '&8'
+  Tertiary Punctuation:
+    Tag: <tp>
+    Sequence:
+      Advanced: '&8'
+  Primary Valuing:
+    Tag: <pv>
+    Sequence:
+      Advanced: '&4'
+  Secondary Valuing:
+    Tag: <sv>
+    Sequence:
+      Advanced: '&4'
+  Tertiary Valuing:
+    Tag: <tv>
+    Sequence:
+      Advanced: '&c'
+  Title:
+    Tag: <title>
+    Sequence:
+      Advanced: '&4&l'
+  Subtitle:
+    Tag: <subtitle>
+    Sequence:
+      Advanced: '&8&o'
+  Display:
+    Tag: <display>
+    Sequence:
+      Advanced: '&4&l'
+  Lore:
+    Tag: <lore>
+    Sequence:
+      Advanced: '&f&o'
+  Divider:
+    Tag: <divider>
+    Sequence:
+      Advanced: '&8&m                              '
+  Clock:
+    Tag: <clock>
+    Sequence:
+      Advanced: '&f'
+  Clickable:
+    Tag: <clickable>
+    Sequence:
+      Advanced: '&4'
+  Interactable:
+    Tag: <interactable>
+    Sequence:
+      Advanced: '&c'
+  Title Sidebar:
+    Tag: <sbt>
+    Sequence:
+      Advanced: '&4&l'
+  Subtitle Sidebar:
+    Tag: <sbst>
+    Sequence:
+      Advanced: '&c'
+  Key Sidebar:
+    Tag: <sbk>
+    Sequence:
+      Advanced: '&f'
+  Value Sidebar:
+    Tag: <sbv>
+    Sequence:
+      Advanced: '&e'
+  Line Sidebar:
+    Tag: <sbl>
+    Sequence:
+      Advanced: '&7'
+  Information Sidebar:
+    Tag: <sbi>
+    Sequence:
+      Advanced: '&7&o'

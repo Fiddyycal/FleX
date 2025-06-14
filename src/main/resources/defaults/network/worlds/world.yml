@@ -1,0 +1,85 @@
+# Where do players spawn when they die or enter this world?
+# This will be ignored when re-joining if join-teleport is disabled in the network config.
+Spawn:
+  x: 0.0
+  y: 100.0
+  z: 0.0
+  yaw: 0.0
+  pitch: 0.0
+  
+  # How many blocks can players randomly spread out over?
+  # This is disabled by default with a value of 1.
+  Radius: 1
+  
+  # How big is the protection radius of the spawn area?
+  # This protects the area from griefing and prevents combat.
+  Protection: 10
+  
+  # Whether creatures should spawn or not.
+  # If PvE is enabled you should change these to true.
+  Creatures:
+    
+    Animals: false
+    Monsters: false
+    Testificates: false
+
+Settings:
+
+  # Auto-save world in seconds.
+  # WARNING: Auto-save is known to cause missing chunks, due to the file moving process. 
+  # FleX will backup worlds for you, find all world backups in root/flex/backups. USE AT YOUR OWN RISK.
+  # This takes the value of a number with a default of -1, like a minigame world it will not save itself.
+  Auto-save: -1
+  
+  # Whether every join and falling into the void teleports the player to the spawn set above.
+  # This takes a value of true or false with a default of true.
+  Void-Teleport: true
+  
+  # Whether this world cycles weather or daylight.
+  # These take a value of true or false with a default of false.
+  Cycle:
+  
+    Weather: false
+    Daylight: false
+  
+  # Whether players and mobs take damage from ANYTHING.
+  # These take a value of true or false with a default of true.
+  Damage:
+  
+    PvP: true
+    PvE: true
+    
+  # Whether players and mobs will be able to place/break blocks.
+  # These take a value of true or false with a default of false.
+  Blocks:
+  
+    Place: false
+    Break: false
+    
+    # List of whitelisted blocks that can be modified, dependant on the setting above.
+    # These take a MATERIAL value. Example: [DIRT, STONE] etc. Default value is '*' for all.
+    # Whietlist default value is '*' - Blacklist default value is BEDROCK.
+    Whietlist:
+    - '*'
+    
+    Blacklist:
+    - 'BEDROCK'
+
+# You can set up world privacy here.
+# Simply leave all fields empty to keep the world public.
+Privacy:
+
+  # The password required to join this partition.
+  # Keep empty or null for no password.
+  Password: ''
+  
+  # Add a hint for the password.
+  # This is empty by default, no hint message will appear.
+  Password-Hint: ''
+
+  # Permission required to join the partition.
+  # This is empty by default, no permission is required to join.
+  Permission: ''
+
+# All commands listed here will not be usable in this world.
+Commands-Blacklist: []

@@ -1,0 +1,133 @@
+# Edit world gameules to your liking here, or in game with admin commands.
+# Some gamerules may not work due to differentiating server versions.
+Gamerules:
+
+  # Whether advancements should be announced in chat.
+  announceAdvancements: true
+  
+  # Whether command blocks should notify admins when they perform commands.
+  # This takes a value of true or false with a default of true.
+  commandBlockOutput: true
+  
+  # Whether the server should skip checking player speed when the player is wearing elytra.
+  # Often helps with jittering due to lag in multiplayer, but may also be used to travel unfairly long distances in survival mode (cheating).
+  # This takes a value of true or false with a default of false.
+  disableElytraMovementCheck: false
+  
+  # Whether the day-night cycle and moon phases progress.
+  # This takes a value of true or false with a default of true.
+  doDaylightCycle: true
+  
+  # Whether entities that are not mobs should have drops.
+  # This takes a value of true or false with a default of true.
+  doEntityDrops: true
+  
+  # Whether fire should spread and naturally extinguish.
+  # This takes a value of true or false with a default of true.
+  doFireTick: true
+  
+  # Whether phantoms will spawn in the nighttime.
+  # This takes a value of true or false with a default of true.
+  doInsomnia: true
+  
+  # Whether players should only be able to craft recipes that they've unlocked first.
+  # This takes a value of true or false with a default of false.
+  doLimitedCrafting: false
+  
+  # Whether mobs should drop items.
+  # This takes a value of true or false with a default of true.
+  doMobLoot: true
+  
+  # Whether mobs should naturally spawn. Does not affect monster spawners.
+  # This takes a value of true or false with a default of true.
+  doMobSpawning: true
+  
+  # Whether blocks should have drops.
+  # This takes a value of true or false with a default of true.
+  doTileDrops: true
+  
+  # Whether the weather will change.
+  # This takes a value of true or false with a default of true.
+  doWeatherCycle: true
+  
+  # Whether the player should take damage when downing.
+  # This takes a value of true or false with a default of true.
+  drowningdamage: true
+  
+  # Wheter the player should take fall damage.
+  # This takes a value of true or false with a default of true.
+  falldamage: true
+  
+  # Whether the player sshould take fire damage.
+  # This takes a value of true or false with a default of true.
+  firedamage: true
+  
+  # Whether the player should keep items in their inventory after death.
+  # This takes a value of true or false with a default of false.
+  keepInventory: false
+  
+  # Whether to log admin commands to server log.
+  # This takes a value of true or false with a default of true.
+  logAdminCommands: true
+  
+  # Determines the number at which the chain command block acts as a "chain".
+  # This takes a numerical value with a default of 65536.
+  maxCommandChainLength: 65536
+  
+  # The maximum number of other pushable entities a mob or player can push, before taking 3 (Heart.svgHalf Heart.svg) suffocation damage per half-second.
+  # Setting to 0 disables the rule. Damage affects survival-mode or adventure-mode players, and all mobs but bats.
+  # Pushable entities include non-spectator-mode players, any mob except bats, as well as boats and minecarts.
+  # This takes a numerical value with a default of 24.
+  maxEntityCramming: 24
+  
+  # Whether the mobs listed below creepers, zombies, endermen, ghasts, withers, ender dragons, rabbits, sheep, and villagers should be able to change blocks.
+  # Whether villagers, zombies, skeletons, and zombie pigmen can pick up items.
+  # This takes a value of true or false with a default of true.
+  mobGriefing: true
+  
+  # Whether the player can regenerate health naturally if their hunger is full enough;
+  # This doesn't affect external healing, such as golden apples, the Regeneration effect, etc.
+  # This takes a value of true or false with a default of true.
+  naturalRegeneration: true
+  
+  # Whether the player can fight with other players.
+  # This takes a value of true or false with a default of true.
+  pvp: true
+  
+  # How often a random block tick occurs (such as plant growth, leaf decay, etc.) per chunk section per game tick.
+  # 0 will disable random ticks, higher numbers will increase random ticks.
+  # Setting to a high integer results in high speeds of decay and growth.
+  # This takes a numerical value with a default of 3.
+  randomTickSpeed: 3
+  
+  # Whether the debug screen shows all or reduced information;
+  # And whether the effects of F3+B (entity hitboxes) and F3+G (chunk boundaries) are shown.
+  # This takes a value of true or false with a default of false.
+  reducedDebugInfo: false
+  
+  # Whether the feedback from commands executed by a player should show up in chat.
+  # Also affects the default behavior of whether command blocks store their output text.
+  # This takes a value of true or false with a default of true.
+  sendCommandFeedback: true
+  
+  # Whether the player's coordinates are displayed.
+  # This takes a value of true or false with a default of true.
+  showcoordinates: true
+  
+  # Whether death messages are put into chat when a player dies.
+  # Also affects whether a message is sent to the pet's owner when the pet dies.
+  # This takes a value of true or false with a default of true.
+  showDeathMessages: true
+  
+  # The number of blocks outward from the world spawn coordinates set in the world.yml file.
+  # AOE: The spawn that players will spawn at when first joining a server or when dying without a personal spawnpoint.
+  # This takes a numerical value with a default of 10.
+  spawnRadius: 10
+  
+  # Whether players in spectator mode can generate chunks.
+  # This takes a value of true or false with a default of true.
+  spectatorsGenerateChunks: true
+  
+  # Whether TNT will explode.
+  # This takes a value of true or false with a default of true.
+  tntexplodes: true

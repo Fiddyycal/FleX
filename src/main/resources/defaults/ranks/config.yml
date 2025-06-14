@@ -1,0 +1,141 @@
+# Enable/Disable the use of the permission-node rank system.
+# Should the integrated rank system be Enabled?
+Enabled: true
+
+# Make rank displays theme-specific.
+# If the below setting is Enabled, theme folders will generate a ranks.yml file, which will contain all ranks that are LOADED to the server.
+# New ranks you add to this files "Ranks" section below will appear in each ranks.yml file when you restart the server.
+Theme-Specific: true
+  
+# Rank players will start with by default.
+# If no default is specified no rank will be used.
+Default: 'Member'
+
+# Staff settings.
+# Please read above settings and modify with CAUTION.
+Staff:
+
+  # This weight determines which ranks are considered as staff ranks.
+  # Any rank with a weight higher than, or equal to what is set below will have staff perks.
+  # FleX default: 10
+  Weight: 10
+
+# Create and add/remove ranks below.
+# Ranks will use "Display" set below for each rank unless explicitly set in each themes ranks.yml file otherwise disabled above.
+Ranks:
+
+  Probation:
+  
+    # The following variables are applicable to the "Display" node.
+    # Tags set in each themes "Tags" node are also applicable below.
+    
+    # [VARIABLE]     | [VALUE USE]   ; [SMALL DESCRIPTION]
+    
+    # \n             | Next Line     ; Send multiple lines of text.
+    # %time%         | Time Stamp    ; Time the message was created.
+    # %date%         | Date Stamp    ; Date the message was created.
+    # %name%         | Player Name   ; Player name or disguise name.
+    # %player%       | Real Name     ; Player name, ignores player disguises.
+    # %rank%         | Rank          ; Rank that is being added, easier for copy/paste.
+    
+    # What will display when this rank is presented or infront of a players name when using chat.
+    
+    Display: '<pp>[&fMember<sp>(<failure>P<sp>)<pp>]<reset> <reset>'
+    
+    # What will display when this rank is abbreviated.
+    # Examples of abbreviation is in the tab list or a sidebar.
+    
+    Abbreviation: '&fNone<reset>'
+    
+    # Command and permission weight.
+    # The higher the weight the higher the authority.
+    # If the weight is set to 0, the rank will not be able to do most things.
+    # If the weight of a rank is 0 or lower, players will not be able to mask as the rank.
+    # FleX default: [Probation] 0, [Member] 1, [Staff] 10+ (See Staff.Weight above)
+    
+    Weight: 0
+    
+    # Weight is used in all rank restricted FleX commands.
+    # You can also inherit another ranks permissions below.
+    
+    Inherit: []
+    
+    # Want ranks per world or even per partition?
+    # Simply add the worlds name or UUID below (find in the worlds info.yml).
+    # If you would like the rank to be usable in all worlds, just add an asterisk ('*') to the list.
+    
+    Worlds:
+    - '*'
+    
+    # A place for permission nodes.
+    # Since this is a all-in-one engine, this is quite necessary instead of just using static ranks.
+    
+    Permissions:
+    - permission.one
+    - permission.you-guessed-it.two
+    - another.permission.etc
+
+  Bot:
+    Display: '<pp>[&f%rank%<pp>]<reset> <reset>'
+    Weight: 1
+    Inherit:
+    - Member
+    Worlds:
+    - '*'
+    Permissions: []
+  Member:
+    Display: '<reset>'
+    Weight: 1
+    Inherit: []
+    Worlds:
+    - '*'
+    Permissions: []
+  Moderator:
+    Display: '<pp>[&4%rank%<pp>]<reset> <reset>'
+    Weight: 10
+    Inherit:
+    - Member
+    Worlds:
+    - '*'
+    Permissions:
+    - flex.command.punish
+    - flex.command.disguise
+    - flex.command.fly
+    - flex.command.flex
+    - flex.command.flow
+    - flex.command.teleport
+  Developer:
+    Display: '<pp>[&4%rank%<pp>]<reset> <reset>'
+    Weight: 15
+    Inherit:
+    - Moderator
+    Worlds:
+    - '*'
+    Permissions:
+    - flex.command.admin
+    - flex.command.combat
+    - flex.command.disguise.custom
+    - flex.command.disguise.flip
+    - flex.command.disguise.keepskin
+    - flex.command.gamemode
+  Administrator:
+    Display: '<pp>[&4%rank%<pp>]<reset> <reset>'
+    Weight: 20
+    Inherit:
+    - Developer
+    Worlds:
+    - '*'
+    Permissions:
+    - -flex.command.disguise.custom
+    - flex.command.disguise.flip
+    - flex.command.disguise.keepskin
+  Owner:
+    Display: '<pp>[&4%rank%<pp>]<reset> <reset>'
+    Weight: 999
+    Inherit:
+    - Administrator
+    Worlds:
+    - '*'
+    Permissions:
+    - '*'
+    

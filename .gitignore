@@ -1,0 +1,11 @@
+/.backwards
+/.idea
+/.metadata
+/.settings
+
+/.classpath
+/.project
+
+/bin/
+/target/
+/src/main/resources/lib/

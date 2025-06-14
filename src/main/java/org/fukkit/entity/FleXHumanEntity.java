@@ -1,0 +1,78 @@
+package org.fukkit.entity;
+
+import org.bukkit.inventory.ItemStack;
+import org.fukkit.PlayerState;
+import org.fukkit.clickable.Loadout;
+import org.fukkit.disguise.FleXSkin;
+import org.fukkit.history.HistoryStore;
+import org.fukkit.reward.Rank;
+
+import io.flex.commons.Nullable;
+
+public interface FleXHumanEntity extends FleXLivingEntity {
+
+	public long getPlayTime();
+	
+	public long getLastSeen();
+	
+	public Rank getRank();
+	
+	public Rank getMask();
+	
+	public FleXSkin getSkin();
+	
+	public HistoryStore getHistory();
+	
+	public PlayerState getState();
+	
+	public Loadout getLoadout();
+	
+	public ItemStack getHelmet();
+	
+	public ItemStack getChestplate();
+	
+	public ItemStack getLeggings();
+	
+	public ItemStack getBoots();
+	
+	public ItemStack getItem(int slot);
+	
+	public ItemStack getItemInHand();
+	
+	public ItemStack getItemInOffHand();
+	
+	public void setItemInHand(ItemStack item);
+	
+	public void setItemInOffHand(ItemStack item);
+	
+	public void addLoadout(Loadout loadout);
+	
+	public void setRank(Rank rank);
+	
+	public void setMask(Rank mask);
+	
+	public void setState(PlayerState state);
+	
+	public void setLoadout(Loadout loadout, boolean overwrite);
+	
+	public void setHelmet(ItemStack item);
+	
+	public void setChestplate(ItemStack item);
+	
+	public void setLeggings(ItemStack item);
+	
+	public void setBoots(ItemStack item);
+	
+	public void setItem(int slot, ItemStack item);
+	
+	public void sendMessage(String... message);
+	
+	public boolean isInventoryFull();
+	
+	public boolean isMasked();
+	
+	public boolean isStaff();
+	
+	public boolean hasPermission(@Nullable String perm);
+
+}

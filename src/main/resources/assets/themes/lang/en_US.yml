@@ -1,0 +1,310 @@
+Message:
+
+  # This is the default English lang file.
+  # It may look a little overwhelming at first, but this file is designed to be as simple as possible.
+  # You can find and customize each <Tag> in each themes theme.yml file.
+  
+  # Each node is pretty self explanatory (except for '*', this means all sub nodes).
+  # But if you're still having trouble, just leave this file as is. Some help has been left below.
+  # Again, if you can't be bothered, the messages are already done pretty well. Remember not all
+  # nodes use the variables by default, as %display% and %command% suggests. So go wild with it!
+  
+  # [VARIABLE]      | [VALUE USE]   ; [SMALL DESCRIPTION]                        | [APPLICABLE]
+  
+  # !               | Capitalize    ; Capitalize variable.                       | ...Anywhere...
+  # \n              | Next Line     ; Send multiple lines of text.               | ...Anywhere...
+  # %time%          | Time Stamp    ; Time the message was created/sent.         | ...Anywhere...
+  # %date%          | Date Stamp    ; Date the message was created/sent.         | ...Anywhere...
+  # %name_<id>%     | Player Name   ; Player name or disguise name.              | ...Anywhere...
+  # %player_<id>%   | Real Name     ; Player name, ignores player disguises.     | ...Anywhere...
+  # %display_<id>%  | Display Name  ; Player name or disguise name and rank.     | ...Anywhere...
+  # %plural_<word>% | Plural Form   ; The plural form of any word.               | ...Anywhere...
+  # %command%       | Command Name  ; Command used to display the message.       | ...Anywhere...
+  
+  # %rank%          | Rank Name     ; Present the players rank name with color.  | ...All...
+  # %role%          | Player Rank   ; Display the players themed rank display.   | ...All...
+  # %delay%         | Chat Delay    ; Display the players chat limitation.       | Chat.Denied.Delay
+  # %button<id>%    | Clickable     ; Display the clickable part of the message. | Chat.Format.Staff, Report.Reports.View, Report.Flow.Reports.View, Punishment.Success
+  # %message%       | Message       ; Display the message in question.           | Chat.Format.*, Error ...All..., Broadcast.Message
+  # %description%   | Command Help  ; Display help for the command in question.  | Command.Help.Page.Line
+  # %page%          | Page Number   ; Display the help page number.              | Command.Help.Page.Line, Command.Help.Failure.Not-Found, Command.Help.Page.Title
+  # %usage%         | Command Usage ; How to use the command with its arguments. | Command.Help.Page.Line, Command.Help.Failure.Not-Found, Command.Help.Usage
+  # %permission%    | Permission    ; Display the permission node required.      | Command.Help.Page.Line, Command.Denied.Permission
+  # %cooldown%      | Command Delay ; How long a command has before another use. | Command.Denied.Cooldown
+  # %unit%          | Time Unit     ; The appropriate unit and plural version.   | Command.Denied.Cooldown, Punishment.Display ...All...
+  # %ms%            | Milliseconds  ; How many milliseconds until a response.    | Command.Ping.Show, Command.Ping.Show-Other
+  # %connection%    | Connection    ; Connection strength by a witty bar.        | Command.Ping.Connection, Command.Ping.Connection-Other
+  # %reason%        | Punish Reason ; Reason for report and/or punishment .      | Command.Report.Reports.View, Command.Report.Flow.Reports.View, Punishment.Log ...All...
+  # %id%            | Index         ; Index of punishment or standing report.    | Command.Report.Reports.View, Command.Report.Flow.Reports.View, Punishment.Log ...All...
+  # %mask%          | Rank Mask     ; Colored display of the mask in question.   | Command.Mask ...All, except [Command.Mask.List]...
+  # %masks%         | List Masks    ; List of every mask permitted.              | Command.Mask.List
+  # %theme%         | Theme name    ; Name of the theme related to the message.  | Command.Theme ...All...
+  # %language%      | Language name ; Name of the language selected.             | Command.Language ...All...
+  # %lang%          | Language alt. ; Alternate name of the language selected.   | Command.Language ...All...
+  # %tp_name%       | Tp'd Player   ; Teleported name or disguise name.          | Command.Teleport.Success-Other, Command.Teleport.Failure-Other
+  # %tp_player%     | Tp'd Name     ; Teleported name, ignores player disguises. | Command.Teleport.Success-Other, Command.Teleport.Failure-Other
+  # %tp_display%    | Tp'd Display  ; Teleported name or disguise name and rank. | Command.Teleport.Success-Other, Command.Teleport.Failure-Other
+  # %skin%          | Skin          ; Skin used for the disguise.                | Command.Disguise.Success.Self, Command.Disguise.Success.Other
+  # %flipped%       | Skin flipped  ; Whether the skin is flipped with -f flag.  | Command.Disguise ...All...
+  # %keep_skin%     | Original Skin ; Whether the skin is kept original with -s. | Command.Disguise ...All...
+  # %gamemode%      | Gamemode      ; Display of the gamemode in question.       | Command.Gamemode ...All...
+  # %gamemode%      | Gamemode      ; Display of the gamemode in question.       | Command.Gamemode ...All...
+  # %punishment%    | Punishment    ; The punishment given to a player.          | Command.Punishment ...All...
+  # %punish_past%   | Punishment    ; The past tense of the punishment.          | Command.Punishment.Success
+
+  Server:
+  
+    Connecting: '<engine><pc>Connecting to <sc>%server%<pp>...'
+    Not-Found: '<engine><failure>The server <sc>%server%<failure> doesn''t exist<pp>.'
+    Fallback:
+      
+      Connecting: '<engine><pc>Connecting to <sc>%server%<pp>...'
+      Not-Fallback: '<engine><failure>The server <sc>%server%<failure> is not a fallback or default server<pp>...'
+    
+  Error:
+  
+    Coming-Soon: '<engine><sc>%coming_soon%<failure> is not ready yet, please check back soon<pp>.'
+    Try-Again:
+    
+      Now: '<engine><failure>An error occurred, please try again<pp>.'
+      Later: '<engine><failure>An error occurred, please try again later<pp>.'
+  
+  Chat:
+  
+    Format:
+    
+      Default: '%role%%name%<pp>: <reset>%message%'
+      Hover: '<pc>Rank<pp>: <sc>%rank%\n<lore>Click to open profile<pp>.'
+      
+      Staff:
+      
+        Default: '<pp>[<reset>%interactable%<pp>] <reset>%role%%name%<pp>:<reset> %message%'
+        Disguised: '<pp>[<reset>%interactable%<pp>] <pp>(<spc>%name%<pp>) <reset>%role%%player%<pp>:<reset> %message%'
+  
+    Mention:
+      
+      Prefix: '<pp>[<reset>@<pp>]'
+      Highlight: '<tc>%display%<reset>'
+  
+    Denied:
+      
+      Delay: '<engine><failure>Members have a <sc>%delay%<failure> second chat limitation<pp>.'
+      Disabled: '<engine><failure>Server chat is disabled. Use <sc>/message <player><failure> to message other players<pp>.'
+  
+  Command:
+  
+    Player:
+    
+      Not-Found: '<engine><failure>That player could not be found<pp>.'
+      Not-Online: '<engine><failure>That player is not online<pp>.'
+      
+    Help:
+    
+      Usage: '<engine><failure>Usage: %usage%'
+      Invalid: '<engine><failure>Invalid Usage: %usage%'
+      Suggest: '<engine><failure>Use <sc>/help [#]<failure>for help<pp>.'
+      Not-Found: '<engine><failure>Help page <sc>%page% <failure>doesn''t exist<pp>.'
+      Page:
+        
+        Title: '<engine><pc>Showing Help Page<pp>: <sc>%page%\n<engine><sc><> = REQUIRED <pp>| <sc>[] = OPTIONAL <pp>| <sc>/ = OR <pp>| <sc>-f = FLAGS'
+        Line: '<engine><pc>%usage%<pp>: <sc>%description%<pp>.'
+      
+    Denied:
+      
+      Cooldown: '<engine><failure>You can''t use that for another <sc>%cooldown%<failure> %unit%<pp>.'
+      Permission: '<engine><failure>You do not have permission to perform this command<pp>.'
+      Coming-Soon: '<engine><failure>The <sc>%command%<failure> command is coming soon<pp>.'
+      
+      Console: '<engine><failure>You cannot execute this command as the console<pp>.'
+      Hub-Only: '<engine><failure>You must be in a hub server to perform this command<pp>.'
+      Spectator: '<engine><failure>You cannot use that as a spectator<pp>.'
+      Ingame: '<engine><failure>You cannot use that ingame<pp>.'
+      Lobby: '<engine><failure>You cannot use that in a lobby<pp>.'
+      Other: '<engine><failure>You cannot use that right now<pp>.'
+      
+    Ping:
+    
+      Millisecond:
+      
+        Self: '<engine><pc>You have a <pv>%ping% <pc>ms connection to the server<pp>.'
+        Other: '<engine><pc>%display%<pc> has a <pv>%ping% <pc>ms connection to the server<pp>.'
+        
+      Connection:
+      
+        Self: '<engine><pc>Your connection<pp>: <sc>%connection%'
+        Other: '<engine><pc>%display%<pc>''s connection<pp>: <sc>%connection%'
+    
+    Theme:
+      
+      Success: '<engine><pc>You have selected the <sc>%theme%<reset> <pc>theme<pp>.\n<engine><pc>Use <sc>/theme<reset> <pc>to change it at any time<pp>.'
+      Failure:
+        
+        Not-Found: '<engine><failure>That theme does not exist<pp>.'
+    
+    Language:
+      
+      Success: '<engine><pc>Your language has been set to <sc>%language%<reset><pp>.<reset> <pp>(<tc>%lang%<pp>)'
+      Failure:
+        
+        Not-Found: '<engine><failure>That language hasn''t been setup by a translator yet<pp>.'
+      
+    Report:
+    
+      Loading: '<engine><pc>Loading report form for %display%<pp>...'
+      Success: '<engine><pc>Report for %display%<pc> submitted<pp>. <success>Thank you<pp>.'
+      Failure:
+      
+        Self: '<engine><failure>You cannot report yourself<pp>.'
+        Denied: '<engine><failure>You cannot report staff members<pp>.'
+      
+      Reports:
+      
+        Reminder: '<engine><pc>There %plural_is% <pv>%amount%<reset> <pc>unresolved %plural_report%<pp>.'
+        Loading: '<engine><pc>Collecting reports, please wait<pp>...\n<engine><pc>FloW could not be found, using default report system<pp>.'
+        View: '<engine><pv>%id%<pp>: <sc>%player%<pp> | <pc>%reason%<pp><reset> <pp>[%interactable_review%<pp> | %interactable_clear%<pp>]'
+        None: '<engine><failure>There are no active reports<pp>.\n<engine><pc>Go ahead and slack off a bit, you deserve it<pp>.'
+      
+      # FloW related report messages.
+      # These will only be sent if FloW is found on the server.
+      # The Report.Flow strings will replace the Report strings.
+      
+      Flow:
+      
+        Success: '<flow><pc>FloW is now actively monitoring %display%<pp>.'
+        Failure: '<flow><sc>%display%<reset> <pc>has disconnected, FloW will monitor them the next time they are online<pp>.'
+        
+        Reports:
+        
+          Reminder: '<flow><pc>There %plural_is% <pv>%amount%<reset> <pc>unresolved overwatch %plural_case%<pp>.'
+          Loading: '<flow><pc>Collecting reports, please wait<pp>...\n<flow><pc>Report system powered by &4&lFleX &c&lOverwatch <pp>(&4&lFl&c&low<pp>)<pp>.'
+          View: '<flow><pv>%id%<pp>: <sc>%player%<pp> | <pc>%reason%<reset> <pp>[%interactable_review%<pp> | %interactable_clear%<pp>]'
+          None: '<flow><failure>There are no active overwatch cases<pp>.\n<flow><pc>Go ahead and slack off a bit, you deserve it<pp>.'
+      
+    Disguise:
+    
+      Predisguise: '<engine><pc>Generating random username, please wait<pp>...'
+      Success:
+      
+        Self: '<engine><success>You will now appear as<pp>: <sc>%display%<pp>.'
+        Other: '<engine><success>You have disguised <sc>%name%<success> as<pp>: <sc>%display%<pp>.'
+      
+      Failure:
+        
+        Disabled: '<engine><failure>Disguises have been disabled on this server<pp>.'
+        Error: '<engine><failure>An error occurred loading skin <sc>%skin%<failure>, please inform Administration<pp>.'
+      
+      Undisguise:
+      
+        Success:
+        
+          Self: '<engine><success>You have been undisguised<pp>.'
+          Other: '<engine><success>You have undisguised <sc>%display%<pp>.'
+        
+        Failure:
+          
+          Self: '<engine><failure>You are not disguised<pp>.'
+          Other: '<engine><failure>That player is not disguised<pp>.'
+          Error: '<engine><failure>An error occurred when attempting to undisguise <sc>%display%<failure>, please inform an Administrator and re-login to the server<pp>.'
+      
+    Mask:
+    
+      List: '<engine><pc>You can mask as<pp>: %masks%<pp>.'
+      Success: '<engine><success>You have been masked as <sc>%mask%<pp>.'
+      
+      Failure:
+      
+        Not-Found: '<engine><failure>There is no such mask as <sc>%mask%<pp>.'
+        Denied: '<engine><failure>You cannot mask as <sc>%mask%<pp>.'
+        
+      Unmask:
+      
+        Success:
+        
+          Self: '<engine><success>You have been unmasked<pp>. <pc>You now appear as <sc>%rank%<pp>'
+          Other: '<engine><success>You unmasked <sc>%display%<pp>. <pc>They now appear as <sc>%rank%<pp>'
+        
+        Failure:
+          
+          Self: '<engine><failure>You are not masked<pp>.'
+          Other: '<engine><failure>That player is not masked<pp>.'
+      
+    Flight:
+    
+      Success:
+      
+        Self: '<engine><success>Your flight has been <sc>%flight%<pp>.'
+        Other: '<engine><sc>%display%<success>''s flight has been <sc>%flight%<pp>.'
+        
+      Failure:
+      
+        Self: '<engine><failure>You already have flight <sc>%flight%<pp>.'
+        Other: '<engine><sc>%display%<failure> already has flight <sc>%flight%<pp>.'
+        
+    Teleport:
+    
+      Success:
+      
+        Self: '<engine><success>You have teleported to %display%<pp>.'
+        Other: '<engine><success>You have teleported %tp_display%<success> to %display%<pp>.'
+        
+      Failure:
+      
+        Self: '<engine><failure>You cannot teleport to yourself<pp>.'
+        Other: '<engine><sc>%tp_display%<failure> cannot be teleported to %display% right now<pp>.'
+        Denied: '<engine><failure>You cannot teleport to <sc>%display%<failure> right now<pp>.'
+      
+    Gamemode:
+    
+      Success:
+      
+        Self: '<engine><success>Your gamemode has been changed to <sc>%gamemode%<pp>.'
+        Other: '<engine><success>You have set the gamemode of <sc>%display%<success> to <sc>%gamemode%<pp>.'
+        
+      Failure:
+      
+        Self: '<engine><failure>You are already in the gamemode <sc>%gamemode%<pp>.'
+        Other: '<engine><sc>%display%<failure> is already in the gamemode <sc>%gamemode%<pp>.'
+        Not-Found: '<engine><failure>There is no such gamemode as <sc>%gamemode%<pp>.'
+      
+    Rank:
+    
+      Success:
+      
+        Self: '<engine><success>Your rank has been set to <sc>%rank%<pp>.<reset> <pp>(<tc>%reason%<pp>)'
+        Other: '<engine><success>You have set the rank of <sc>%display%<success> to <sc>%rank%<pp>.<reset> <pp>(<tc>%reason%<pp>)'
+        
+      Failure:
+      
+        Self: '<engine><failure>You already have the rank <sc>%rank%<pp>.'
+        Other: '<engine><failure><sc>%display%<failure> already has the rank <sc>%rank%<pp>.'
+        Not-Found: '<engine><failure>There is no such rank as <sc>%rank%<pp>.'
+      
+    Punishment:
+    
+      Success: '<engine><success>You have %punish_past% <sc>%display%<pp>: <sc>%interactable%<pp>.'
+      Failure:
+      
+        Self: '<engine><failure>You cannot %punishment% yourself<pp>.'
+        Denied: '<engine><failure>You cannot %punishment% staff with the same or higher authority<pp>.'
+        
+      Log:
+      
+        Chat: TODO
+        Screen: TODO
+      
+    Broadcast:
+      
+      Confirm:
+        
+        View: '<engine><pc>Your broadcast is pending<pp>...\n<engine><lore>Message<pp>: <sc>%message%\n<engine><lore>Viewers<pp>: <sc>%viewers%\n<engine><lore>Flags<pp>: <sc>%flags%<pp>.\n<engine><pc>Use <success>/admin say confirm<pc> to send this message<pp>.'
+        Denied: '<engine><failure>You do not have any message to confirm<pp>.'
+        
+      Dismiss:
+      
+        Success: '<engine><success>Pending broadcast dismissed<pp>.'
+        Denied: '<engine><failure>You do not have a pending broadcast<pp>.'
+        
+      Message: '<engine><pp>&l<<spc>&l%viewers%<pp>&l> <reset>%display%<pp>: <severe>&l%message%<pp>.'
+      Success: '<engine><success>Broadcasting message<pp>...'
+      Failure: '<engine><failure>An error occurred broadcasting to your server, please inform Development<pp>.'
+      

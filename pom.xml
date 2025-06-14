@@ -1,0 +1,148 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.flex</groupId>
+  <artifactId>flex-commons</artifactId>
+  <version>3.0.25b-SNAPSHOT</version>
+  
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+  
+  <build>
+  
+    <plugins>
+    
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <artifactSet>
+                <excludes>
+                  <exclude>oi.flex:fukkit-8</exclude>
+                </excludes>
+                <includes>
+                  <include>org.spigotmc:spigot-19-api</include>
+                </includes>
+              </artifactSet>
+              <finalName>${project.artifactId}-${project.version}</finalName>
+              <shadedArtifactAttached>false</shadedArtifactAttached>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
+    </plugins>
+    
+    <resources>
+    
+      <resource>
+        <directory>src/main/resources/</directory>
+      </resource>
+      
+    </resources>
+    
+  </build>
+  
+  <repositories>
+  
+    <!--Local-->
+    <repository>
+        <id>localrepository</id>
+        <url>file://${pom.basedir}/src/main/resources/lib</url>
+    </repository>
+  
+    <!--Spigot-->
+    <repository>
+      <id>spigot-api-repo</id>
+      <url>https://hub.spigotmc.org/nexus/content/groups/public/org/spigotmc/spigot-api/</url>
+    </repository>
+  
+    <!--Bungeecord API (Java Doc)-->
+    <repository>
+      <id>bungeecord-repo</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </repository>
+	
+	<!--Citizens-->
+	<repository>
+      <id>citizens-repo</id>
+      <url>https://maven.citizensnpcs.co/repo</url>
+    </repository>
+    
+    <!--https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc-->
+    <repository>
+      <id>d-maven</id>
+      <url>http://d-maven.googlecode.com/svn/trunk/repo</url>
+    </repository>
+    
+  </repositories>
+
+  <dependencies>
+   
+    <!--Spigot API-->
+    <dependency>
+      <groupId>org.spigotmc</groupId>
+      <artifactId>spigot-api</artifactId>
+      <version>1.19.4-R0.1-SNAPSHOT</version>
+      <type>jar</type>
+      <scope>provided</scope>
+    </dependency>
+  
+    <!--Bungeecord API-->
+    <dependency>
+      <groupId>net.md-5</groupId>
+      <artifactId>bungeecord-api</artifactId>
+      <version>1.8-SNAPSHOT</version>
+      <type>jar</type>
+      <scope>provided</scope>
+    </dependency>
+  
+    <!--Bungeecord API (Java Doc)-->
+    <dependency>
+      <groupId>net.md-5</groupId>
+      <artifactId>bungeecord-api</artifactId>
+      <version>1.8-SNAPSHOT</version>
+      <type>javadoc</type>
+      <scope>provided</scope>
+    </dependency>
+    
+	<!--Citizens-->
+    <dependency>
+	  <groupId>net.citizensnpcs</groupId>
+	  <artifactId>citizens-main</artifactId>
+	  <version>2.0.31-SNAPSHOT</version>
+	  <type>jar</type>
+	  <scope>compile</scope>
+	</dependency>
+    
+    <!--https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc-->
+    <dependency>
+      <groupId>org.xerial</groupId>
+      <artifactId>sqlite-jdbc</artifactId>
+      <version>3.28.0</version>
+    </dependency>
+    
+  </dependencies>
+  
+</project>

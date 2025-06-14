@@ -1,0 +1,17 @@
+# If you see this plugin.yml in your .jar file it means
+# this plugin was not compiled using maven. As a result FleX
+# could be missing some dependencies.
+
+# Is FleX up to date? Is it cracked?
+# The Fukkit team recommends to get the full
+# version as soon as possible.
+
+name: FleX-Proxy
+version: 1.0.1a-SNAPSHOT
+
+main: net.md_5.fungee.FungeeCord
+author: Team FDev
+authors:
+- (FDev) 5Ocal
+- (FDev) LFW
+- md_5
