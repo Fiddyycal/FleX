@@ -5,14 +5,13 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
 import io.flex.commons.cache.Cacheable;
 
 @SuppressWarnings("unchecked")
 public class SQLRowWrapper implements Cacheable {
 	
-	private String table, primary;
+	private String table, identifier;
 	
 	private SQLDatabase database;
 	
@@ -20,18 +19,19 @@ public class SQLRowWrapper implements Cacheable {
     
     private boolean updated = true;
 	
-	public SQLRowWrapper(@Nullable SQLDatabase database, String table, String primary, Map<String, Object> entries) throws SQLException {
+	public SQLRowWrapper(@Nullable SQLDatabase database, String table, Map<String, Object> entries) throws SQLException {
+		this(database, table, null, entries);
+	}
+	
+	public SQLRowWrapper(@Nullable SQLDatabase database, String table, @Nullable String identifier, Map<String, Object> entries) throws SQLException {
+
+		this.entries = entries;
 		
-		if (primary == null)
-			throw new SQLException("The table \"" + table + "\" does not have a primary column, FleX cannot reliably identify row without a primary column.");
-		
-		if (database == null)
-			Task.debug("SQL", "Database is null where " + primary + " is " + entries.get(primary) + ". This entry will remain local only.");
+		if (identifier != null)
+			this.setIdentifier(identifier);
 		
 		this.table = table;
-		this.database = database;
-		this.primary = primary;
-		this.entries = entries;
+		this.database = database; // If null this entry will remain local only.
 		
 	}
 	
@@ -39,8 +39,17 @@ public class SQLRowWrapper implements Cacheable {
 		return this.table;
 	}
 	
-	public String getPrimaryColumn() {
-		return this.primary;
+	public String getIdentifier() {
+		return this.identifier;
+	}
+	
+	public void setIdentifier(String identifier) throws SQLException {
+		
+	    if (!this.entries.containsKey(identifier))
+	        throw new SQLException("No such column as " + this.identifier + ".");
+	    
+		this.identifier = identifier;
+		
 	}
 	
 	public <V> V get(String key) throws SQLException {
@@ -211,7 +220,8 @@ public class SQLRowWrapper implements Cacheable {
 	}
 	
 	public int update(boolean force) throws SQLException {
-		
+
+		// Local entry.
 		if (this.database == null)
 			return 0;
 		
@@ -220,8 +230,8 @@ public class SQLRowWrapper implements Cacheable {
 		if (!force && this.updated)
 			return affected;
 		
-	    if (this.primary == null || !this.entries.containsKey(this.primary))
-	        throw new SQLException("Cannot update row without primary column value.");
+	    if (this.identifier == null)
+	        throw new SQLException("Cannot update row without a unique identifier. Use SQLRowWrapper#setIdentifier(String column) or specify in the constructor.");
 	    
 	    StringBuilder builder = new StringBuilder("UPDATE " + this.table + " SET ");
 	    
@@ -229,7 +239,7 @@ public class SQLRowWrapper implements Cacheable {
 	    
 	    for (String key : this.entries.keySet()) {
 	    	
-	        if (key.equals(this.primary))
+	        if (key.equals(this.identifier))
 	        	continue;
 	        
 	        if (count++ > 0)
@@ -239,7 +249,7 @@ public class SQLRowWrapper implements Cacheable {
 	        
 	    }
 	    
-	    builder.append(" WHERE " + this.primary + "=?");
+	    builder.append(" WHERE " + this.identifier + "=?");
 	    
 	    String query = builder.toString();
 	    
@@ -255,14 +265,14 @@ public class SQLRowWrapper implements Cacheable {
 	        
 	        for (Entry<String, Object> entry : this.entries.entrySet()) {
 	        	
-	            if (entry.getKey().equals(this.primary))
+	            if (entry.getKey().equals(this.identifier))
 	            	continue;
 	            
 	            statement.setObject(index++, entry.getValue());
 	            
 	        }
 	        
-	        statement.setObject(index, this.entries.get(this.primary));
+	        statement.setObject(index, this.entries.get(this.identifier));
 	        
 	        affected += statement.executeUpdate();
 	        

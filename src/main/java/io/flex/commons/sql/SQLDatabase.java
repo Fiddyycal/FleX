@@ -28,6 +28,12 @@ import io.flex.commons.console.Console;
 import java.io.File;
 import java.io.Serializable;
 
+import static io.flex.commons.utils.ClassUtils.is;
+import static io.flex.commons.utils.ClassUtils.isString;
+
+import static io.flex.commons.sql.SQLDataType.IDENTIFIER_QUOTE;
+import static io.flex.commons.sql.SQLDataType.STRING_QUOTE;
+
 public class SQLDatabase implements Serializable {
 	
 	private static final long
@@ -93,8 +99,6 @@ public class SQLDatabase implements Serializable {
 	
 	public SQLConnection open() throws SQLException {
 		
-		new UnsupportedOperationException().printStackTrace();
-		
 		for (SQLConnection connection : this.pool) {
 			
 			if (connection.isAvailable()) {
@@ -155,15 +159,23 @@ public class SQLDatabase implements Serializable {
 			String query = "SELECT * FROM " + table;
 
 			if (condition != null)
-			    query += " WHERE " + condition.key() + " = ?";
-
-			statement = connection.getDriverConnection().prepareStatement(query);
-
-			if (condition != null)
-			    statement.setObject(1, condition.value() instanceof UUID ? condition.value().toString() : condition.value());
-		    
+			    query += " WHERE " + IDENTIFIER_QUOTE + condition.key() + IDENTIFIER_QUOTE + " = ?";
+			
+			statement = connection.getDriverConnection().prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			
+			if (condition != null) {
+				
+				Object obj = simplify(condition.value());
+				
+				if (obj instanceof String)
+					statement.setString(1, (String)obj);
+				
+				else statement.setObject(1, obj);
+				
+			}
+			
 		    ResultSet result = statement.executeQuery();
-	    	
+		    
 		    if (result != null && !result.isClosed()) {
 				
 				ResultSetMetaData meta = result.getMetaData();
@@ -174,7 +186,7 @@ public class SQLDatabase implements Serializable {
 			}
 			
 			ResultSetMetaData meta = result.getMetaData();
-			
+	        
 			while(result.next()) {
 				
 				Map<String, Object> entries = new HashMap<String, Object>();
@@ -196,10 +208,9 @@ public class SQLDatabase implements Serializable {
 		            if (rs.next())
 		            	primary = rs.getString("COLUMN_NAME");
 		        }
-				
-				if (primary == null)
-					throw new SQLException("The table \"" + table + "\" does not have a primary column, FleX cannot reliably identify row without a primary column.");
 		        
+		        System.out.println("adding row to table: " + table);
+				
 				rows.add(new SQLRowWrapper(this, table, primary, entries));
 				
 			}
@@ -327,6 +338,15 @@ public class SQLDatabase implements Serializable {
 	 * @throws SQLException
 	 */
 	public SQLRowWrapper addRow(String table, LinkedHashMap<String, Object> entries) throws SQLException {
+		return this.addRow(table, null, entries);
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public SQLRowWrapper addRow(String table, @Nullable String identifier, LinkedHashMap<String, Object> entries) throws SQLException {
 		
 	    if (entries == null || entries.size() == 0)
 	        throw new SQLException("Cannot insert an empty row into table " + table + ", please provide values.");
@@ -336,6 +356,17 @@ public class SQLDatabase implements Serializable {
 		PreparedStatement statement = null;
 		
 		try {
+			
+			if (identifier == null) {
+				
+		        DatabaseMetaData databaseMeta = connection.getDriverConnection().getMetaData();
+		        
+		        try (ResultSet rs = databaseMeta.getPrimaryKeys(null, null, table)) {
+		            if (rs.next())
+		            	identifier = rs.getString("COLUMN_NAME");
+		        }
+				
+			}
 			
 			List<String> columns = this.getColumns(table);
 	        
@@ -370,7 +401,7 @@ public class SQLDatabase implements Serializable {
 	        
 	        statement.executeUpdate();
 	        
-	        return new SQLRowWrapper(this, table, columns.get(0), filtered);
+	        return new SQLRowWrapper(this, table, identifier, filtered);
 	        
 		} catch (SQLException e) {
     	
@@ -396,7 +427,16 @@ public class SQLDatabase implements Serializable {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public void createTable(String table, String primary, LinkedHashMap<String, SQLDataType> columns, SQLSetting... settings) throws SQLException {
+	public void createTable(String table, LinkedHashMap<String, SQLDataType> columns) throws SQLException {
+		this.createTable(table, null, columns);
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public void createTable(String table, @Nullable String primary, LinkedHashMap<String, SQLDataType> columns) throws SQLException {
 		
 	    SQLConnection connection = this.open();
 		
@@ -408,9 +448,6 @@ public class SQLDatabase implements Serializable {
 	    	
 	    	if (columns == null || columns.isEmpty())
 		        throw new SQLException("Column definitions must not be empty.");
-	    	
-	    	if (!columns.containsKey(primary))
-	    	    throw new SQLException("Primary column \"" + primary + "\" is not defined in column definitions.");
 		    
 		    DatabaseMetaData meta = connection.getDriverConnection().getMetaData();
 		    
@@ -442,12 +479,6 @@ public class SQLDatabase implements Serializable {
 		    
 			Task.print("SQL", "Builing structured query language table " + table + "...");
 		    
-	        boolean autoIncrement = false;
-		    
-		    for (SQLSetting setting : settings)
-		    	if (setting == SQLSetting.AUTO_INCREMENT)
-		    		autoIncrement = true;
-		    
 		    StringBuilder query = new StringBuilder("CREATE TABLE IF NOT EXISTS `" + table + "` (");
 
 		    for (Entry<String, SQLDataType> entry : columns.entrySet()) {
@@ -456,16 +487,13 @@ public class SQLDatabase implements Serializable {
 		        
 		        SQLDataType type = entry.getValue();
 
-		        query.append(SQLDataType.IDENTIFIER_QUOTE + column + SQLDataType.IDENTIFIER_QUOTE + " " + type);
+		        query.append(IDENTIFIER_QUOTE + column + IDENTIFIER_QUOTE + " " + type);
 		        
 		        if (type.getLength() > 0)
 		        	query.append("(" + type.getLength() + ")");
 		        
-		        if (column.equals(primary))
-		        	query.append(" PRIMARY KEY");
-		        
-		        if (autoIncrement && column.equals(primary) && type.name().contains("INT"))
-		            query.append(" NOT NULL AUTO_INCREMENT");
+		        if (primary != null && column.equals(primary))
+			        query.append(" PRIMARY KEY");
 		        
 		        query.append(", ");
 		        
@@ -524,7 +552,7 @@ public class SQLDatabase implements Serializable {
 		try {
 			
 			if (this.driver == SQLDriverType.SQLITE)
-				query = query.replace(SQLDataType.IDENTIFIER_QUOTE, "");
+				query = query.replace(IDENTIFIER_QUOTE, "");
 			
 			this.open();
 			Task.debug("SQL", "Attempting EXECUTE -|- base; " + query);
@@ -578,7 +606,7 @@ public class SQLDatabase implements Serializable {
 		try {
 			
 			if (this.driver == SQLDriverType.SQLITE)
-				query = query.replace(SQLDataType.IDENTIFIER_QUOTE, "");
+				query = query.replace(IDENTIFIER_QUOTE, "");
 			
 			this.open();
 			Task.debug("SQL", "Attempting UPDATE -> base; " + query);
@@ -795,6 +823,15 @@ public class SQLDatabase implements Serializable {
 	@Override
 	public String toString() {
 		return this.getHost() + "/" + this.database;
+	}
+	
+	private static Object simplify(Object value) {
+		
+		if (value != null && String.valueOf(value).equalsIgnoreCase("null"))
+			value = "NULL";
+		
+		return isString(value) || is(UUID.class, value) ? value.toString() : (value != null ? value : "NULL");
+		
 	}
 	
 }

@@ -16,10 +16,15 @@ import io.flex.commons.utils.StringUtils;
 
 public class SQLConnection {
 	
+	/**
+	 *  This is so that even if another SQLConnection
+	 *  instance is made with the same variables/credentials
+	 *  it will not be treated as the initial connection.
+	 */
 	private static Set<String> attempted = new HashSet<String>();
 	
 	private java.sql.Connection connection;
-
+	
 	private String
 	
 	ip = null,
@@ -193,11 +198,7 @@ public class SQLConnection {
         
         if (attempted.contains(this.toString())) {
         	
-        	Task.print("SQL", "Attempting connection to " + this + " for the first time...");
-        	
         	this.testConnection(1);
-        	
-        	Task.print("SQL", "Connection settings established.");
         	
         	attempted.add(this.toString());
         	
@@ -296,7 +297,7 @@ public class SQLConnection {
     	
     	int limit = 2;
 		
-		Task.print("SQL", "Attempting connection" + (attempt < 0 ? " (Local)" : (attempt > 1 ? " (" + attempt + "/" + limit + ")" + (this.alternateEncoding ? "" : " using alternate encoding") : "")) + "...",
+		Task.print("SQL", "Attempting initial connection" + (attempt < 0 ? " (Local)" : (attempt > 1 ? " (" + attempt + "/" + limit + ")" + (this.alternateEncoding ? "" : " using alternate encoding") : "")) + "...",
 				
 				"[" + (this.driver == SQLDriverType.SQLITE ? "DRIVE:PATH" : "HOST:PORT") + "/DATABASE] " + this.getHost() + "/" + this.database,
 				"[USER] " + this.username,
@@ -349,7 +350,7 @@ public class SQLConnection {
 			
 		}
 		
-		Task.print("SQL", "Connection successfully established.");
+		Task.print("SQL", "Connection settings successfully established.");
 		
 		try {
 			this.connection.close();

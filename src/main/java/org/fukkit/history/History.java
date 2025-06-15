@@ -13,9 +13,12 @@ import org.fukkit.entity.FleXHumanEntity;
 import io.flex.commons.Nullable;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
+import io.flex.commons.sql.SQLMap;
 import io.flex.commons.sql.SQLDataType;
 
 public abstract class History<T> {
+	
+	private static boolean tableExists = false;
 	
 	protected FleXHumanEntity player;
 	
@@ -32,21 +35,37 @@ public abstract class History<T> {
 		
 		this.player = player;
 		
+		// Table is only used to store local data
 		if ((this.table = table) == null)
 			return;
 		
 		SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
 		
-		LinkedHashMap<String, SQLDataType> columns = new LinkedHashMap<String, SQLDataType>();
+		if (table.contains("connection"))
+		System.out.println("CREATING TABLE 1...................................");
 		
-		columns.put("uuid", SQLDataType.VARCHAR);
-		columns.put("time", SQLDataType.BIGINT);
-		columns.put("log", SQLDataType.VARCHAR);
-		
-		try {
-			database.createTable(table, "uuid", columns);
-		} catch (SQLException e) {
-			e.printStackTrace();
+		if (!tableExists) {
+			
+			System.out.println("CREATING TABLE 2...................................");
+			
+			/*
+			 * Setting this first so that in the case of SQLException
+			 * it won't churn and spam the console and making the stack unreadable.
+			 */
+			tableExists = true;
+			
+			try {
+				
+				database.createTable(table, SQLMap.of(
+						
+						SQLMap.entry("uuid", SQLDataType.VARCHAR),
+						SQLMap.entry("time", SQLDataType.BIGINT),
+						SQLMap.entry("log", SQLDataType.VARCHAR)));
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
 		}
 		
 		try {
@@ -82,18 +101,19 @@ public abstract class History<T> {
 		long time = System.currentTimeMillis();
 		
 		this.log.put(time, log);
-
+		
+		if (this.table == null)
+			return;
+		
 		SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
 		
 		try {
 			
-			LinkedHashMap<String, Object> entries = new LinkedHashMap<String, Object>();
-			
-			entries.put("uuid", this.player.getUniqueId());
-			entries.put("time", time);
-			entries.put("log", log);
-			
-			database.addRow(this.table, entries);
+			database.addRow(this.table, SQLMap.of(
+					
+					SQLMap.entry("uuid", this.player.getUniqueId()),
+					SQLMap.entry("time", time),
+					SQLMap.entry("log", log)));
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -115,6 +135,8 @@ public abstract class History<T> {
 		
 		if (this.table == null)
 			return;
+		
+		// TODO when remove rows is added to SQLDatabase use it here...
 		
 	}
 	

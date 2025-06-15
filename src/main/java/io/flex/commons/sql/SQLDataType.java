@@ -295,6 +295,9 @@ public enum SQLDataType implements SQLType {
      */
 	@Deprecated
 	JSON(Types.VARCHAR, 255);
+	
+	public static final String STRING_QUOTE = "'";
+	public static final String IDENTIFIER_QUOTE = "`";
     
     /**
      * The Integer value for the JDBCType. It maps to a value in
@@ -498,8 +501,5 @@ public enum SQLDataType implements SQLType {
     public boolean hasLengthSyntax() {
 		return this.length > 0;
 	}
-	
-	public static final String STRING_QUOTE = "'";
-	public static final String IDENTIFIER_QUOTE = "`";
     
 }

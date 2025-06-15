@@ -19,7 +19,6 @@ import io.flex.commons.socket.DataServer;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLDataType;
 import io.flex.commons.sql.SQLDriverType;
-import io.flex.commons.sql.SQLSetting;
 
 public class ConnectionHandler {
 	
@@ -103,7 +102,7 @@ public class ConnectionHandler {
 			punishment_columns.put("silent", SQLDataType.BOOLEAN);
 			punishment_columns.put("pardoned", SQLDataType.BOOLEAN);
 			
-			this.database.createTable("flex_punishment", "id", punishment_columns, SQLSetting.AUTO_INCREMENT);
+			this.database.createTable("flex_punishment", "id", punishment_columns);
 			
 		} catch (SQLException e) {
 			
