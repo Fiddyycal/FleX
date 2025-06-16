@@ -6,6 +6,7 @@
 /.classpath
 /.project
 
+/lib/
 /bin/
 /target/
 /src/main/resources/lib/

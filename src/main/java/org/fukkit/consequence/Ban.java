@@ -2,19 +2,12 @@ package org.fukkit.consequence;
 
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import org.fukkit.Fukkit;
-import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.theme.Theme;
 
-import io.flex.commons.sql.SQLCondition;
-import io.flex.commons.sql.SQLDatabase;
-import io.flex.commons.sql.SQLRowWrapper;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.NumUtils;
 import io.flex.commons.utils.StringUtils;
@@ -33,29 +26,6 @@ public class Ban extends Conviction {
 		return new Ban(reference);
 	}
 	
-	public static Ban[] download(FleXHumanEntity player) throws SQLException {
-		return download(player, false);
-	}
-	
-	public static Ban[] download(FleXHumanEntity player, boolean outgoing) throws SQLException {
-		
-		SQLDatabase table = Fukkit.getConnectionHandler().getDatabase();
-		
-		Set<Ban> convictions = new LinkedHashSet<Ban>();
-		
-		for (SQLRowWrapper row : table.getRows("flex_punishment", SQLCondition.where(outgoing ? "by" : "uuid").is(player.getUniqueId()))) {
-			
-			if (ConvictionType.valueOf(row.getString("type")) != ConvictionType.BAN)
-				continue;
-			
-			convictions.add(new Ban(row.getLong("id")));
-				
-		}
-		
-		return convictions.toArray(new Ban[convictions.size()]);
-		
-	}
-
 	@Override
 	public ConvictionType getType() {
 		return ConvictionType.BAN;

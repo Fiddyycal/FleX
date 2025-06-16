@@ -1,17 +1,12 @@
 package org.fukkit.consequence;
 
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.theme.Theme;
-
-import io.flex.commons.sql.SQLCondition;
-import io.flex.commons.sql.SQLDatabase;
-import io.flex.commons.sql.SQLRowWrapper;
 
 public class Kick extends Conviction {
 
@@ -27,27 +22,9 @@ public class Kick extends Conviction {
 		return new Kick(reference);
 	}
 	
-	public static Kick[] download(FleXHumanEntity player) throws SQLException {
-		return download(player, false);
-	}
-	
-	public static Kick[] download(FleXHumanEntity player, boolean outgoing) throws SQLException {
-		
-		Set<Kick> convictions = new LinkedHashSet<Kick>();
-		
-		SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
-		
-		for (SQLRowWrapper row : database.getRows("flex_punishment", SQLCondition.where(outgoing ? "by" : "uuid").is(player.getUniqueId()))) {
-			
-			if (ConvictionType.valueOf(row.getString("type")) != ConvictionType.KICK)
-				continue;
-			
-			convictions.add(new Kick(row.getLong("id")));
-				
-		}
-		
-		return convictions.toArray(new Kick[convictions.size()]);
-		
+	@SuppressWarnings("unchecked")
+	public static Set<Kick> download(FleXHumanEntity player) throws SQLException {
+		return (Set<Kick>) Conviction.download(player, false, ConvictionType.KICK);
 	}
 
 	@Override

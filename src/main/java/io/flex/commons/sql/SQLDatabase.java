@@ -148,6 +148,10 @@ public class SQLDatabase implements Serializable {
 	 */
 	public Set<SQLRowWrapper> getRows(String table, @Nullable SQLCondition<?> condition) throws SQLException {
 		
+		if (table.equalsIgnoreCase("flex_punishment")) {
+			Thread.dumpStack();
+		}
+		
 		Set<SQLRowWrapper> rows = new HashSet<SQLRowWrapper>();
 		
 		SQLConnection connection = this.open();
@@ -175,16 +179,14 @@ public class SQLDatabase implements Serializable {
 			}
 			
 		    ResultSet result = statement.executeQuery();
-		    
-		    if (result != null && !result.isClosed()) {
-				
-				ResultSetMetaData meta = result.getMetaData();
-				
-				if (meta.getColumnCount() > 0 && result.isBeforeFirst() && result.getType() != ResultSet.TYPE_FORWARD_ONLY)
-					result.first();
-				
-			}
 			
+			String primary = null;
+			
+	        try (ResultSet rs = connection.getDriverConnection().getMetaData().getPrimaryKeys(null, null, table)) {
+	            if (rs.next())
+	            	primary = rs.getString("COLUMN_NAME");
+	        }
+	        
 			ResultSetMetaData meta = result.getMetaData();
 	        
 			while(result.next()) {
@@ -199,18 +201,7 @@ public class SQLDatabase implements Serializable {
 			        entries.put(column, value);
 			        
 			    }
-				
-				String primary = null;
-				
-		        DatabaseMetaData databaseMeta = connection.getDriverConnection().getMetaData();
 		        
-		        try (ResultSet rs = databaseMeta.getPrimaryKeys(null, null, table)) {
-		            if (rs.next())
-		            	primary = rs.getString("COLUMN_NAME");
-		        }
-		        
-		        System.out.println("adding row to table: " + table);
-				
 				rows.add(new SQLRowWrapper(this, table, primary, entries));
 				
 			}

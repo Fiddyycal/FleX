@@ -334,11 +334,11 @@ public class ConvictionListeners extends FleXEventListener {
 		if (event.getTo() == PlayerState.INGAME) {
 			
 			if (fle.isPending(player)) {
-				
+				/* TODO local cache of reports so this doesn't contact database every time player state changes.
 				List<Report> reports;
 				
 				try {
-					reports = Arrays.asList(Report.download(player));
+					reports = Report.download(player);
 				} catch (SQLException e) {
 					
 					e.printStackTrace();
@@ -348,7 +348,7 @@ public class ConvictionListeners extends FleXEventListener {
 				
 				if (!reports.isEmpty())
 					reports.stream().forEach(r -> r.onBypassAttempt());
-				
+				*/
 			}
 			
 		}

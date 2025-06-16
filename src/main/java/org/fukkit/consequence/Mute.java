@@ -1,7 +1,6 @@
 package org.fukkit.consequence;
 
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.fukkit.Fukkit;
@@ -11,9 +10,6 @@ import org.fukkit.json.JsonBuffer;
 import org.fukkit.json.JsonComponent;
 import org.fukkit.theme.Theme;
 
-import io.flex.commons.sql.SQLCondition;
-import io.flex.commons.sql.SQLDatabase;
-import io.flex.commons.sql.SQLRowWrapper;
 import io.flex.commons.utils.NumUtils;
 
 import net.md_5.bungee.api.chat.ClickEvent.Action;
@@ -32,27 +28,9 @@ public class Mute extends Conviction {
 		return new Mute(reference);
 	}
 	
-	public static Mute[] download(FleXHumanEntity player) throws SQLException {
-		return download(player, false);
-	}
-	
-	public static Mute[] download(FleXHumanEntity player, boolean outgoing) throws SQLException {
-		
-		Set<Mute> convictions = new LinkedHashSet<Mute>();
-
-		SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
-
-		for (SQLRowWrapper row : database.getRows("flex_punishment", SQLCondition.where(outgoing ? "by" : "uuid").is(player.getUniqueId()))) {
-			
-			if (ConvictionType.valueOf(row.getString("type")) != ConvictionType.MUTE)
-				continue;
-			
-			convictions.add(new Mute(row.getLong("id")));
-				
-		}
-		
-		return convictions.toArray(new Mute[convictions.size()]);
-		
+	@SuppressWarnings("unchecked")
+	public static Set<Mute> download(FleXHumanEntity player) throws SQLException {
+		return (Set<Mute>) Conviction.download(player, false, ConvictionType.MUTE);
 	}
 
 	@Override

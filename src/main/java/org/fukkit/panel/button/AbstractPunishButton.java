@@ -3,7 +3,6 @@ package org.fukkit.panel.button;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,7 +61,7 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 			
 			try {
 				
-				List<String> all = Arrays.stream(Report.download(this.other, true)).map(p -> {
+				List<String> all = Report.download(this.other, true).stream().map(p -> {
 					
 					SimpleDateFormat format = new SimpleDateFormat("(dd/MM/yy) [hh:mm:ss z]");
 					

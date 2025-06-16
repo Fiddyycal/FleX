@@ -12,6 +12,7 @@ import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 
+import io.flex.commons.Nullable;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLMap;
@@ -51,27 +52,64 @@ public abstract class Conviction extends PreConsequence {
 		
 	}
 	
-	public static Conviction[] download(FleXHumanEntity player) throws SQLException {
+	public static <T extends Conviction> Set<T> download(FleXHumanEntity player) throws SQLException {
+		return download(player, false);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T extends Conviction> Set<T> download(FleXHumanEntity player, boolean outgoing) throws SQLException {
+		return (Set<T>) download(player, outgoing, null);
+	}
+	
+	public static Set<? extends Conviction> download(FleXHumanEntity player, boolean outgoing, @Nullable ConvictionType type) throws SQLException {
+		
+		SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
 		
 		Set<Conviction> convictions = new LinkedHashSet<Conviction>();
 		
-		Arrays.stream(Ban.download(player)).forEach(b -> {
-			convictions.add(b);
-		});
+		for (SQLRowWrapper row : database.getRows("flex_punishment", SQLCondition.where(outgoing ? "by" : "uuid").is(player.getUniqueId()))) {
+			
+			ConvictionType check = null;
+			
+			try {
+				check = ConvictionType.valueOf(row.getString("type"));
+			} catch (IllegalArgumentException ignore) {
+				continue;
+			}
+			
+			if (type != null && check != type)
+				continue;
+			
+			long reference = row.getLong("id");
+			
+			switch (check) {
+			case BAN:
+				
+				convictions.add(Ban.download(reference));
+				break;
+				
+			case KICK:
+				
+				convictions.add(Kick.download(reference));
+				break;
+				
+			case MUTE:
+				
+				convictions.add(Mute.download(reference));
+				break;
+				
+			case REPORT:
+				
+				convictions.add(Report.download(reference));
+				break;
+				
+			default:
+				break;
+			}
+			
+		}
 		
-		Arrays.stream(Mute.download(player)).forEach(m -> {
-			convictions.add(m);
-		});
-		
-		Arrays.stream(Kick.download(player)).forEach(k -> {
-			convictions.add(k);
-		});
-		
-		Arrays.stream(Report.download(player)).forEach(r -> {
-			convictions.add(r);
-		});
-		
-		return convictions.toArray(new Conviction[convictions.size()]);
+		return convictions;
 		
 	}
 	

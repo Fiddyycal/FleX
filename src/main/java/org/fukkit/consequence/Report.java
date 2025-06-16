@@ -31,54 +31,42 @@ public class Report extends Conviction {
 		return new Report(reference);
 	}
 	
-	public static Report[] download() throws SQLException {
+	public static Set<Report> download() throws SQLException {
 		return download((SQLCondition<?>)null);
 	}
 	
-	public static Report[] download(FleXHumanEntity player) throws SQLException {
+	public static Set<Report> download(@Nullable SQLCondition<?> condition) throws SQLException {
+
+		SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
 		
 		Set<Report> convictions = new LinkedHashSet<Report>();
 		
-		SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
-
-		for (SQLRowWrapper row : database.getRows("flex_punishment", SQLCondition.where("uuid").is(player.getUniqueId()))) {
-			
-			if (ConvictionType.valueOf(row.getString("type")) != ConvictionType.REPORT)
-				continue;
-			
-			convictions.add(new Report(row.getLong("id")));
-			
-		}
-		
-		return convictions.toArray(new Report[convictions.size()]);
-		
-	}
-	
-	public static Report[] download(@Nullable SQLCondition<?> condition) throws SQLException {
-		
-		Set<Report> convictions = new LinkedHashSet<Report>();
-
-		SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
-
 		for (SQLRowWrapper row : database.getRows("flex_punishment", condition)) {
 			
-			if (ConvictionType.valueOf(row.getString("type")) != ConvictionType.REPORT)
+			ConvictionType check = null;
+			
+			try {
+				check = ConvictionType.valueOf(row.getString("type"));
+			} catch (IllegalArgumentException ignore) {
+				continue;
+			}
+			
+			if (check != ConvictionType.REPORT)
 				continue;
 			
-			convictions.add(new Report(row.getLong("id")));
+			long reference = row.getLong("id");
+			
+			convictions.add(download(reference));
 			
 		}
 		
-		return convictions.toArray(new Report[convictions.size()]);
+		return convictions;
 		
 	}
 	
-	public static Report[] download(FleXPlayer player) throws SQLException {
-		return download(player, false);
-	}
-	
-	public static Report[] download(FleXPlayer player, boolean outgoing) throws SQLException {
-		return download(SQLCondition.where(outgoing ? "by" : "uuid").is(player.getUniqueId()));
+	@SuppressWarnings("unchecked")
+	public static Set<Report> download(FleXHumanEntity player) throws SQLException {
+		return (Set<Report>) Conviction.download(player, false, ConvictionType.REPORT);
 	}
 
 	@Override

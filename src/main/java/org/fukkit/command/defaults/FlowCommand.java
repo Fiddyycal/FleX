@@ -2,6 +2,8 @@ package org.fukkit.command.defaults;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.fukkit.Fukkit;
 import org.fukkit.command.Command;
@@ -48,7 +50,7 @@ public class FlowCommand extends FleXCommandAdapter {
 		Theme theme = this.getPlayer().getTheme();
 		Language lang = this.getPlayer().getLanguage();
 		
-		Report[] reports = null;
+		Set<Report> reports = new LinkedHashSet<Report>();
 		
 		if (args.length == 1) {
 			
@@ -59,15 +61,16 @@ public class FlowCommand extends FleXCommandAdapter {
 			
 			try {
 				
-				Report[] downloaded = Report.download(SQLCondition.where("id").is(Long.parseLong(args[0])));
+				// TODO use local report cache instead of this resource taxing way...
+				Set<Report> downloaded = Report.download(SQLCondition.where("id").is(Long.parseLong(args[0])));
 				
-				if (downloaded.length == 0) {
+				if (downloaded.isEmpty()) {
 					// TODO: REPORT_VIEW_FAILURE_NOT_FOUND
 					this.getPlayer().sendMessage(theme.format("<engine><failure>Report <sc>%id%<reset> <failure>doesn't exist<pp>.").replace("%id%", args[0]));
 					return false;
 				}
 				
-				Report report = downloaded[0];
+				Report report = downloaded.stream().findFirst().orElse(null);
 				
 				if (report.isPardoned() && !this.getPlayer().hasPermission("flex.command.flow.archive")) {
 					// TODO: REPORT_VIEW_FAILURE_ARCHIVED, REPORT_VIEW_FAILURE_ARCHIVED
@@ -162,7 +165,7 @@ public class FlowCommand extends FleXCommandAdapter {
 				e.printStackTrace();
 			}
 			
-			if (reports == null || reports.length < 1) {
+			if (reports == null || reports.isEmpty()) {
 				// TODO: FLOW_NONE
 				this.getPlayer().sendMessage("[ThemeMessage=FLOW_NONE]");
 				return false;
@@ -191,9 +194,9 @@ public class FlowCommand extends FleXCommandAdapter {
 			e.printStackTrace();
 		}
 		
-		if (reports == null || reports.length < 1) {
+		if (reports == null || reports.isEmpty()) {
 
-			Arrays.stream((flow ? ThemeMessage.FLOW_REPORTS_NONE : ThemeMessage.REPORTS_NONE).format(lang, new Variable<Integer>("%amount%", reports.length))).forEach(s -> {
+			Arrays.stream((flow ? ThemeMessage.FLOW_REPORTS_NONE : ThemeMessage.REPORTS_NONE).format(lang, new Variable<Integer>("%amount%", reports.size()))).forEach(s -> {
 				this.getPlayer().sendMessage(theme.format(s));
 			});
 			
