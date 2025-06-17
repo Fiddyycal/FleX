@@ -155,8 +155,6 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public void unBan();
 	
-	public boolean isOnline();
-	
 	public boolean isDisguised();
 	
 	public boolean isMuted();

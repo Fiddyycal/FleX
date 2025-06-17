@@ -32,7 +32,6 @@ import static io.flex.commons.utils.ClassUtils.is;
 import static io.flex.commons.utils.ClassUtils.isString;
 
 import static io.flex.commons.sql.SQLDataType.IDENTIFIER_QUOTE;
-import static io.flex.commons.sql.SQLDataType.STRING_QUOTE;
 
 public class SQLDatabase implements Serializable {
 	
@@ -98,6 +97,8 @@ public class SQLDatabase implements Serializable {
 	}
 	
 	public SQLConnection open() throws SQLException {
+
+		Thread.dumpStack();
 		
 		for (SQLConnection connection : this.pool) {
 			
@@ -147,10 +148,6 @@ public class SQLDatabase implements Serializable {
 	 * @throws SQLException
 	 */
 	public Set<SQLRowWrapper> getRows(String table, @Nullable SQLCondition<?> condition) throws SQLException {
-		
-		if (table.equalsIgnoreCase("flex_punishment")) {
-			Thread.dumpStack();
-		}
 		
 		Set<SQLRowWrapper> rows = new HashSet<SQLRowWrapper>();
 		

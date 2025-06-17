@@ -6,7 +6,7 @@ import java.util.List;
 import org.fukkit.Fukkit;
 import org.fukkit.clickable.Menu;
 import org.fukkit.clickable.button.ExecutableButton;
-import org.fukkit.consequence.ConvictionType;
+import org.fukkit.consequence.PunishmentType;
 import org.fukkit.consequence.EvidenceType;
 import org.fukkit.consequence.Reason;
 import org.fukkit.consequence.gui.button.ReasonButton;
@@ -19,9 +19,9 @@ import io.flex.commons.utils.NumUtils;
 
 public class SanctionGui extends Menu {
 	
-	private ConvictionType consequenceType;
+	private PunishmentType consequenceType;
 	
-	public SanctionGui(FleXPlayer player, FleXPlayer threatened, ConvictionType consequenceType, boolean ip, boolean silent) {
+	public SanctionGui(FleXPlayer player, FleXPlayer threatened, PunishmentType consequenceType, boolean ip, boolean silent) {
 		
 		super(player.getTheme().format("<title>" + consequenceType.toString() + "<pp>: <sc>" + threatened.getName()), determineRows(consequenceType));
 		
@@ -40,18 +40,18 @@ public class SanctionGui extends Menu {
 			if (reason.isFlowVerdict())
 				continue;
 			
-			if (consequenceType != ConvictionType.REPORT && reason.getConvictionType() != null && reason.getConvictionType() != consequenceType)
+			if (consequenceType != PunishmentType.REPORT && reason.getConvictionType() != null && reason.getConvictionType() != consequenceType)
 				continue;
 			
 			ExecutableButton button = new ReasonButton(theme, threatened, reason);
 			List<String> lore = button.getLore();
 			
-			if (consequenceType != ConvictionType.REPORT) {
+			if (consequenceType != PunishmentType.REPORT) {
 				
 				if (!lore.get(lore.size() - 1).contains("Example"))
 					lore.add("");
 				
-				if (consequenceType != ConvictionType.KICK && reason.getDuration() > 0) {
+				if (consequenceType != PunishmentType.KICK && reason.getDuration() > 0) {
 					String duration = reason.getDuration() >= NumUtils.YEAR_TO_MILLIS ? "Permanent" : NumUtils.toString(reason.getDuration());
 					lore.add(theme.format("<tc>Duration<pp>:" + Theme.reset + " <lore>" + duration + (this.hasMetadata("punishment_ip") ? " IPv4" : "")));
 				}
@@ -110,13 +110,13 @@ public class SanctionGui extends Menu {
 		
 	}
 	
-	public ConvictionType getConsequenceType() {
+	public PunishmentType getConsequenceType() {
 		return this.consequenceType;
 	}
 	
-	private static int determineRows(ConvictionType consequenceType) {
+	private static int determineRows(PunishmentType consequenceType) {
 		
-		if (consequenceType == ConvictionType.REPORT)
+		if (consequenceType == PunishmentType.REPORT)
 			return 3;
 		
 		long items = Arrays.stream(Reason.values()).filter(r -> {

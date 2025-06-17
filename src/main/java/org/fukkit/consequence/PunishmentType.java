@@ -1,12 +1,12 @@
 package org.fukkit.consequence;
 
-public enum ConvictionType {
+public enum PunishmentType {
 	
 	BAN("Ban"), MUTE("Mute"), KICK("Kick"), REPORT("Report");
 
 	private String name;
 	
-	private ConvictionType(String name) {
+	private PunishmentType(String name) {
 		this.name = name;
 	}
 	

@@ -19,13 +19,13 @@ import io.flex.commons.sql.SQLMap;
 import io.flex.commons.sql.SQLRowWrapper;
 import io.flex.commons.utils.CollectionUtils;
 
-public abstract class Conviction extends PreConsequence {
+public abstract class Punishment extends Consequence {
 	
 	protected long reference;
 	
 	protected String[] evidence;
 	
-	public Conviction(FleXPlayer player, FleXPlayer by, Reason reason, boolean ip, boolean silent, String... evidence) {
+	public Punishment(FleXPlayer player, FleXPlayer by, Reason reason, boolean ip, boolean silent, String... evidence) {
 		
 		super(player, by, reason, ip, silent);
 		
@@ -44,7 +44,7 @@ public abstract class Conviction extends PreConsequence {
 		
 	}
 	
-	protected Conviction(long reference) throws SQLException {
+	protected Punishment(long reference) throws SQLException {
 		
 		super();
 		
@@ -52,27 +52,27 @@ public abstract class Conviction extends PreConsequence {
 		
 	}
 	
-	public static <T extends Conviction> Set<T> download(FleXHumanEntity player) throws SQLException {
+	public static <T extends Punishment> Set<T> download(FleXHumanEntity player) throws SQLException {
 		return download(player, false);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <T extends Conviction> Set<T> download(FleXHumanEntity player, boolean outgoing) throws SQLException {
+	public static <T extends Punishment> Set<T> download(FleXHumanEntity player, boolean outgoing) throws SQLException {
 		return (Set<T>) download(player, outgoing, null);
 	}
 	
-	public static Set<? extends Conviction> download(FleXHumanEntity player, boolean outgoing, @Nullable ConvictionType type) throws SQLException {
+	public static Set<? extends Punishment> download(FleXHumanEntity player, boolean outgoing, @Nullable PunishmentType type) throws SQLException {
 		
 		SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
 		
-		Set<Conviction> convictions = new LinkedHashSet<Conviction>();
+		Set<Punishment> convictions = new LinkedHashSet<Punishment>();
 		
 		for (SQLRowWrapper row : database.getRows("flex_punishment", SQLCondition.where(outgoing ? "by" : "uuid").is(player.getUniqueId()))) {
 			
-			ConvictionType check = null;
+			PunishmentType check = null;
 			
 			try {
-				check = ConvictionType.valueOf(row.getString("type"));
+				check = PunishmentType.valueOf(row.getString("type"));
 			} catch (IllegalArgumentException ignore) {
 				continue;
 			}

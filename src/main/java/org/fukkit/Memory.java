@@ -10,9 +10,11 @@ import org.fukkit.cache.PlayerCache;
 import org.fukkit.cache.RankCache;
 import org.fukkit.cache.ThemeCache;
 import org.fukkit.cache.WorldCache;
+import org.fukkit.consequence.Ban.BanCache;
 
 public interface Memory {
 
+	BanCache BAN_CACHE = new BanCache();
 	GuiCache GUI_CACHE = new GuiCache();
 	RankCache RANK_CACHE = new RankCache();
 	SkinCache SKIN_CACHE = new SkinCache();
@@ -33,6 +35,7 @@ public interface Memory {
 		RANK_CACHE.load();
 		SKIN_CACHE.load();
 		NAME_CACHE.load();
+		BAN_CACHE.load();
 		
 		/* After everything has loaded. */
 		PLAYER_CACHE.load();

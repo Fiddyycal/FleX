@@ -22,7 +22,7 @@ public enum Reason {
 			"Cheating",
 			null,
 			Material.BARRIER,
-			ConvictionType.BAN,
+			PunishmentType.BAN,
 			new EvidenceType[] { EvidenceType.RECORDING_REFERENCE },
 			NumUtils.MONTH_TO_MILLIS,
 			"This player has an unfair advantage"),
@@ -33,7 +33,7 @@ public enum Reason {
 			"Disrespect/Abuse",
 			null,
 			Material.BARRIER,
-			ConvictionType.MUTE,
+			PunishmentType.MUTE,
 			new EvidenceType[] { EvidenceType.RECORDING_REFERENCE },
 			NumUtils.MONTH_TO_MILLIS * 3,
 			"This player is using chat inappropriately"),
@@ -44,7 +44,7 @@ public enum Reason {
 			"Teaming/Targeting/Glitching",
 			null,
 			Material.BARRIER,
-			ConvictionType.MUTE,
+			PunishmentType.MUTE,
 			new EvidenceType[] { EvidenceType.RECORDING_REFERENCE },
 			NumUtils.MONTH_TO_MILLIS * 3,
 			"This player is breaking another flow rule"),
@@ -59,7 +59,7 @@ public enum Reason {
 			"Hacking",
 			null,
 			Material.ANVIL,
-			ConvictionType.BAN,
+			PunishmentType.BAN,
 			new EvidenceType[] { EvidenceType.YOUTUBE_LINK, EvidenceType.RECORDING_REFERENCE },
 			NumUtils.MONTH_TO_MILLIS,
 			"This player is using a hacked client"),
@@ -70,7 +70,7 @@ public enum Reason {
 			"Illegal Modifications",
 			null,
 			Material.REDSTONE,
-			ConvictionType.BAN,
+			PunishmentType.BAN,
 			new EvidenceType[] { EvidenceType.YOUTUBE_LINK, EvidenceType.RECORDING_REFERENCE },
 			NumUtils.MONTH_TO_MILLIS,
 			"This player is using prohibited",
@@ -82,7 +82,7 @@ public enum Reason {
 			"Glitching",
 			null,
 			Material.STONE_PICKAXE,
-			ConvictionType.KICK,
+			PunishmentType.KICK,
 			new EvidenceType[] { EvidenceType.YOUTUBE_LINK, EvidenceType.RECORDING_REFERENCE },
 			-1L,
 			"This player is glitching or intentionally",
@@ -94,7 +94,7 @@ public enum Reason {
 			"Teaming in FFA",
 			null,
 			Material.TRIPWIRE_HOOK,
-			ConvictionType.KICK,
+			PunishmentType.KICK,
 			new EvidenceType[] { EvidenceType.YOUTUBE_LINK, EvidenceType.RECORDING_REFERENCE },
 			-1L,
 			"This player is teaming with",
@@ -110,7 +110,7 @@ public enum Reason {
 			"Excessive Targeting",
 			null,
 			VersionUtils.material("YELLOW_FLOWER", "DANDELION"),
-			ConvictionType.KICK,
+			PunishmentType.KICK,
 			new EvidenceType[] { EvidenceType.YOUTUBE_LINK, EvidenceType.RECORDING_REFERENCE },
 			-1L,
 			"This player is excessively targeting/stalking/stream",
@@ -126,7 +126,7 @@ public enum Reason {
 			"Malicious Threats",
 			"\"%name%: im abouta fry this proxy\"",
 			Material.FLINT_AND_STEEL,
-			ConvictionType.BAN,
+			PunishmentType.BAN,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.CHAT_LOG },
 			NumUtils.MONTH_TO_MILLIS,
 			"This player is sending malicious threats targeted",
@@ -139,7 +139,7 @@ public enum Reason {
 			"Malicious Threats",
 			"\"%name%: FUCK OFF ILL DOX YA CUNT\"",
 			Material.POISONOUS_POTATO,
-			ConvictionType.MUTE,
+			PunishmentType.MUTE,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.CHAT_LOG },
 			NumUtils.MONTH_TO_MILLIS,
 			"This player is sending malicious threats targeted",
@@ -153,7 +153,7 @@ public enum Reason {
 			"Malicious Links",
 			"\"%name%: I got a free minecon cape from this link! http://freeCape.scam\"",
 			VersionUtils.material("BOOK_AND_QUILL", "WRITABLE_BOOK"),
-			ConvictionType.MUTE,
+			PunishmentType.MUTE,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.CHAT_LOG },
 			NumUtils.YEAR_TO_MILLIS,
 			"This player is sending malicious links",
@@ -165,7 +165,7 @@ public enum Reason {
 			"Filter Bypass",
 			"\"%name%: wot r u a f@ggot? ky5 kid\"",
 			Material.PAPER,
-			ConvictionType.MUTE,
+			PunishmentType.MUTE,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.CHAT_LOG },
 			NumUtils.MONTH_TO_MILLIS,
 			"This player is bypassing the on",
@@ -177,7 +177,7 @@ public enum Reason {
 			"Network Disrespect",
 			"\"%name%: the developers hard work aint shit lmao\"",
 			Material.TNT,
-			ConvictionType.MUTE,
+			PunishmentType.MUTE,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.CHAT_LOG },
 			NumUtils.DAY_TO_MILLIS * 16,
 			"This player is being disrespectful towards overall",
@@ -189,7 +189,7 @@ public enum Reason {
 			"Player Disrespect",
 			"\"%name%: LOL I SAW A PICTURE OF YO UGLY ASS FACE\"",
 			VersionUtils.material("WEB", "COBWEB"),
-			ConvictionType.MUTE,
+			PunishmentType.MUTE,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.CHAT_LOG },
 			NumUtils.DAY_TO_MILLIS * 16,
 			"This player is being disrespectful",
@@ -200,7 +200,7 @@ public enum Reason {
 			"Degrading Others",
 			"\"%name%: stfu cunt you're asian\"",
 			Material.DRAGON_EGG,
-			ConvictionType.MUTE,
+			PunishmentType.MUTE,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.CHAT_LOG },
 			NumUtils.MONTH_TO_MILLIS,
 			"This player is being abusive with",
@@ -212,7 +212,7 @@ public enum Reason {
 			"Discrimination",
 			"\"%name%: leave the lobby no gays allowed\"",
 			VersionUtils.material("IRON_FENCE", "IRON_BARS"),
-			ConvictionType.MUTE,
+			PunishmentType.MUTE,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.CHAT_LOG },
 			NumUtils.MONTH_TO_MILLIS,
 			"This player is discriminating against race,",
@@ -224,7 +224,7 @@ public enum Reason {
     		"Trash Talk",
     		"\"%name%: ur so shit at mineman lol\"",
     		Material.NAME_TAG,
-			ConvictionType.MUTE,
+			PunishmentType.MUTE,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.CHAT_LOG },
 			NumUtils.DAY_TO_MILLIS * 16,
     		"This player is trash talking and/or being a bad",
@@ -236,7 +236,7 @@ public enum Reason {
 			"Inappropriate Links",
 			null,
 			Material.BOOK,
-			ConvictionType.MUTE,
+			PunishmentType.MUTE,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.CHAT_LOG },
 			NumUtils.DAY_TO_MILLIS * 16,
 			"This player is sending inappropriate",
@@ -248,7 +248,7 @@ public enum Reason {
 			"Service/Product Advertisement",
 			"\"%name%: Selling my account. Send me offers!\"",
 			VersionUtils.material("SIGN", "OAK_SIGN"),
-			ConvictionType.MUTE,
+			PunishmentType.MUTE,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.CHAT_LOG },
 			NumUtils.DAY_TO_MILLIS * 16,
 			"This player is using the network as a platform",
@@ -260,7 +260,7 @@ public enum Reason {
 			"Server Advertisement",
 			"\"%name%: Come join my server! ad.notAscam.com\"",
 			VersionUtils.material("SKULL_ITEM", "PLAYER_HEAD"),
-			ConvictionType.MUTE,
+			PunishmentType.MUTE,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.CHAT_LOG },
 			NumUtils.YEAR_TO_MILLIS,
 			"This player is advertising server",
@@ -276,7 +276,7 @@ public enum Reason {
 			"Inappropriate Username",
 			null,
 			Material.NAME_TAG,
-			ConvictionType.BAN,
+			PunishmentType.BAN,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK },
 			NumUtils.YEAR_TO_MILLIS,
 			"This player has a username which is designed",
@@ -288,7 +288,7 @@ public enum Reason {
 			"Inappropriate Skin",
 			null,
 			Material.COOKIE,
-			ConvictionType.BAN,
+			PunishmentType.BAN,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK },
 			NumUtils.YEAR_TO_MILLIS,
 			"This player has a skin that contains inappropriate",
@@ -300,7 +300,7 @@ public enum Reason {
 			"Bot/VPN Use",
 			"Using a VPN to bypass a previous ban or mute",
 			VersionUtils.material("FIREWORK_CHARGE", "FIRE_CHARGE"),
-			ConvictionType.BAN,
+			PunishmentType.BAN,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.YOUTUBE_LINK, EvidenceType.RECORDING_REFERENCE },
 			NumUtils.YEAR_TO_MILLIS,
 			"This player is botting and/or using a",
@@ -312,7 +312,7 @@ public enum Reason {
 			"Network Bootleg Creation",
 			"Recreation of a copyrighted concept",
 			Material.COAL,
-			ConvictionType.BAN,
+			PunishmentType.BAN,
 			new EvidenceType[] { EvidenceType.IMGUR_LINK, EvidenceType.GYAZO_LINK, EvidenceType.LIGHTSHOT_LINK, EvidenceType.YOUTUBE_LINK, EvidenceType.RECORDING_REFERENCE },
 			NumUtils.YEAR_TO_MILLIS,
 			"This player is involved in the development of",
@@ -338,7 +338,7 @@ public enum Reason {
 	
 	private Material material;
 	
-	private ConvictionType conviction;
+	private PunishmentType conviction;
 	
 	private EvidenceType[] evidence;
 	
@@ -346,7 +346,7 @@ public enum Reason {
 	
 	private String[] description;
 	
-	private Reason(String category, String display, @Nullable String example, Material material, @Nullable ConvictionType conviction, EvidenceType[] evidence, long duration, String... description) {
+	private Reason(String category, String display, @Nullable String example, Material material, @Nullable PunishmentType conviction, EvidenceType[] evidence, long duration, String... description) {
 		
 		this.category = category;
 		this.display = display;
@@ -386,7 +386,7 @@ public enum Reason {
 		return this.material;
 	}
 	
-	public ConvictionType getConvictionType() {
+	public PunishmentType getConvictionType() {
 		return this.conviction;
 	}
 	

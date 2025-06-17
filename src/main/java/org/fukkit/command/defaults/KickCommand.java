@@ -4,7 +4,7 @@ import org.fukkit.clickable.Menu;
 import org.fukkit.command.Command;
 import org.fukkit.command.FlaggedCommand;
 import org.fukkit.command.RestrictCommand;
-import org.fukkit.consequence.ConvictionType;
+import org.fukkit.consequence.PunishmentType;
 import org.fukkit.consequence.gui.SanctionGui;
 import org.fukkit.entity.FleXPlayer;
 
@@ -15,7 +15,7 @@ public class KickCommand extends AbstractSanctionCommand {
 	
 	@Override
 	protected Menu getMenu(FleXPlayer other, boolean ip, boolean silent) {
-		return new SanctionGui(this.getPlayer(), other, ConvictionType.KICK, false, silent);
+		return new SanctionGui(this.getPlayer(), other, PunishmentType.KICK, false, silent);
 	}
 	
 }

@@ -8,7 +8,7 @@ import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.theme.Theme;
 
-public class Kick extends Conviction {
+public class Kick extends Punishment {
 
 	public Kick(FleXPlayer player, FleXPlayer by, Reason reason, boolean silent, String... evidence) {
 		super(player, by, reason, false, silent, evidence);
@@ -24,12 +24,12 @@ public class Kick extends Conviction {
 	
 	@SuppressWarnings("unchecked")
 	public static Set<Kick> download(FleXHumanEntity player) throws SQLException {
-		return (Set<Kick>) Conviction.download(player, false, ConvictionType.KICK);
+		return (Set<Kick>) Punishment.download(player, false, PunishmentType.KICK);
 	}
 
 	@Override
-	public ConvictionType getType() {
-		return ConvictionType.KICK;
+	public PunishmentType getType() {
+		return PunishmentType.KICK;
 	}
 	
 	@Override

@@ -10,6 +10,8 @@ import org.fukkit.history.History;
 import net.md_5.fungee.ConnectionReason;
 
 public class ConnectionHistory extends History<String> {
+
+	public static final String TABLE_NAME = "flex_history_connection";
 	
 	public ConnectionHistory(FleXHumanEntity player) {
 		super(player, "flex_history_connection");

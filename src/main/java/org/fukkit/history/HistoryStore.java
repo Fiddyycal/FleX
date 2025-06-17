@@ -2,8 +2,7 @@ package org.fukkit.history;
 
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.history.variance.BadgeHistory;
-import org.fukkit.history.variance.ChatHistory;
-import org.fukkit.history.variance.CommandHistory;
+import org.fukkit.history.variance.ChatCommandHistory;
 import org.fukkit.history.variance.ConnectionHistory;
 import org.fukkit.history.variance.DisguiseHistory;
 import org.fukkit.history.variance.IpHistory;
@@ -11,15 +10,12 @@ import org.fukkit.history.variance.LocalRecordHistory;
 import org.fukkit.history.variance.NameHistory;
 import org.fukkit.history.variance.PunishmentHistory;
 import org.fukkit.history.variance.RankHistory;
-import org.fukkit.history.variance.SkinHistory;
 
 public class HistoryStore {
 	
 	private BadgeHistory badges;
 	
-	private ChatHistory messages;
-	
-	private CommandHistory commands;
+	private ChatCommandHistory messages;
 	
 	private ConnectionHistory connections;
 	
@@ -35,15 +31,11 @@ public class HistoryStore {
 	
 	private RankHistory ranks;
 	
-	private SkinHistory skins;
-	
 	public HistoryStore(FleXHumanEntity player) {
 		
 		this.badges = new BadgeHistory(player);
 		
-		this.messages = new ChatHistory(player);
-		
-		this.commands = new CommandHistory(player);
+		this.messages = new ChatCommandHistory(player);
 		
 		this.connections = new ConnectionHistory(player);
 		
@@ -59,20 +51,14 @@ public class HistoryStore {
 		
 		this.ranks = new RankHistory(player);
 		
-		this.skins = new SkinHistory(player);
-		
 	}
 	
 	public BadgeHistory getBadges() {
 		return this.badges;
 	}
 	
-	public ChatHistory getMessages() {
+	public ChatCommandHistory getChatAndCommands() {
 		return this.messages;
-	}
-	
-	public CommandHistory getCommands() {
-		return this.commands;
 	}
 	
 	public ConnectionHistory getConnections() {
@@ -101,10 +87,6 @@ public class HistoryStore {
 	
 	public RankHistory getRanks() {
 		return this.ranks;
-	}
-	
-	public SkinHistory getSkins() {
-		return this.skins;
 	}
 
 }

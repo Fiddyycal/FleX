@@ -14,7 +14,7 @@ import io.flex.commons.utils.NumUtils;
 
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
-public class Mute extends Conviction {
+public class Mute extends Punishment {
 
 	public Mute(FleXPlayer player, FleXPlayer by, Reason reason, boolean ip, boolean silent, String... evidence) {
 		super(player, by, reason, ip, silent, evidence);
@@ -30,12 +30,12 @@ public class Mute extends Conviction {
 	
 	@SuppressWarnings("unchecked")
 	public static Set<Mute> download(FleXHumanEntity player) throws SQLException {
-		return (Set<Mute>) Conviction.download(player, false, ConvictionType.MUTE);
+		return (Set<Mute>) Punishment.download(player, false, PunishmentType.MUTE);
 	}
 
 	@Override
-	public ConvictionType getType() {
-		return ConvictionType.MUTE;
+	public PunishmentType getType() {
+		return PunishmentType.MUTE;
 	}
 	
 	@Override

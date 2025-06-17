@@ -17,7 +17,7 @@ public class CommandLogListeners extends FleXEventListener {
 		
 		FleXPlayer player = Fukkit.getPlayerExact(event.getPlayer());
 		
-		player.getHistory().getMessages().add(event.getMessage());
+		player.getHistory().getChatAndCommands().add(event.getMessage());
 		
 	}
 

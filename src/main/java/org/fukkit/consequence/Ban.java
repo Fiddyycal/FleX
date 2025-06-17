@@ -2,18 +2,65 @@ package org.fukkit.consequence;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.UUID;
+
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.theme.Theme;
 
+import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.sql.SQLCondition;
+import io.flex.commons.sql.SQLDatabase;
+import io.flex.commons.sql.SQLRowWrapper;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.NumUtils;
 import io.flex.commons.utils.StringUtils;
 
-public class Ban extends Conviction {
-
+public class Ban extends Punishment {
+	
+	/**
+	 * 
+	 * Local cache for bans so database isn't being
+	 * stressed everytime someone attempts to connect.
+	 * 
+	 * @see ConvictionListeners
+	 *
+	 */
+	public static class BanCache extends LinkedCache<Ban, UUID> {
+		
+		private static final long serialVersionUID = -4132115098896228306L;
+		
+		public BanCache() {
+			super((con, uid) -> con.uuid.equals(uid));
+		}
+		
+		@SuppressWarnings("unchecked")
+		public <C extends Consequence> C getByPlayer(FleXPlayer player) {
+			return (C) this.stream().filter(b -> b.uuid.equals(player.getUniqueId())).findFirst().orElse(null);
+		}
+		
+		@Override
+		public boolean load() {
+			
+			SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
+			
+			try {
+				
+				for (SQLRowWrapper row : database.getRows("flex_punishment", SQLCondition.where("type").is(PunishmentType.BAN.name())))
+					this.add(Ban.download(row.getLong("id")));
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+			return true;
+			
+		}
+		
+	}
+	
 	public Ban(FleXPlayer player, FleXPlayer by, Reason reason, boolean ip, boolean silent, String... evidence) {
 		super(player, by, reason, ip, silent, evidence);
 	}
@@ -27,8 +74,8 @@ public class Ban extends Conviction {
 	}
 	
 	@Override
-	public ConvictionType getType() {
-		return ConvictionType.BAN;
+	public PunishmentType getType() {
+		return PunishmentType.BAN;
 	}
 
 	@Override

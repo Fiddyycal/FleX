@@ -12,8 +12,10 @@ import io.flex.commons.Nullable;
 
 public class BadgeHistory extends History<String> {
 
+	public static final String TABLE_NAME = "flex_history_badge";
+	
 	public BadgeHistory(FleXHumanEntity player) {
-		super(player, "flex_history_badge");
+		super(player, TABLE_NAME);
 	}
 	
 	/**

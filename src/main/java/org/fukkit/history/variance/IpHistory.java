@@ -7,6 +7,8 @@ import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.history.History;
 
 public class IpHistory extends History<String> {
+
+	public static final String TABLE_NAME = "flex_history_ip";
 	
 	public IpHistory(FleXHumanEntity player) {
 		super(player, "flex_history_ip");

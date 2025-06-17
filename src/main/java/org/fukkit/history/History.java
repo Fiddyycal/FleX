@@ -14,11 +14,8 @@ import io.flex.commons.Nullable;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLMap;
-import io.flex.commons.sql.SQLDataType;
 
 public abstract class History<T> {
-	
-	private static boolean tableExists = false;
 	
 	protected FleXHumanEntity player;
 	
@@ -40,33 +37,6 @@ public abstract class History<T> {
 			return;
 		
 		SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
-		
-		if (table.contains("connection"))
-		System.out.println("CREATING TABLE 1...................................");
-		
-		if (!tableExists) {
-			
-			System.out.println("CREATING TABLE 2...................................");
-			
-			/*
-			 * Setting this first so that in the case of SQLException
-			 * it won't churn and spam the console and making the stack unreadable.
-			 */
-			tableExists = true;
-			
-			try {
-				
-				database.createTable(table, SQLMap.of(
-						
-						SQLMap.entry("uuid", SQLDataType.VARCHAR),
-						SQLMap.entry("time", SQLDataType.BIGINT),
-						SQLMap.entry("log", SQLDataType.VARCHAR)));
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			
-		}
 		
 		try {
 			

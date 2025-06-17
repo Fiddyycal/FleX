@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.fukkit.consequence.Ban;
-import org.fukkit.consequence.Conviction;
+import org.fukkit.consequence.Punishment;
 import org.fukkit.consequence.Kick;
 import org.fukkit.consequence.Mute;
 import org.fukkit.consequence.Report;
@@ -14,13 +14,13 @@ import org.fukkit.history.History;
 
 import io.flex.FleX.Task;
 
-public class PunishmentHistory extends History<Conviction> {
-	
+public class PunishmentHistory extends History<Punishment> {
+
 	public PunishmentHistory(FleXHumanEntity player) {
 		super(player);
 		try {
 			
-			this.log = Conviction.download(player).stream().collect(Collectors.toMap(Conviction::getTime, c -> c,
+			this.log = Punishment.download(player).stream().collect(Collectors.toMap(Punishment::getTime, c -> c,
 		             (conviction, compare) -> {
 		            	 Task.debug("Conviction", "Duplicate key in punishment history has been overwritten: " + conviction.getTime() + "/" + compare.getTime());
 		                 return conviction;

@@ -1,8 +1,6 @@
 package org.fukkit.listeners;
 
-import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,12 +12,12 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.fukkit.Fukkit;
 import org.fukkit.PlayerState;
 import org.fukkit.consequence.Ban;
-import org.fukkit.consequence.Conviction;
-import org.fukkit.consequence.ConvictionType;
+import org.fukkit.consequence.Punishment;
+import org.fukkit.consequence.PunishmentType;
 import org.fukkit.consequence.EvidenceType;
 import org.fukkit.consequence.Kick;
 import org.fukkit.consequence.Mute;
-import org.fukkit.consequence.PreConsequence;
+import org.fukkit.consequence.Consequence;
 import org.fukkit.consequence.Report;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.FleXEventListener;
@@ -51,17 +49,17 @@ public class ConvictionListeners extends FleXEventListener {
 		if (event.isCancelled())
 			return;
 		
-		PreConsequence consequence = event.getPreConsequence();
+		Consequence consequence = event.getPreConsequence();
 		
 		FleXPlayer player = consequence.getPlayer();
 		FleXPlayer by = consequence.getBy();
 		
-		ConvictionType type = consequence.getType();
+		PunishmentType type = consequence.getType();
 		
-		if ((type == ConvictionType.REPORT || type == ConvictionType.KICK) && !player.isOnline())
+		if ((type == PunishmentType.REPORT || type == PunishmentType.KICK) && !player.isOnline())
 			return;
 		
-		if (type == ConvictionType.REPORT) {
+		if (type == PunishmentType.REPORT) {
 			
 			FleXReportEvent report = new FleXReportEvent(new Report(player, by, consequence.getReason()), false);
 			
@@ -74,12 +72,12 @@ public class ConvictionListeners extends FleXEventListener {
 			
 			String log = flowEvidence(player, consequence);
 			
-			by.setMetadata("input_evidence", new FleXFixedMetadataValue(new BiCell<PreConsequence, String>() {
+			by.setMetadata("input_evidence", new FleXFixedMetadataValue(new BiCell<Consequence, String>() {
 				
 				private static final long serialVersionUID = -5368438625243730572L;
 
 				@Override
-				public PreConsequence a() {
+				public Consequence a() {
 					return consequence;
 				}
 				
@@ -118,9 +116,9 @@ public class ConvictionListeners extends FleXEventListener {
 			return;
 		
 		FleXFixedMetadataValue metaData = (FleXFixedMetadataValue) player.getMetadata("input_evidence").get(0);
-		BiCell<PreConsequence, String> cell = (BiCell<PreConsequence, String>) metaData.value();
+		BiCell<Consequence, String> cell = (BiCell<Consequence, String>) metaData.value();
 		
-		PreConsequence consequence = cell.a();
+		Consequence consequence = cell.a();
 		
 		FleXPlayer punished = consequence.getPlayer();
 		FleXPlayer by = consequence.getBy();
@@ -150,7 +148,7 @@ public class ConvictionListeners extends FleXEventListener {
 		
 		by.removeMetadata("input_evidence", Fukkit.getInstance());
 		
-		if (consequence.getType() == ConvictionType.KICK && !punished.isOnline()) {
+		if (consequence.getType() == PunishmentType.KICK && !punished.isOnline()) {
 			by.sendMessage(theme.format("<engine><failure>Player went offline<sp>.\\s<failure>Punishment cancelled<pp>."));
 			return;
 		}
@@ -160,7 +158,7 @@ public class ConvictionListeners extends FleXEventListener {
 			return;
 		}
 		
-		String processing = consequence.getType() == ConvictionType.KICK ? EvidenceType.PROCESSING : EvidenceType.REDUCED;
+		String processing = consequence.getType() == PunishmentType.KICK ? EvidenceType.PROCESSING : EvidenceType.REDUCED;
 		String evidence = none ? EvidenceType.NON_APPLICABLE : auto ? cell.b() + " (Automatic)" : temp ? processing : message;
 		
 		switch (consequence.getType()) {
@@ -199,7 +197,7 @@ public class ConvictionListeners extends FleXEventListener {
 					return;
 				
 				String success = auto ? "Passed with automated evidence" : "Punishment passed successfully";
-				String reduced = parse.getConviction().getType() == ConvictionType.KICK ? success : "Passed with a reduced duration until evidence is finalized";
+				String reduced = parse.getConviction().getType() == PunishmentType.KICK ? success : "Passed with a reduced duration until evidence is finalized";
 				String accepted = "Evidence accepted";
 				
 				by.sendMessage(theme.format("<engine><success>" + (none ? success : temp ? reduced : accepted) + "<pp>."));
@@ -210,7 +208,7 @@ public class ConvictionListeners extends FleXEventListener {
 		
     }
 	
-	private static String flowEvidence(FleXPlayer player, PreConsequence consequence) {
+	private static String flowEvidence(FleXPlayer player, Consequence consequence) {
 		
 		EvidenceType[] required = consequence.getReason().getRequiredEvidence();
 		
@@ -219,7 +217,7 @@ public class ConvictionListeners extends FleXEventListener {
 		
 		if (Arrays.stream(required).anyMatch(e -> e.isChatType())) {
 			
-			long logged = player.getHistory().getMessages().asMap().entrySet().stream().filter(e -> {
+			long logged = player.getHistory().getChatAndCommands().asMap().entrySet().stream().filter(e -> {
 				return e.getValue().contains(":") && e.getKey() >= (System.currentTimeMillis() - (NumUtils.MINUTE_TO_MILLIS * 10));
 				
 			}).map(e -> e.getKey()).findFirst().orElse(-1L);
@@ -251,7 +249,7 @@ public class ConvictionListeners extends FleXEventListener {
 		if (event.isCancelled())
 			return;
 		
-		Conviction conviction = event.getConviction();
+		Punishment conviction = event.getConviction();
 		
 		conviction.onConvict();
 		

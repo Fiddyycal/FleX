@@ -82,7 +82,7 @@ public class ChatHistoryButton extends ExecutableButton {
 	
 	private static List<String> last5(Theme theme, Language language, FleXPlayer other) {
 		
-		Map<Long, String> chats = other.getHistory().getMessages().asMap();
+		Map<Long, String> chats = other.getHistory().getChatAndCommands().asMap();
 		
 		List<Long> times = chats.keySet().stream().sorted().collect(Collectors.toList());
 		

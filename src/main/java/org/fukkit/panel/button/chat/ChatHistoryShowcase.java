@@ -30,7 +30,7 @@ public class ChatHistoryShowcase extends Menu {
 		
 		Theme theme = viewer.getTheme();
 		
-		Map<Long, String> history = other.getHistory().getMessages().asMap();
+		Map<Long, String> history = other.getHistory().getChatAndCommands().asMap();
 		
 		String name = other.getDisplayName(theme, true);
 		
@@ -82,7 +82,7 @@ public class ChatHistoryShowcase extends Menu {
 		
 		Map<String, List<Long>> categorized = new HashMap<String, List<Long>>();
 		
-		Set<Long> all = other.getHistory().getMessages().asMap().keySet().stream().sorted().collect(Collectors.toSet());
+		Set<Long> all = other.getHistory().getChatAndCommands().asMap().keySet().stream().sorted().collect(Collectors.toSet());
 		
 		SimpleDateFormat date = new SimpleDateFormat("EEE, MMM d, yyyy");
 		

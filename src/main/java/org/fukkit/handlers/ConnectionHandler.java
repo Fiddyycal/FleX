@@ -10,6 +10,13 @@ import org.fukkit.Fukkit;
 import org.fukkit.config.Configuration;
 import org.fukkit.config.YamlConfig;
 import org.fukkit.data.BukkitLocalDataServer;
+import org.fukkit.history.variance.BadgeHistory;
+import org.fukkit.history.variance.ChatCommandHistory;
+import org.fukkit.history.variance.ConnectionHistory;
+import org.fukkit.history.variance.DisguiseHistory;
+import org.fukkit.history.variance.IpHistory;
+import org.fukkit.history.variance.NameHistory;
+import org.fukkit.history.variance.RankHistory;
 
 import io.flex.FleX;
 import io.flex.FleX.Task;
@@ -19,6 +26,7 @@ import io.flex.commons.socket.DataServer;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLDataType;
 import io.flex.commons.sql.SQLDriverType;
+import io.flex.commons.sql.SQLMap;
 
 public class ConnectionHandler {
 	
@@ -104,6 +112,14 @@ public class ConnectionHandler {
 			
 			this.database.createTable("flex_punishment", "id", punishment_columns);
 			
+			this.createHistoryTable(BadgeHistory.TABLE_NAME);
+			this.createHistoryTable(ChatCommandHistory.TABLE_NAME);
+			this.createHistoryTable(ConnectionHistory.TABLE_NAME);
+			this.createHistoryTable(DisguiseHistory.TABLE_NAME);
+			this.createHistoryTable(IpHistory.TABLE_NAME);
+			this.createHistoryTable(NameHistory.TABLE_NAME);
+			this.createHistoryTable(RankHistory.TABLE_NAME);
+			
 		} catch (SQLException e) {
 			
 			Task.error("SQL (" + Severity.EMERG + ")", "Failed to build local tables. (" + this.database + ")");
@@ -136,6 +152,16 @@ public class ConnectionHandler {
 	
 	public static boolean isRegistered() {
 		return registered;
+	}
+	
+	private void createHistoryTable(String table) throws SQLException {
+		
+		this.database.createTable(table, SQLMap.of(
+				
+				SQLMap.entry("uuid", SQLDataType.VARCHAR),
+				SQLMap.entry("time", SQLDataType.BIGINT),
+				SQLMap.entry("log", SQLDataType.VARCHAR)));
+		
 	}
 	
 }

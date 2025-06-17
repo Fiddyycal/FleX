@@ -7,17 +7,17 @@ import org.fukkit.entity.FleXPlayer;
 
 import io.flex.commons.cache.Cacheable;
 
-public abstract class PreConsequence implements Cacheable {
+public abstract class Consequence implements Cacheable {
+	
+	protected UUID uuid, by;
 	
 	protected Reason reason;
 	
 	protected long duration, time, until;
-
-	protected UUID uuid, by;
 	
 	protected boolean pardoned, ip, silent;
 	
-	public PreConsequence(FleXPlayer player, FleXPlayer by, Reason reason, boolean ip, boolean silent) {
+	public Consequence(FleXPlayer player, FleXPlayer by, Reason reason, boolean ip, boolean silent) {
 		
 		this.reason = reason;
 		
@@ -35,7 +35,7 @@ public abstract class PreConsequence implements Cacheable {
 		
 	}
 	
-	protected PreConsequence() {
+	protected Consequence() {
 		//
 	}
 	
@@ -75,6 +75,6 @@ public abstract class PreConsequence implements Cacheable {
 		return this.silent;
 	}
 	
-	public abstract ConvictionType getType();
+	public abstract PunishmentType getType();
 	
 }

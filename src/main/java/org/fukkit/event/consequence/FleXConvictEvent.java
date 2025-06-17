@@ -1,16 +1,16 @@
 package org.fukkit.event.consequence;
 
 import org.bukkit.event.HandlerList;
-import org.fukkit.consequence.Conviction;
+import org.fukkit.consequence.Punishment;
 import org.fukkit.entity.FleXPlayer;
 
 public class FleXConvictEvent extends FleXPreConsequenceEvent {
 
 	private static HandlerList handlers = new HandlerList();
 	
-	protected Conviction conviction;
+	protected Punishment conviction;
 	
-	public FleXConvictEvent(Conviction conviction, boolean async) {
+	public FleXConvictEvent(Punishment conviction, boolean async) {
 		
 		super(conviction, async);
 		
@@ -30,7 +30,7 @@ public class FleXConvictEvent extends FleXPreConsequenceEvent {
 		return this.conviction.getPlayer();
 	}
 	
-	public Conviction getConviction() {
+	public Punishment getConviction() {
 		return this.conviction;
 	}
 	

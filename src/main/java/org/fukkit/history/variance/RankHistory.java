@@ -12,6 +12,8 @@ import io.flex.commons.Nullable;
 
 public class RankHistory extends History<String> {
 
+	public static final String TABLE_NAME = "flex_history_rank";
+	
 	public RankHistory(FleXHumanEntity player) {
 		super(player, "flex_history_rank");
 	}

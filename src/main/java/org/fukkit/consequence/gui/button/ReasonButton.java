@@ -3,8 +3,8 @@ package org.fukkit.consequence.gui.button;
 import org.fukkit.Fukkit;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.clickable.button.ExecutableButton;
-import org.fukkit.consequence.ConvictionType;
-import org.fukkit.consequence.PreConsequence;
+import org.fukkit.consequence.PunishmentType;
+import org.fukkit.consequence.Consequence;
 import org.fukkit.consequence.Reason;
 import org.fukkit.consequence.gui.SanctionGui;
 import org.fukkit.entity.FleXPlayer;
@@ -52,12 +52,12 @@ public class ReasonButton extends ExecutableButton {
 		if (action.isClick()) {
 			
 			SanctionGui menu = (SanctionGui) this.getClickable();
-			ConvictionType type = menu.getConsequenceType();
+			PunishmentType type = menu.getConsequenceType();
 			
-			PreConsequence consequence = new PreConsequence(this.threatened, player, this.reason, menu.hasMetadata("punishment_ip"), menu.hasMetadata("punishment_silent")) {
+			Consequence consequence = new Consequence(this.threatened, player, this.reason, menu.hasMetadata("punishment_ip"), menu.hasMetadata("punishment_silent")) {
 				
 				@Override
-		        public ConvictionType getType() {
+		        public PunishmentType getType() {
 				    return type;
 			    }
 				

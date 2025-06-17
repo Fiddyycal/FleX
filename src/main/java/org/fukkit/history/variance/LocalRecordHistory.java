@@ -12,7 +12,7 @@ import org.fukkit.history.History;
 import io.flex.commons.utils.FileUtils;
 
 public class LocalRecordHistory extends History<String> {
-	
+
 	public LocalRecordHistory(FleXHumanEntity player) {
 		
 		super(player);

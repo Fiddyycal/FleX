@@ -17,7 +17,7 @@ import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLRowWrapper;
 
-public class Report extends Conviction {
+public class Report extends Punishment {
 	
 	public Report(FleXPlayer player, FleXPlayer by, Reason reason, String... evidence) {
 		super(player, by, reason, false, true, evidence);
@@ -43,15 +43,15 @@ public class Report extends Conviction {
 		
 		for (SQLRowWrapper row : database.getRows("flex_punishment", condition)) {
 			
-			ConvictionType check = null;
+			PunishmentType check = null;
 			
 			try {
-				check = ConvictionType.valueOf(row.getString("type"));
+				check = PunishmentType.valueOf(row.getString("type"));
 			} catch (IllegalArgumentException ignore) {
 				continue;
 			}
 			
-			if (check != ConvictionType.REPORT)
+			if (check != PunishmentType.REPORT)
 				continue;
 			
 			long reference = row.getLong("id");
@@ -66,12 +66,12 @@ public class Report extends Conviction {
 	
 	@SuppressWarnings("unchecked")
 	public static Set<Report> download(FleXHumanEntity player) throws SQLException {
-		return (Set<Report>) Conviction.download(player, false, ConvictionType.REPORT);
+		return (Set<Report>) Punishment.download(player, false, PunishmentType.REPORT);
 	}
 
 	@Override
-	public ConvictionType getType() {
-		return ConvictionType.REPORT;
+	public PunishmentType getType() {
+		return PunishmentType.REPORT;
 	}
 	
 	@Override

@@ -8,6 +8,8 @@ import org.fukkit.history.History;
 
 public class NameHistory extends History<String> {
 
+	public static final String TABLE_NAME = "flex_history_name";
+	
 	public NameHistory(FleXHumanEntity player) {
 		super(player, "flex_history_name");
 	}

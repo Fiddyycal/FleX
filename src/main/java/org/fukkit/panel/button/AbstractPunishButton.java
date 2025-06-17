@@ -14,8 +14,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.clickable.button.ExecutableButton;
-import org.fukkit.consequence.Conviction;
-import org.fukkit.consequence.ConvictionType;
+import org.fukkit.consequence.Punishment;
+import org.fukkit.consequence.PunishmentType;
 import org.fukkit.consequence.Report;
 import org.fukkit.consequence.gui.SanctionGui;
 import org.fukkit.entity.FleXPlayer;
@@ -29,14 +29,14 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 	
 	protected FleXPlayer other;
 	
-	private ConvictionType convictionType;
+	private PunishmentType convictionType;
 	
-	public AbstractPunishButton(Material material, Theme theme, Language language, FleXPlayer other, ConvictionType convictionType) {
+	public AbstractPunishButton(Material material, Theme theme, Language language, FleXPlayer other, PunishmentType convictionType) {
 		
 		super(
 				
 				material,
-				theme.format("<title>" + (convictionType == ConvictionType.REPORT ? "History<sp>:\\s<pc>" + convictionType + "s" : "Punish<sp>:\\s<pc>" + convictionType)),
+				theme.format("<title>" + (convictionType == PunishmentType.REPORT ? "History<sp>:\\s<pc>" + convictionType + "s" : "Punish<sp>:\\s<pc>" + convictionType)),
 				lore(theme, other, convictionType));
 		
 		this.other = other;
@@ -54,10 +54,10 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 		boolean ip = action.isShiftClick();
 		boolean silent = action.isRightClick();
 		
-		if ((this.convictionType == ConvictionType.KICK || this.convictionType == ConvictionType.REPORT) && ip)
+		if ((this.convictionType == PunishmentType.KICK || this.convictionType == PunishmentType.REPORT) && ip)
 			return false;
 		
-		if (this.convictionType == ConvictionType.REPORT && silent) {
+		if (this.convictionType == PunishmentType.REPORT && silent) {
 			
 			try {
 				
@@ -80,7 +80,7 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 			
 		}
 		
-		if (action == ButtonAction.GUI_MIDDLE_CLICK || (action == ButtonAction.GUI_LEFT_CLICK && this.convictionType == ConvictionType.REPORT)) {
+		if (action == ButtonAction.GUI_MIDDLE_CLICK || (action == ButtonAction.GUI_LEFT_CLICK && this.convictionType == PunishmentType.REPORT)) {
 			
 			List<String> all = this.punishmentSet().stream().map(p -> {
 				
@@ -101,24 +101,24 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 		
 	}
 	
-	private static String[] lore(Theme theme, FleXPlayer other, ConvictionType convictionType) {
+	private static String[] lore(Theme theme, FleXPlayer other, PunishmentType convictionType) {
 		
 		List<String> lore = new ArrayList<String>();
 		List<String> latest = last5(theme, other, convictionType);
 
-		if (convictionType != ConvictionType.REPORT)
-			lore.add(theme.format("<lore>" + convictionType + " <sc>" + other.getDisplayName(theme, true).replace(ChatColor.RESET.toString(), ChatColor.WHITE.toString()) + "\\s<lore>" + (convictionType == ConvictionType.MUTE ? "on" : "from") + " the network<pp>."));
+		if (convictionType != PunishmentType.REPORT)
+			lore.add(theme.format("<lore>" + convictionType + " <sc>" + other.getDisplayName(theme, true).replace(ChatColor.RESET.toString(), ChatColor.WHITE.toString()) + "\\s<lore>" + (convictionType == PunishmentType.MUTE ? "on" : "from") + " the network<pp>."));
 		
 		else lore.add(theme.format("<lore>View <sc>" + other.getDisplayName(theme, true).replace(ChatColor.RESET.toString(), ChatColor.WHITE.toString()) + "<lore>'s report history<pp>."));
 		
-		if (convictionType == ConvictionType.REPORT) {
+		if (convictionType == PunishmentType.REPORT) {
 			lore.add("");
 			lore.add(theme.format("<tc>Action<sp>/<tc>Location history logged and provided by <spc>FloW<pp>."));
 		}
 		
 		lore.add("");
 		lore.add(theme.format("<spc>Recent " + convictionType.toString().toLowerCase() + " history<pp>:" + Theme.reset +
-				(convictionType != ConvictionType.KICK ? convictionType == ConvictionType.REPORT ? " <pp>(<success>Pardoned<sp>/<failure>Expired<sp>/<severe>Active<pp>)" : " <pp>(<success>Pardoned<sp>/<failure>Expired<sp>/<severe>Active<pp>)" : "")));
+				(convictionType != PunishmentType.KICK ? convictionType == PunishmentType.REPORT ? " <pp>(<success>Pardoned<sp>/<failure>Expired<sp>/<severe>Active<pp>)" : " <pp>(<success>Pardoned<sp>/<failure>Expired<sp>/<severe>Active<pp>)" : "")));
 		
 		if (!latest.isEmpty())
 			lore.addAll(latest);
@@ -127,13 +127,13 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 		
 		lore.add("");
 
-		if (convictionType != ConvictionType.REPORT) {
+		if (convictionType != PunishmentType.REPORT) {
 			
 			lore.add(theme.format("<sp>&oMiddle Click<pp>:\\s<sc>Show more<pp>."));
 			lore.add(theme.format("<sp>&oLeft Click<pp>:\\s<sc>Standard " + convictionType.toString().toLowerCase() + "<pp>.\\s<sp>(<spc>Flags<sp>:\\s<tc>None<sp>)"));
 			lore.add(theme.format("<sp>&oRight Click<pp>:\\s<sc>Silent " + convictionType.toString().toLowerCase() + "<pp>.\\s<sp>(<spc>Flags<sp>:\\s<tc>-s<sp>)"));
 			
-			if (convictionType != ConvictionType.KICK) {
+			if (convictionType != PunishmentType.KICK) {
 				
 				lore.add(theme.format("<sp>&o[Shift] + Left Click<pp>:\\s<sc>IPv4 " + convictionType.toString().toLowerCase() + "<pp>.\\s<sp>(<spc>Flags<sp>:\\s<tc>-i<sp>)"));
 				lore.add(theme.format("<sp>&o[Shift] + Right Click<pp>:\\s<sc>Silent IPv4 " + convictionType.toString().toLowerCase() + "<pp>.\\s<sp>(<spc>Flags<sp>:\\s<tc>-i<sp>,\\s<tc>-s<sp>)"));
@@ -151,9 +151,9 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 		
 	}
 	
-	private static List<String> last5(Theme theme, FleXPlayer other, ConvictionType convictionType) {
+	private static List<String> last5(Theme theme, FleXPlayer other, PunishmentType convictionType) {
 		
-		Set<Conviction> convictions = other.getHistory().getPunishments().asMap().entrySet().stream().map(e -> e.getValue()).filter(c -> {
+		Set<Punishment> convictions = other.getHistory().getPunishments().asMap().entrySet().stream().map(e -> e.getValue()).filter(c -> {
 			return c.getType() == convictionType;
 		}).collect(Collectors.toSet());
 		
@@ -167,7 +167,7 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 			if (times.size() <= i || times.get(i) == null)
 				return;
 			
-			Conviction conviction = convictions.stream().filter(b -> b.getTime() == times.get(i)).findFirst().orElse(null);
+			Punishment conviction = convictions.stream().filter(b -> b.getTime() == times.get(i)).findFirst().orElse(null);
 			
 			String dateTime = format.format(new Date(conviction.getTime()))
 			
@@ -190,6 +190,6 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 		
 	}
 	
-	public abstract Set<? extends Conviction> punishmentSet();
+	public abstract Set<? extends Punishment> punishmentSet();
 
 }

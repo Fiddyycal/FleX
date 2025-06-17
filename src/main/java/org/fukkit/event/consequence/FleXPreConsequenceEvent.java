@@ -3,17 +3,17 @@ package org.fukkit.event.consequence;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.fukkit.consequence.PreConsequence;
+import org.fukkit.consequence.Consequence;
 
 public class FleXPreConsequenceEvent extends Event implements Cancellable {
 
 	private static HandlerList handlers = new HandlerList();
 	
-	private PreConsequence consequence;
+	private Consequence consequence;
 	
 	private boolean cancel = false;
 	
-	public FleXPreConsequenceEvent(PreConsequence consequence, boolean async) {
+	public FleXPreConsequenceEvent(Consequence consequence, boolean async) {
 		
 		super(async);
 		
@@ -25,7 +25,7 @@ public class FleXPreConsequenceEvent extends Event implements Cancellable {
 		return handlers;
 	}
 	
-	public PreConsequence getPreConsequence() {
+	public Consequence getPreConsequence() {
 		return this.consequence;
 	}
 	

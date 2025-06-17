@@ -1,5 +1,6 @@
 package org.fukkit.entity;
 
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.fukkit.PlayerState;
 import org.fukkit.clickable.Loadout;
@@ -68,6 +69,8 @@ public interface FleXHumanEntity extends FleXLivingEntity {
 	public void sendMessage(String... message);
 	
 	public boolean isInventoryFull();
+	
+	public boolean isOnline();
 	
 	public boolean isMasked();
 	

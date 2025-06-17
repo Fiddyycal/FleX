@@ -4,8 +4,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.bukkit.Material;
-import org.fukkit.consequence.Conviction;
-import org.fukkit.consequence.ConvictionType;
+import org.fukkit.consequence.Punishment;
+import org.fukkit.consequence.PunishmentType;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.theme.Theme;
 
@@ -16,11 +16,11 @@ public class BanButton extends AbstractPunishButton {
 	private static final long serialVersionUID = -808233538601808625L;
 
 	public BanButton(Theme theme, Language language, FleXPlayer other) {
-		super(Material.IRON_SWORD, theme, language, other, ConvictionType.BAN);
+		super(Material.IRON_SWORD, theme, language, other, PunishmentType.BAN);
 	}
 
 	@Override
-	public Set<Conviction> punishmentSet() {
+	public Set<Punishment> punishmentSet() {
 		return this.other.getHistory().getPunishments().banSet().stream().collect(Collectors.toSet());
 	}
 
