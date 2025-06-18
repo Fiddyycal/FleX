@@ -16,6 +16,7 @@ import org.bukkit.Material;
 import org.fukkit.clickable.Menu;
 import org.fukkit.clickable.button.PointlessButton;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 
@@ -30,7 +31,17 @@ public class ChatHistoryShowcase extends Menu {
 		
 		Theme theme = viewer.getTheme();
 		
-		Map<Long, String> history = other.getHistory().getChatAndCommands().asMap();
+		Map<Long, String> chat;
+		
+		try {
+			chat = other.getHistory().getChatAndCommands().asMap();
+		} catch (FleXPlayerNotLoadedException e) {
+			
+			e.printStackTrace();
+			
+			chat = new HashMap<Long, String>();
+			
+		}
 		
 		String name = other.getDisplayName(theme, true);
 		
@@ -47,6 +58,8 @@ public class ChatHistoryShowcase extends Menu {
 		
 		SimpleDateFormat format = new SimpleDateFormat("[hh:mm:ss z]");
 		
+		Map<Long, String> messages = chat;
+		
 		categorizeIntoDates(other).forEach((d, l) -> {
 			
 			List<String> lore = new ArrayList<String>();
@@ -55,7 +68,7 @@ public class ChatHistoryShowcase extends Menu {
 			
 			l.forEach(t -> {
 				
-				String message = history.get(t);
+				String message = messages.get(t);
 				
 				String dateTime = format.format(new Date(t))
 				
@@ -82,7 +95,17 @@ public class ChatHistoryShowcase extends Menu {
 		
 		Map<String, List<Long>> categorized = new HashMap<String, List<Long>>();
 		
-		Set<Long> all = other.getHistory().getChatAndCommands().asMap().keySet().stream().sorted().collect(Collectors.toSet());
+		Set<Long> all;
+		
+		try {
+			all = other.getHistory().getChatAndCommands().asMap().keySet().stream().sorted().collect(Collectors.toSet());
+		} catch (FleXPlayerNotLoadedException e) {
+			
+			e.printStackTrace();
+			
+			return new HashMap<String, List<Long>>();
+			
+		}
 		
 		SimpleDateFormat date = new SimpleDateFormat("EEE, MMM d, yyyy");
 		

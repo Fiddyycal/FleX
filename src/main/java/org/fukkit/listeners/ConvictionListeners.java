@@ -20,6 +20,7 @@ import org.fukkit.consequence.Mute;
 import org.fukkit.consequence.Consequence;
 import org.fukkit.consequence.Report;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.FleXEventListener;
 import org.fukkit.event.consequence.FleXBanEvent;
 import org.fukkit.event.consequence.FleXConvictEvent;
@@ -70,7 +71,14 @@ public class ConvictionListeners extends FleXEventListener {
 			
 		} else {
 			
-			String log = flowEvidence(player, consequence);
+			String log;
+			
+			try {
+				log = flowEvidence(player, consequence);
+			} catch (FleXPlayerNotLoadedException e) {
+				e.printStackTrace();
+				return;
+			}
 			
 			by.setMetadata("input_evidence", new FleXFixedMetadataValue(new BiCell<Consequence, String>() {
 				
@@ -208,7 +216,11 @@ public class ConvictionListeners extends FleXEventListener {
 		
     }
 	
-	private static String flowEvidence(FleXPlayer player, Consequence consequence) {
+	/**
+	 * Not sure whats going on here, look over and see what i was trying to achieve.
+	 */
+	@Deprecated
+	private static String flowEvidence(FleXPlayer player, Consequence consequence) throws FleXPlayerNotLoadedException {
 		
 		EvidenceType[] required = consequence.getReason().getRequiredEvidence();
 		
@@ -226,7 +238,7 @@ public class ConvictionListeners extends FleXEventListener {
 				return "flow-" + FileUtils.getTimeStamp(logged) + ".chat";
 			
 		}
-		
+		/* TODO
 		if (Arrays.stream(required).anyMatch(e -> e.isPhysicalType())) {
 			
 			long logged = player.getHistory().getFlowRecords().asMap().entrySet().stream().filter(e -> {
@@ -238,7 +250,7 @@ public class ConvictionListeners extends FleXEventListener {
 				return "flow-" + FileUtils.getTimeStamp(logged) + ".rec";
 			
 		}
-		
+		*/
 		return null;
 				
 	}

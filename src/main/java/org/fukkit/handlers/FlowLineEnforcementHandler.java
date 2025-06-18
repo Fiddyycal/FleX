@@ -14,7 +14,6 @@ import org.fukkit.api.helper.DataHelper;
 import org.fukkit.config.Configuration;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.fle.CriticalHitListeners;
-import org.fukkit.fle.flow.ChatLogListeners;
 import org.fukkit.fle.flow.CommandLogListeners;
 
 import io.flex.FleX;
@@ -35,7 +34,6 @@ public class FlowLineEnforcementHandler {
 		this.driver = Fukkit.getBridgeHandler().isCitizensEnabled() ? AIDriver.CITIZENS : AIDriver.FLEX;
 		
 		new CriticalHitListeners();
-		new ChatLogListeners();
 		new CommandLogListeners();
 		
 		DataHelper.set("flow.suspects.recording", new HashSet<UUID>());

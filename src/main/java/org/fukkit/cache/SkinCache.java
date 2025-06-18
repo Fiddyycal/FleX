@@ -54,8 +54,6 @@ public class SkinCache extends LinkedCache<FleXSkin, BufferedImage> {
 		if (!skins.exists())
 			skins.mkdirs();
 		
-		System.out.println(skins.list().length);
-		
 		if (skins.list().length > 0) {
 			
 			for (File data : skins.listFiles()) {

@@ -40,7 +40,7 @@ public abstract class Punishment extends Consequence {
 			
 		}
 		
-		player.getHistory().getPunishments().add(this);
+		player.getHistoryAsync(history -> history.getPunishments().add(this));
 		
 	}
 	

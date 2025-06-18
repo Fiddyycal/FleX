@@ -1,4 +1,4 @@
-package org.fukkit.history.variance;
+/*package org.fukkit.history.variance;
 
 import java.io.File;
 import java.util.Arrays;
@@ -34,3 +34,4 @@ public class LocalRecordHistory extends History<String> {
 	}
 
 }
+*/

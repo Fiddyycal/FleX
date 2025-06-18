@@ -7,8 +7,6 @@ import static net.md_5.fungee.FungeeCord.NAME;
 import static net.md_5.fungee.FungeeCord.TRAVERTINE;
 import static net.md_5.fungee.FungeeCord.VERSION;
 
-import java.util.stream.Collectors;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -396,7 +394,6 @@ public class DebugCommand extends FleXCommandAdapter {
 			sender.sendMessage(ChatColor.GRAY + "User: " + ChatColor.RESET + "(#" + (/*(CraftFleXPlayer)*/id)/*.id*/ + ") " + name);
 			sender.sendMessage(ChatColor.GRAY + "Logged, Display: " + ChatColor.RESET + CollectionUtils.toCollection(player.getName() + "," + player.getDisplayName()));
 			sender.sendMessage(ChatColor.GRAY + "Play time, Last seen: " + ChatColor.RESET + CollectionUtils.toCollection(player.getPlayTime() + "," + player.getLastSeen()));
-			sender.sendMessage(ChatColor.GRAY + "Names: " + ChatColor.RESET + player.getHistory().getNames().nameSet().stream().collect(Collectors.toList()));
 			sender.sendMessage(ChatColor.GRAY + "Location: " + ChatColor.RESET + (player.getWorld() instanceof FleXWorld ? "(FleX) " + player.getWorld().getName() : "(Bukkit) " + player.getPlayer().getWorld().getName()) + ", x" + NumUtils.roundToDecimal(player.getLocation().getX(), 2) + ", y" + NumUtils.roundToDecimal(player.getLocation().getY(), 2) + ", z" + NumUtils.roundToDecimal(player.getLocation().getZ(), 2) + ", (p" + NumUtils.roundToDecimal(player.getLocation().getPitch(), 2) + ", y" + NumUtils.roundToDecimal(player.getLocation().getYaw(), 2) + ")");
 			sender.sendMessage(ChatColor.GRAY + "Signature: " + ChatColor.RESET + (silent ? ChatColor.MAGIC : "") + player.getSkin().getSignature().substring(0, 8));
 			sender.sendMessage(ChatColor.GRAY + "State, Ping: " + ChatColor.RESET + CollectionUtils.toCollection(player.getState() + "," + player.getPing()));
@@ -407,7 +404,6 @@ public class DebugCommand extends FleXCommandAdapter {
 			sender.sendMessage(ChatColor.GRAY + "Theme: " + ChatColor.RESET + player.getTheme().getName());
 			sender.sendMessage(ChatColor.GRAY + "Skin: " + ChatColor.RESET + player.getSkin().getValue().substring(0, 6));
 			sender.sendMessage(ChatColor.GRAY + "IP: " + ChatColor.RESET + (silent ? ChatColor.MAGIC : "") + player.getIp());
-			sender.sendMessage(ChatColor.GRAY + "IP history: " + ChatColor.RESET + (silent ? ChatColor.MAGIC : "") + player.getHistory().getIps().ipSet().stream().collect(Collectors.toList()));
 			sender.sendMessage(ChatColor.GRAY + "Sidebar, Disguised, Airborne: " + ChatColor.RESET + CollectionUtils.toCollection((player.getSidebar() != null) + "," + player.isDisguised() + "," + !player.isOnGround()));
 
 			if (sender instanceof Player || sender instanceof FleXPlayer)

@@ -2,6 +2,7 @@ package org.fukkit.entity;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -15,6 +16,7 @@ import org.fukkit.consequence.Mute;
 import org.fukkit.disguise.Disguise;
 import org.fukkit.disguise.Visibility;
 import org.fukkit.event.entity.EntityCleanEvent.CleanType;
+import org.fukkit.history.HistoryStore;
 import org.fukkit.json.JsonBuffer;
 import org.fukkit.scoreboard.playerlist.ListScore;
 import org.fukkit.scoreboard.playerlist.NameTag;
@@ -77,6 +79,12 @@ public interface FleXPlayer extends FleXHumanEntity {
 	public ProtocolVersion getVersion();
 	
 	public Map<String, Boolean> getPermissions();
+	
+	public HistoryStore getHistory() throws FleXPlayerNotLoadedException;
+	
+	public void getHistoryAsync(Consumer<HistoryStore> history);
+	
+	public void getHistoryAsync(Consumer<HistoryStore> history, Runnable timeout);
 	
 	public Player getPlayer();
 	
@@ -176,17 +184,18 @@ public interface FleXPlayer extends FleXHumanEntity {
 	 * Every use of this method pushes SQL upstream, it is
 	 * strongly recommended that this method be used asynchronously.
 	 * 
-	 * @throws SQLException
+	 * @throws SQLException When database error occurs.
+	 * @throws FleXPlayerNotLoadedException when data row is not found.
 	 * 
 	 */
-	public void push() throws SQLException;
+	public void push() throws SQLException, FleXPlayerNotLoadedException;
 	
 	/**
 	 * 
 	 * Every use of this method pulls SQL downstream, it is
 	 * strongly recommended that this method be used asynchronously.
 	 * 
-	 * @throws SQLException
+	 * @throws SQLException When database error occurs.
 	 * 
 	 */
 	public void pull() throws SQLException;

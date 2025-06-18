@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXHumanEntity;
+import org.fukkit.utils.BukkitUtils;
 
 import io.flex.commons.Nullable;
 import io.flex.commons.sql.SQLCondition;
@@ -23,12 +24,12 @@ public abstract class History<T> {
 	
 	private String table;
 	
-	public History(FleXHumanEntity player) {
+	public History(FleXHumanEntity player) throws SQLException {
 		this(player, null);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public History(FleXHumanEntity player, @Nullable String table) {
+	public History(FleXHumanEntity player, @Nullable String table) throws SQLException {
 		
 		this.player = player;
 		
@@ -75,19 +76,23 @@ public abstract class History<T> {
 		if (this.table == null)
 			return;
 		
-		SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
-		
-		try {
+		BukkitUtils.asyncThread(() -> {
 			
-			database.addRow(this.table, SQLMap.of(
-					
-					SQLMap.entry("uuid", this.player.getUniqueId()),
-					SQLMap.entry("time", time),
-					SQLMap.entry("log", log)));
+			SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
 			
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+			try {
+				
+				database.addRow(this.table, SQLMap.of(
+						
+						SQLMap.entry("uuid", this.player.getUniqueId()),
+						SQLMap.entry("time", time),
+						SQLMap.entry("log", log)));
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+		});
 		
 	}
 

@@ -16,7 +16,7 @@ import io.flex.FleX.Task;
 
 public class PunishmentHistory extends History<Punishment> {
 
-	public PunishmentHistory(FleXHumanEntity player) {
+	public PunishmentHistory(FleXHumanEntity player) throws SQLException {
 		super(player);
 		try {
 			

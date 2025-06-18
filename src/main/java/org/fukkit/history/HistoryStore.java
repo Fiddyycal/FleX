@@ -1,12 +1,13 @@
 package org.fukkit.history;
 
+import java.sql.SQLException;
+
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.history.variance.BadgeHistory;
 import org.fukkit.history.variance.ChatCommandHistory;
 import org.fukkit.history.variance.ConnectionHistory;
 import org.fukkit.history.variance.DisguiseHistory;
 import org.fukkit.history.variance.IpHistory;
-import org.fukkit.history.variance.LocalRecordHistory;
 import org.fukkit.history.variance.NameHistory;
 import org.fukkit.history.variance.PunishmentHistory;
 import org.fukkit.history.variance.RankHistory;
@@ -23,15 +24,13 @@ public class HistoryStore {
 	
 	private IpHistory ips;
 	
-	private LocalRecordHistory records;
-	
 	private NameHistory names;
 	
 	private PunishmentHistory punishments;
 	
 	private RankHistory ranks;
 	
-	public HistoryStore(FleXHumanEntity player) {
+	public HistoryStore(FleXHumanEntity player) throws SQLException {
 		
 		this.badges = new BadgeHistory(player);
 		
@@ -42,8 +41,6 @@ public class HistoryStore {
 		this.disguises = new DisguiseHistory(player);
 		
 		this.ips = new IpHistory(player);
-		
-		this.records = new LocalRecordHistory(player);
 		
 		this.names = new NameHistory(player);
 		
@@ -71,10 +68,6 @@ public class HistoryStore {
 	
 	public IpHistory getIps() {
 		return this.ips;
-	}
-	
-	public LocalRecordHistory getFlowRecords() {
-		return this.records;
 	}
 	
 	public NameHistory getNames() {

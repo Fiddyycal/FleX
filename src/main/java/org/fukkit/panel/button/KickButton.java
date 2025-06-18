@@ -1,11 +1,10 @@
 package org.fukkit.panel.button;
 
 import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.fukkit.consequence.Punishment;
 import org.fukkit.consequence.PunishmentType;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.theme.Theme;
 import org.fukkit.utils.VersionUtils;
 
@@ -19,9 +18,10 @@ public class KickButton extends AbstractPunishButton {
 		super(VersionUtils.material("GOLD_AXE", "GOLDEN_AXE"), theme, language, other, PunishmentType.KICK);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Set<Punishment> punishmentSet() {
-		return this.other.getHistory().getPunishments().kickSet().stream().collect(Collectors.toSet());
+	public <T extends Punishment> Set<T> asSet() throws FleXPlayerNotLoadedException {
+		return (Set<T>) this.other.getHistory().getPunishments().kickSet();
 	}
 
 }

@@ -50,8 +50,6 @@ public interface FleXEntity extends Cacheable {
 	
 	public boolean hasMetadata(String metadataKey);
 	
-	public boolean isUploaded();
-	
 	public boolean isLoaded();
 	
 	public void onSpawn(Entity entity);

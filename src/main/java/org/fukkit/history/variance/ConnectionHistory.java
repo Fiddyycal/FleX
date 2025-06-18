@@ -1,5 +1,6 @@
 package org.fukkit.history.variance;
 
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -13,7 +14,7 @@ public class ConnectionHistory extends History<String> {
 
 	public static final String TABLE_NAME = "flex_history_connection";
 	
-	public ConnectionHistory(FleXHumanEntity player) {
+	public ConnectionHistory(FleXHumanEntity player) throws SQLException {
 		super(player, "flex_history_connection");
 	}
 	

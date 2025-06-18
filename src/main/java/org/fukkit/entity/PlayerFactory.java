@@ -9,7 +9,7 @@ import io.flex.commons.Nullable;
 
 public interface PlayerFactory {
 	
-	public FleXPlayer createFukkitSafe(UUID uuid, String name, FleXSkin skin);
+	public FleXPlayer createFukkitSafe(UUID uuid, String name);
 	
 	public FleXBot createFukkitFake(String name);
 	

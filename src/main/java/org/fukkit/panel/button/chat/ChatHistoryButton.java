@@ -13,6 +13,7 @@ import org.bukkit.ChatColor;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.clickable.button.ExecutableButton;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.VersionUtils;
@@ -82,7 +83,17 @@ public class ChatHistoryButton extends ExecutableButton {
 	
 	private static List<String> last5(Theme theme, Language language, FleXPlayer other) {
 		
-		Map<Long, String> chats = other.getHistory().getChatAndCommands().asMap();
+		Map<Long, String> chats = null;
+		
+		try {
+			chats = other.getHistory().getChatAndCommands().asMap();
+		} catch (FleXPlayerNotLoadedException e) {
+			
+			e.printStackTrace();
+			
+			return new ArrayList<String>();
+			
+		}
 		
 		List<Long> times = chats.keySet().stream().sorted().collect(Collectors.toList());
 		

@@ -1,11 +1,9 @@
 package org.fukkit.entity;
 
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.fukkit.PlayerState;
 import org.fukkit.clickable.Loadout;
 import org.fukkit.disguise.FleXSkin;
-import org.fukkit.history.HistoryStore;
 import org.fukkit.reward.Rank;
 
 import io.flex.commons.Nullable;
@@ -21,8 +19,6 @@ public interface FleXHumanEntity extends FleXLivingEntity {
 	public Rank getMask();
 	
 	public FleXSkin getSkin();
-	
-	public HistoryStore getHistory();
 	
 	public PlayerState getState();
 	
@@ -75,6 +71,8 @@ public interface FleXHumanEntity extends FleXLivingEntity {
 	public boolean isMasked();
 	
 	public boolean isStaff();
+	
+	public boolean isUploaded();
 	
 	public boolean hasPermission(@Nullable String perm);
 

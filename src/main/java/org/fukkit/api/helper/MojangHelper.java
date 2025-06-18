@@ -96,23 +96,11 @@ public class MojangHelper {
             JsonObject sessionObj = new JsonParser().parse(sessionReader).getAsJsonObject();
             JsonObject property = sessionObj.get("properties").getAsJsonArray().get(0).getAsJsonObject();
         	
-            String name = sessionObj.get("name").getAsString();
+            //String name = sessionObj.get("name").getAsString();
             String value = property.get("value").getAsString();
             String signature = property.get("signature").getAsString();
         	
             skin = Fukkit.getImplementation().createSkin(uuid.toString(), value, signature);
-        	
-            PlayerFactory factory = Fukkit.getPlayerFactory();
-        	
-            try {
-            	
-            	if (Fukkit.getPlayer(uuid) == null)
-                	factory.createFukkitSafe(uuid, name, skin);
-            	
-			} catch (Exception e) {
-	        	Task.error("Mojang API", "Failed to update player skin for " + skin.getName() + ".");
-	        	Console.log("Mojang API", Severity.ERROR, e);
-			}
         	
         } catch (IOException e) {
             

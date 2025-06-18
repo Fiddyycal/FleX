@@ -29,6 +29,7 @@ import com.google.common.io.ByteStreams;
 
 import io.flex.commons.utils.ClassUtils;
 import io.flex.commons.utils.CollectionUtils;
+
 import net.md_5.fungee.Memory;
 import net.md_5.fungee.ProtocolVersion;
 
@@ -84,7 +85,9 @@ public class FukkitChannelHandler extends FleXEventListener implements ChannelHa
 		if (from != null)
 			connection = from + " -x";
 		
-		player.getHistory().getConnections().add(connection);
+		String con = connection;
+		
+		player.getHistoryAsync(history -> history.getConnections().add(con), null);
 		
 	}
 	

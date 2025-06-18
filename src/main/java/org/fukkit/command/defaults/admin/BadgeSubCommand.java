@@ -23,11 +23,10 @@ public class BadgeSubCommand extends AbstractAdminSubCommand {
 			return false;
 		}
 		
-		FleXPlayer fp = this.command.getPlayer();
+		FleXPlayer player = this.command.getPlayer();
 		
-		Theme theme = fp.getTheme();
+		Theme theme = player.getTheme();
 		String name = args[0];
-		Badge badge = null;
 		
 		StringBuilder reason = new StringBuilder();
 		
@@ -40,8 +39,8 @@ public class BadgeSubCommand extends AbstractAdminSubCommand {
 	        
 	    }
 		
-		fp = Fukkit.getPlayer(name);
-		badge = Memory.BADGE_CACHE.get(args[1]);
+		FleXPlayer fp = Fukkit.getPlayer(name);
+		Badge badge = Memory.BADGE_CACHE.get(args[1]);
 		
 		if (fp == null) {
 			this.command.playerNotFound(name);
@@ -50,24 +49,44 @@ public class BadgeSubCommand extends AbstractAdminSubCommand {
 
 		if (badge == null) {
 			// TODO
-			fp.sendMessage(theme.format("<engine><failure>That badge could not be found<pp>."));
+			this.command.getPlayer().sendMessage(theme.format("<engine><failure>That badge could not be found<pp>."));
 			return false;
 		}
 		
-		if (fp.getHistory().getBadges().badgeSet().contains(badge)) {
-			// TODO
-			fp.sendMessage(theme.format("<engine><sc>" + fp.getDisplayName(theme) + "<failure> already has that badge<pp>."));
-			return false;
-		}
+		// TODO
+		this.command.getPlayer().sendMessage(theme.format("<engine><sc>Adding badge to<reset> <spc>" + fp.getDisplayName(theme) + "<pp>..."));
 		
-		String reas = args.length > 2 ? reason.toString() : "No reason found";
-		
-		fp.getHistory().getBadges().onBadgeReceive(badge, reas);
-		
-		if (this.command.getPlayer() == fp || (this.command.getPlayer() != fp && fp.isOnline())) {
-			fp.getPlayer().playSound(fp.getLocation(), VersionUtils.sound("LEVEL_UP", "ENTITY_PLAYER_LEVELUP"), 1F, 0.1F);
-			fp.sendMessage(theme.format("<engine><success>You have been given the badge <spc>" + badge.getName() + "<pp>. (<sc>" + reas + "<pp>)"));
-		}
+		fp.getHistoryAsync(history -> {
+			
+			if (!player.isOnline())
+				return;
+			
+			if (history.getBadges().badgeSet().contains(badge)) {
+				// TODO
+				player.sendMessage(theme.format("<engine><sc>" + fp.getDisplayName(theme) + "<failure> already has that badge<pp>."));
+				return;
+				
+			}
+			
+			String reas = args.length > 2 ? reason.toString() : "No reason found";
+			
+			history.getBadges().onBadgeReceive(badge, reas);
+			
+			if (this.command.getPlayer() == fp || (player != fp && fp.isOnline())) {
+				
+				fp.getPlayer().playSound(fp.getLocation(), VersionUtils.sound("LEVEL_UP", "ENTITY_PLAYER_LEVELUP"), 1F, 0.1F);
+				fp.sendMessage(theme.format("<engine><success>You have been given the badge <spc>" + badge.getName() + "<pp>. (<sc>" + reas + "<pp>)"));
+				
+			}
+			
+		}, () -> {
+			
+			if (!player.isOnline())
+				return;
+			
+			player.sendMessage(theme.format("<engine><sc>" + fp.getDisplayName(theme) + "<failure>'s badge history failed to load, please try again later<pp>..."));
+			
+		});
 		
 		return true;
 		

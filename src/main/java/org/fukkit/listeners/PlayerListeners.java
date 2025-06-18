@@ -23,12 +23,15 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -51,6 +54,7 @@ import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.combat.CombatFactory;
 import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.FleXEventListener;
 import org.fukkit.event.hologram.FloatingItemInteractEvent;
 import org.fukkit.event.hologram.HologramInteractEvent;
@@ -81,6 +85,32 @@ import net.md_5.fungee.server.ServerVersion;
 
 @SuppressWarnings("deprecation")
 public class PlayerListeners extends FleXEventListener {
+	
+	@EventHandler(priority = EventPriority.LOW)
+	public void event(AsyncPlayerPreLoginEvent event) {
+
+	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.getSafe(event.getUniqueId());
+		
+		try {
+			
+			if (fp == null)
+				Memory.PLAYER_CACHE.add(fp = Fukkit.getPlayerFactory().createFukkitSafe(event.getUniqueId(), event.getName()));
+			
+			if (fp == null) {
+				disconnect(event, FileNotFoundException.class.getName());
+				return;
+			}
+			
+		} catch (Exception e) {
+			
+			disconnect(event, "FleXPlayer failed to login.");
+			
+			Console.log("FleXPlayer", Severity.CRITICAL, e);
+	    	return;
+			
+		}
+	    
+	}
 	
 	@EventHandler(priority = EventPriority.LOW)
 	public void event(PlayerJoinEvent event) {
@@ -119,17 +149,12 @@ public class PlayerListeners extends FleXEventListener {
 				return;
 			}
 			
-			if (fp == null)
-				Memory.PLAYER_CACHE.add(fp = Fukkit.getPlayerFactory().createFukkitSafe(player.getUniqueId(), player.getName(), Fukkit.getDisguiseFactory().getPlayerSkin(player)));
-			
 			if (fp == null) {
 				disconnect(player, FileNotFoundException.class.getName());
 				return;
 			}
 			
 			fp.setState(PlayerState.CONNECTING);
-			
-			fp.getHistory().getConnections().add("-> " + Bukkit.getPort());
 			
 			fp.onConnect(player);
 			
@@ -211,7 +236,7 @@ public class PlayerListeners extends FleXEventListener {
 				disconnect(player, "FleXPlayer failed to login: " + e.getMessage());
 			}
 			
-		}, 10L);
+		}, 20L);
 		
 	}
 	
@@ -225,18 +250,20 @@ public class PlayerListeners extends FleXEventListener {
 			if (player.getWorld() instanceof FleXWorld)
 				((FleXWorld)player.getWorld()).getPlayerData(player).setLastSeen(player.getLocation());
 			
-			player.getHistory().getConnections().add("<- " + Bukkit.getPort());
+			try {
+				player.getHistory().getConnections().add("<- " + Bukkit.getPort());
+			} catch (FleXPlayerNotLoadedException ignore) {}
 			
 			player.onDisconnect(event.getPlayer());
 			
 			/**
-			 * We are not removing the FleXPlayer object anymore, so that there's no excessive loading when player data is looked up in-game.
+			 * We are removing the FleXPlayer object, so there may be excessive loading when player data is looked up in-game.
 			 * 
 			 * TODO: Make a low-latency mode, that does not remove players from cache when they disconnect (like it is atm).
 			 * 
 			 * Example: When low-latency mode is disabled, players that dc are removed from cache and their data has to be retrieved everytime if they are offline.
 			 */
-			//Memory.PLAYER_CACHE.remove(player);
+			Memory.PLAYER_CACHE.remove(player);
 			
 		}
 		
@@ -808,6 +835,22 @@ public class PlayerListeners extends FleXEventListener {
 			event.getPlayer().setMask(null);
 			
 		}
+		
+	}
+	
+	private static void disconnect(AsyncPlayerPreLoginEvent event, String reason) {
+		
+		String message = "Disconnected";
+		
+		StringBuilder sb = new StringBuilder();
+		String error = ChatColor.RED + ServerConnectException.FALLBACK_ERROR + ": \n" + ServerConnectException.class.getCanonicalName() + ": ";
+		
+		Arrays.stream(new String[] { error + (reason != null ? reason : "no further information:") }).forEach(r -> sb.append(FormatUtils.format(r) + "\n"));
+		
+		message = sb.length() > 0 ? sb.toString() : "You have been kicked from the server.";
+		
+		event.setLoginResult(Result.KICK_OTHER);
+		event.setKickMessage(message);
 		
 	}
 	

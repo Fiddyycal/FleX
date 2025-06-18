@@ -1,5 +1,6 @@
 package org.fukkit.history.variance;
 
+import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,7 +15,7 @@ public class RankHistory extends History<String> {
 
 	public static final String TABLE_NAME = "flex_history_rank";
 	
-	public RankHistory(FleXHumanEntity player) {
+	public RankHistory(FleXHumanEntity player) throws SQLException {
 		super(player, "flex_history_rank");
 	}
 	

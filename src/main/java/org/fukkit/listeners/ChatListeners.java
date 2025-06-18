@@ -17,16 +17,19 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.fukkit.Fukkit;
 import org.fukkit.PlayerState;
-import org.fukkit.api.helper.PlayerHelper;
 import org.fukkit.config.Configuration;
 import org.fukkit.config.YamlConfig;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.FleXEventListener;
+import org.fukkit.history.HistoryStore;
+import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.ChatUtils;
 
 import io.flex.commons.file.Variable;
+
 import net.md_5.fungee.Memory;
 import net.md_5.fungee.channel.Channel;
 import net.md_5.fungee.utils.NetworkUtils;
@@ -55,9 +58,9 @@ public class ChatListeners extends FleXEventListener {
 		if (event.isCancelled())
 			return;
 		
-		UUID uuid;
+		UUID uuid = event.getPlayer().getUniqueId();
 		
-		FleXPlayer player = PlayerHelper.getPlayerSafe((uuid = event.getPlayer().getUniqueId()));
+		FleXPlayer player = Fukkit.getPlayer(uuid);
 		
 		String name = player.getName();
 		String message = event.getMessage();
@@ -65,6 +68,33 @@ public class ChatListeners extends FleXEventListener {
 		if (player.getState() == PlayerState.CONNECTING || player.getState() == PlayerState.DISCONNECTING || player.getState() == PlayerState.UNKNOWN) {
 			event.setCancelled(true);
 			return;
+		}
+		
+		Theme theme = player.getTheme();
+		
+		if (theme == null) {
+			
+			player.sendMessage((theme != null ? theme : org.fukkit.Memory.THEME_CACHE.getDefaultTheme()).format("<engine><failure>Loading theme, please wait<pp>..."));
+			
+			event.setCancelled(true);
+			return;
+			
+		}
+		
+		HistoryStore history;
+		
+		try {
+			
+			// Checks if error is cast before logging chat.
+			history = player.getHistory();
+			
+		} catch (FleXPlayerNotLoadedException e) {
+			
+			player.sendMessage(theme.format("<engine><failure>Loading profile, please wait<pp>..."));
+			
+			event.setCancelled(true);
+			return;
+			
 		}
 		
 		if (chat_delay.contains(uuid)) {
@@ -75,6 +105,8 @@ public class ChatListeners extends FleXEventListener {
 			return;
 			
 		}
+		
+		history.getChatAndCommands().add(event.getMessage());
 		
 		if (player.getRank().getWeight() < this.weight) {
 			

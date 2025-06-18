@@ -5,6 +5,14 @@ import org.fukkit.Fukkit;
 
 public class BukkitUtils {
 	
+	public static BukkitRunnable mainThread(Runnable runnable) {
+		return runLater(runnable, false);
+	}
+	
+	public static BukkitRunnable asyncThread(Runnable runnable) {
+		return runLater(runnable, -1, true);
+	}
+	
 	public static BukkitRunnable runLater(Runnable runnable) {
 		return runLater(runnable, false);
 	}

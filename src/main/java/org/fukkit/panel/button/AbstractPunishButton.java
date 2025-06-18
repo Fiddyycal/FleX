@@ -19,6 +19,7 @@ import org.fukkit.consequence.PunishmentType;
 import org.fukkit.consequence.Report;
 import org.fukkit.consequence.gui.SanctionGui;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.theme.Theme;
 
 import io.flex.commons.file.Language;
@@ -82,13 +83,25 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 		
 		if (action == ButtonAction.GUI_MIDDLE_CLICK || (action == ButtonAction.GUI_LEFT_CLICK && this.convictionType == PunishmentType.REPORT)) {
 			
-			List<String> all = this.punishmentSet().stream().map(p -> {
+			List<String> all;
+			
+			try {
 				
-				SimpleDateFormat format = new SimpleDateFormat("(dd/MM/yy) [hh:mm:ss z]");
+				all = this.asSet().stream().map(p -> {
+					
+					SimpleDateFormat format = new SimpleDateFormat("(dd/MM/yy) [hh:mm:ss z]");
+					
+					return format.format(new Date(p.getTime())) + " " + p.getReason();
+					
+				}).collect(Collectors.toList());
 				
-				return format.format(new Date(p.getTime())) + " " + p.getReason();
+			} catch (FleXPlayerNotLoadedException e) {
 				
-			}).collect(Collectors.toList());
+				e.printStackTrace();
+				
+				all = new ArrayList<String>();
+				
+			}
 			
 			player.closeMenu();
 			player.sendMessage(all.toArray(new String[all.size()]));
@@ -153,9 +166,21 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 	
 	private static List<String> last5(Theme theme, FleXPlayer other, PunishmentType convictionType) {
 		
-		Set<Punishment> convictions = other.getHistory().getPunishments().asMap().entrySet().stream().map(e -> e.getValue()).filter(c -> {
-			return c.getType() == convictionType;
-		}).collect(Collectors.toSet());
+		Set<Punishment> convictions;
+		
+		try {
+			
+			convictions = other.getHistory().getPunishments().asMap().entrySet().stream().map(e -> e.getValue()).filter(c -> {
+				return c.getType() == convictionType;
+			}).collect(Collectors.toSet());
+			
+		} catch (FleXPlayerNotLoadedException e) {
+			
+			e.printStackTrace();
+			
+			return new ArrayList<String>();
+			
+		}
 		
 		List<Long> times = convictions.stream().map(p -> p.getTime()).sorted(/*Collections.reverseOrder()*/).collect(Collectors.toList());
 		List<String> latest = new LinkedList<String>();
@@ -190,6 +215,6 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 		
 	}
 	
-	public abstract Set<? extends Punishment> punishmentSet();
+	public abstract <T extends Punishment> Set<T> asSet() throws FleXPlayerNotLoadedException;
 
 }

@@ -20,11 +20,19 @@ public class FleXPanel extends Menu {
 		Theme theme = player.getTheme();
 		Language lang = player.getLanguage();
 		
-		this.addButton(new ChatHistoryButton(theme, lang, other));
-		this.addButton(new ReportButton(theme, lang, other));
-		this.addButton(new BanButton(theme, lang, other));
-		this.addButton(new MuteButton(theme, lang, other));
-		this.addButton(new KickButton(theme, lang, other));
+		other.getHistoryAsync(history -> {
+			
+			this.addButton(new ChatHistoryButton(theme, lang, other));
+			this.addButton(new ReportButton(theme, lang, other));
+			this.addButton(new BanButton(theme, lang, other));
+			this.addButton(new MuteButton(theme, lang, other));
+			this.addButton(new KickButton(theme, lang, other));
+			
+		}, () -> {
+			
+			other.sendMessage("Failed to load FleX Panel for player " + other.getName() + ".");
+			
+		});
 		
 		/* References */
 		/* Ranks */

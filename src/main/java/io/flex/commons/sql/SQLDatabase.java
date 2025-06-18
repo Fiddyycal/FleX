@@ -97,8 +97,6 @@ public class SQLDatabase implements Serializable {
 	}
 	
 	public SQLConnection open() throws SQLException {
-
-		Thread.dumpStack();
 		
 		for (SQLConnection connection : this.pool) {
 			
