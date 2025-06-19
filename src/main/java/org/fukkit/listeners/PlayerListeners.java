@@ -1,6 +1,5 @@
 package org.fukkit.listeners;
 
-import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import org.bukkit.Bukkit;
@@ -31,7 +30,6 @@ import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -97,7 +95,7 @@ public class PlayerListeners extends FleXEventListener {
 				Memory.PLAYER_CACHE.add(fp = Fukkit.getPlayerFactory().createFukkitSafe(event.getUniqueId(), event.getName()));
 			
 			if (fp == null) {
-				disconnect(event, FileNotFoundException.class.getName());
+				disconnect(event, FleXPlayerNotLoadedException.class.getName());
 				return;
 			}
 			
@@ -150,7 +148,7 @@ public class PlayerListeners extends FleXEventListener {
 			}
 			
 			if (fp == null) {
-				disconnect(player, FileNotFoundException.class.getName());
+				disconnect(player, FleXPlayerNotLoadedException.class.getName());
 				return;
 			}
 			
