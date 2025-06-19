@@ -9,7 +9,6 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.util.Vector;
 import org.fukkit.clickable.Menu;
 import org.fukkit.consequence.Ban;
 import org.fukkit.consequence.Mute;
@@ -112,8 +111,6 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public void setVisibility(Visibility visibility);
 	
-	public void setVelocity(Vector vector);
-	
 	@Deprecated
 	public void setScoreboard(Scoreboard scoreboard) throws IllegalArgumentException, IllegalStateException;
 	
@@ -169,7 +166,7 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public boolean isBanned();
 	
-	public boolean isNew();
+	public boolean isNew() throws FleXPlayerNotLoadedException;
 	
 	public void disconnect(@Nullable String reason);
 	
