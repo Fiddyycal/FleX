@@ -82,7 +82,7 @@ public class Kick extends Punishment {
 		
 		Theme theme = player.getTheme();
 		
-		player.kick(null,
+		player.kick(
 					
 				theme.format("<severe>&lYou have been &nkicked<severe>&l from the network<pp>."),
 				"",

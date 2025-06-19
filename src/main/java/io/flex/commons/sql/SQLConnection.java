@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import io.flex.FleX;
 import io.flex.FleX.Task;
@@ -35,6 +36,11 @@ public class SQLConnection {
 	sqlite = FleX.EXE_PATH.replace(File.separator, "/") + "/flex/data/sqlite";
 
 	private boolean alternateEncoding = false, available = true;
+	
+	private long
+	
+	creation,
+	lifeSpan = 21600000/*6 hours*/; // Lower than typical database timeout (ms).
 	
 	private SQLDriverType driver;
 	
@@ -217,6 +223,7 @@ public class SQLConnection {
 	}
 	
 	private void connect(boolean lite) throws SQLException {
+		this.creation = System.currentTimeMillis();
 		this.connection = DriverManager.getConnection("jdbc:" + this.driver + ":" + (lite ? "/" : "//") + this.getHost() + "/" + this.database + (lite ? ".db" : "?allowMultiQueries=true&autoReconnect=true" + (this.alternateEncoding ? "&characterEncoding=latin1&useConfigs=maxPerformance" : "")), this.username, this.password);
 	}
 
@@ -253,12 +260,27 @@ public class SQLConnection {
 		return this.connection;
 	}
 	
+	public boolean isStale() {
+		
+		try {
+			
+			// Expire after 6 hours (below MySQL's 8-hour timeout)
+	        return (System.currentTimeMillis() - this.creation > this.lifeSpan) || !this.connection.isValid(2);
+			
+		} catch (SQLException e) {
+			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to check if connection is stale: " + e.getMessage());
+		}
+		return true;
+    }
+	
 	public boolean isAvailable() {
 		return this.available;
 	}
 	
+	UUID uid = UUID.randomUUID();
+	
 	public void open() {
-
+		
 		this.available = false;
 		
 		try {

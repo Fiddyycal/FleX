@@ -135,7 +135,7 @@ public abstract class Punishment extends Consequence {
 	}
 	
 	public boolean hasEvidence() {
-		return this.evidence != null && this.evidence.length != 0 && !Arrays.stream(this.evidence).anyMatch(e -> e.toUpperCase().contains(EvidenceType.NON_APPLICABLE));
+		return this.evidence != null && this.evidence.length != 0 && !Arrays.stream(this.evidence).anyMatch(e -> e.toUpperCase().contains(EvidenceType.NOT_APPLICABLE));
 	}
 	
 	public boolean isReduced() {

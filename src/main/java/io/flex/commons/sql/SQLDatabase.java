@@ -85,18 +85,13 @@ public class SQLDatabase implements Serializable {
 		
 	}
 	
-	private SQLConnection connect() {
-		return this.driver == SQLDriverType.SQLITE ?
-				
-				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.sqlite) :
-				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.driver);
-	}
-	
 	public SQLDriverType getDriver() {
 		return this.driver;
 	}
 	
 	public SQLConnection open() throws SQLException {
+		
+		Task.debug("SQL", "Opening connection, connections in use: " + this.pool.size());
 		
 		for (SQLConnection connection : this.pool) {
 			
@@ -110,7 +105,8 @@ public class SQLDatabase implements Serializable {
 		Task.print("SQL",
 				
 				"No available connections in connection pool, creating new connection...",
-				"Consider making the max_connections variable higher.");
+				"Consider making the max_connections variable higher.",
+				"Connections in use: " + this.pool.size());
 		
 		SQLConnection connection = this.connect();
 		
@@ -120,6 +116,13 @@ public class SQLDatabase implements Serializable {
 		
 		return connection;
 		
+	}
+	
+	private SQLConnection connect() {
+		return this.driver == SQLDriverType.SQLITE ?
+				
+				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.sqlite) :
+				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.driver);
 	}
 	
 	/**

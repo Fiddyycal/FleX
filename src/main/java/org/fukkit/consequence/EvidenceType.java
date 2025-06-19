@@ -16,7 +16,7 @@ public enum EvidenceType {
 	
 	NONE("None");
 	
-	public static final String NON_APPLICABLE = "Non-applicable (Approved by Administration)", PROCESSING = "Processing", REDUCED = PROCESSING + " (Duration reduced until finalized)";
+	public static final String NOT_APPLICABLE = "Not-applicable (Approved by Administration)", PROCESSING = "Processing", REDUCED = PROCESSING + " (Duration reduced until finalized)";
 	
 	private String name;
 	

@@ -19,7 +19,6 @@ import java.util.UUID;
 import org.fukkit.Fukkit;
 import org.fukkit.disguise.FleXSkin;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.entity.PlayerFactory;
 
 @SuppressWarnings("deprecation")
 public class MojangHelper {

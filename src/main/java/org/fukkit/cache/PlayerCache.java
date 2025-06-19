@@ -118,10 +118,10 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 		
 		if (pl == null) {
 			
-			String name = micro_cache.get(uuid).getName();
+			Meta meta = micro_cache.get(uuid);
 			
-			if (name != null)
-				pl = Fukkit.getPlayerFactory().createFukkitSafe(uuid, name);
+			if (meta != null)
+				pl = Fukkit.getPlayerFactory().createFukkitSafe(uuid, meta.getName());
 			
 		}
 		

@@ -167,7 +167,7 @@ public class ConvictionListeners extends FleXEventListener {
 		}
 		
 		String processing = consequence.getType() == PunishmentType.KICK ? EvidenceType.PROCESSING : EvidenceType.REDUCED;
-		String evidence = none ? EvidenceType.NON_APPLICABLE : auto ? cell.b() + " (Automatic)" : temp ? processing : message;
+		String evidence = none ? EvidenceType.NOT_APPLICABLE : auto ? cell.b() + " (Automatic)" : temp ? processing : message;
 		
 		switch (consequence.getType()) {
 		
