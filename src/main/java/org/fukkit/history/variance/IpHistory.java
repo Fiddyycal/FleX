@@ -9,6 +9,15 @@ import org.fukkit.history.History;
 
 public class IpHistory extends History<String> {
 
+	/**
+	 * 
+	 * 
+	 * 
+		// getAddress() is a resource heavy task that blocks, this ensures that it updates async.
+		BukkitUtils.asyncThread(() -> this.ip = this.getPlayer().getAddress() != null ? this.getPlayer().getAddress().getHostName() : null);
+	 * 
+	 */
+	
 	public static final String TABLE_NAME = "flex_history_ip";
 	
 	public IpHistory(FleXHumanEntity player) throws SQLException {

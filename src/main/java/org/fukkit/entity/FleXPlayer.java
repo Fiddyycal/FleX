@@ -53,7 +53,7 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public Theme getTheme();
 	
-	public String getIp();
+	public String getIp() throws FleXPlayerNotLoadedException;
 	
 	public NameTag getNameTag(FleXPlayer viewer);
 	

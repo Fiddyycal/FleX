@@ -90,7 +90,6 @@ public class ConnectionHandler {
 			user_columns.put("last_seen", SQLDataType.BIGINT);
 			user_columns.put("rank", SQLDataType.VARCHAR);
 			user_columns.put("theme", SQLDataType.VARCHAR);
-			user_columns.put("ip", SQLDataType.VARCHAR);
 			user_columns.put("language", SQLDataType.VARCHAR);
 			user_columns.put("skin", SQLDataType.TEXT);
 			

@@ -1,7 +1,7 @@
 package org.fukkit.world;
 
 import java.io.File;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -37,7 +37,7 @@ public interface FleXWorld extends Cacheable {
 	
 	public PlayerData getPlayerData(FleXPlayer player);
 	
-	public List<? extends FleXHumanEntity> getFleXPlayersUnsafe();
+	public Set<FleXHumanEntity> getOnlinePlayers();
 	
 	public void setSpawnLocation(Location location);
 	

@@ -91,7 +91,7 @@ public class SQLDatabase implements Serializable {
 	
 	public SQLConnection open() throws SQLException {
 		
-		Task.debug("SQL", "Opening connection, connections in use: " + this.pool.size());
+		Task.print("SQL", "Opening connection, connections in use: " + this.pool.size());
 		
 		for (SQLConnection connection : this.pool) {
 			
@@ -101,13 +101,12 @@ public class SQLDatabase implements Serializable {
 			}
 				
 		}
-		
+		/*
 		Task.print("SQL",
 				
 				"No available connections in connection pool, creating new connection...",
-				"Consider making the max_connections variable higher.",
-				"Connections in use: " + this.pool.size());
-		
+				"Consider making the max_connections variable higher.");
+		*/
 		SQLConnection connection = this.connect();
 		
 		connection.open();
@@ -433,8 +432,6 @@ public class SQLDatabase implements Serializable {
 		
 	    try {
 	    	
-			this.open();
-	    	
 	    	if (columns == null || columns.isEmpty())
 		        throw new SQLException("Column definitions must not be empty.");
 		    
@@ -543,7 +540,6 @@ public class SQLDatabase implements Serializable {
 			if (this.driver == SQLDriverType.SQLITE)
 				query = query.replace(IDENTIFIER_QUOTE, "");
 			
-			this.open();
 			Task.debug("SQL", "Attempting EXECUTE -|- base; " + query);
 			
 			statement = connection.getDriverConnection().prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -597,7 +593,6 @@ public class SQLDatabase implements Serializable {
 			if (this.driver == SQLDriverType.SQLITE)
 				query = query.replace(IDENTIFIER_QUOTE, "");
 			
-			this.open();
 			Task.debug("SQL", "Attempting UPDATE -> base; " + query);
 			
 			statement = connection.getDriverConnection().prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -663,8 +658,6 @@ public class SQLDatabase implements Serializable {
 			
 			if (this.driver == SQLDriverType.SQLITE)
 				query = query.replace(SQLDataType.IDENTIFIER_QUOTE, "");
-			
-			this.open();
 			
 			Task.debug("SQL", "Attempting RESULT <- base; " + query);
 			

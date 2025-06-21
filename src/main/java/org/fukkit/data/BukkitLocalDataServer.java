@@ -1,7 +1,8 @@
 package org.fukkit.data;
 
 import org.fukkit.api.helper.EventHelper;
-import org.fukkit.event.data.DataReceivedEvent;
+import org.fukkit.event.data.AsyncDataReceivedEvent;
+import org.fukkit.utils.BukkitUtils;
 
 import io.flex.commons.socket.Data;
 import io.flex.commons.socket.DataCommand;
@@ -15,7 +16,7 @@ public class BukkitLocalDataServer extends DataServer {
 
 	@Override
 	public void onDataReceive(Data data, DataCommand command) {
-    	EventHelper.callEvent(new DataReceivedEvent(data, command));
+		BukkitUtils.asyncThread(() -> EventHelper.callEvent(new AsyncDataReceivedEvent(data, command)));
     }
 	
 }

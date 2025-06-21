@@ -1,1 +1,0 @@
-package net.md_5.fungee.event.data;

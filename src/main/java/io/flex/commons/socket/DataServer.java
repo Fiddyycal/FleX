@@ -6,8 +6,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.flex.FleX.Task;
 import net.md_5.fungee.utils.NetworkUtils;
@@ -17,12 +17,10 @@ public abstract class DataServer extends Thread {
 	public static final int DEFAULT_DATA_RECEIVING_PORT = 15565;
 	
 	private int port;
-    private Socket client;
+	
 	private ServerSocket server;
-    private PrintWriter out;
-    private BufferedReader in;
     
-	private static final Map<String, Data> memory = new HashMap<String, Data>();
+	private static final Map<String, Data> memory = new ConcurrentHashMap<String, Data>();
 	
 	public DataServer(int port) {
 		
@@ -44,133 +42,111 @@ public abstract class DataServer extends Thread {
 	}
 	
 	@Override
-	@SuppressWarnings("deprecation")
 	public void run() {
-    	
-    	if (this.port == -1) {
-    		this.stop();
-    		return;
-    	}
-    	
-		while(true) {
-			
-			try {
-				
-				debug("Sockets", "Waiting for connection on port " + this.port + "...");
-				
-				try {
-					this.client = this.server.accept();
-				} catch (Exception e) {
-					Task.error("Connection could not be established: " + e.getMessage() + ": no further information.");
-					continue;
-				}
-				
-				int port = this.client.getLocalPort();
-				
-				debug("Socket: " + port, "Socket connected.");
-				
-	            this.out = new PrintWriter(this.client.getOutputStream());
-		        this.in = new BufferedReader(new InputStreamReader(this.client.getInputStream()));
-				
-				String command = this.in.readLine();
-				
-				if (command == null) {
-					Task.error("Socket: " + port, "Connection closed: Unable to resolve command: Command cannot be null.");
-					continue;
-				}
-				
-				debug("Socket: " + port, "Deciphering command from string " + command + ".");
-				
-	            DataCommand cmd;
-				
-				try {
-					cmd = DataCommand.valueOf(command);
-				} catch (IllegalArgumentException e) {
-					Task.error("Socket: " + port, "Connection closed: Unable to resolve command " + command + ".");
-					continue;
-				}
-				
-				debug("Socket: " + port, "Requesting key...");
-				
-				String key = this.in.readLine();
-				
-				if (key == null) {
-					Task.error("Socket: " + port, "Connection closed: Key cannot be null.");
-					continue;
-				}
-				
-				if (cmd == DataCommand.SEND_DATA || cmd == DataCommand.PUBLISH_DATA) {
-					
-					String value = null;
-					
-					try {
-						
-						value = this.in.readLine();
-						
-						debug("Socket: " + port, "Key found. Raw UTF: " + command + "::" + key + "::" + value);
-			            
-					} catch (IndexOutOfBoundsException e) {
-						
-						debug("Socket: " + port, "Key found. Raw UTF: " + command + "::" + key + "::null");
-
-						if (cmd == DataCommand.PUBLISH_DATA) {
-
-				            debug("Socket: " + port, "Found value to be null, removing key from memory.");
-				            
-							memory.remove(key);
-							
-						}
-						
-					}
-					
-					Data data = new Data(key, value, port);
-					
-					if (cmd == DataCommand.PUBLISH_DATA && value != null) {
-						
-						debug("Socket: " + port, "Publishing value " + value + ".");
-						
-						memory.put(key, data);
-						
-					}
-					
-					this.onDataReceive(data, cmd);
-					
-					debug("Socket: " + port, "Sending reciept...");
-					
-					// Confirms the data was received.
-					this.out.println(true);
-					this.out.flush();
-					
-					debug("Socket: " + port, "Data reciept sent.");
-					
-				}
-				
-				if (cmd == DataCommand.REQUEST_DATA) {
-					
-		            debug("Socket: " + port, "Key found. Raw UTF: " + command + "::" + key);
-					
-					Data data = memory.get(key);
-					
-					if (data == null)
-						data = new Data(key, null, this.port);
-		    		
-					this.out.println(DataCommand.RETURN_DATA.name());
-					this.out.println(data.getValue());
-					this.out.flush();
-					
-					debug("Socket: " + port, "Data returned (" + data.getValue() + ").");
-					
-				}
-				
-				if (cmd == DataCommand.RETURN_DATA)
-					throw new UnsupportedOperationException("Data command \"RETURN_DATA\" cannot be used here, please revise.");
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-		}
 		
+	    if (this.port == -1)
+	        return;
+
+	    while (true) {
+	        try {
+	        	
+	            Socket client = this.server.accept();
+	            
+	            // Now handling each client in its own thread.
+	            new Thread(() -> handleClient(client)).start();
+	            
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    
+	}
+
+	private void handleClient(Socket client) {
+		
+	    int port = client.getLocalPort();
+	    
+	    PrintWriter out = null;
+        BufferedReader in = null;
+	    
+        try {
+					
+			out = new PrintWriter(client.getOutputStream(), true);
+	        in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+	        
+	        debug("Socket: " + port, "Socket connected.");
+
+	        String command = in.readLine();
+	        if (command == null) {
+	            Task.error("Socket: " + port, "Connection closed: Unable to resolve command: Command cannot be null.");
+	            return;
+	        }
+
+	        debug("Socket: " + port, "Deciphering command from string " + command + ".");
+
+	        DataCommand cmd;
+	        try {
+	            cmd = DataCommand.valueOf(command);
+	        } catch (IllegalArgumentException e) {
+	            Task.error("Socket: " + port, "Connection closed: Unable to resolve command " + command + ".");
+	            return;
+	        }
+
+	        debug("Socket: " + port, "Requesting key...");
+	        String key = in.readLine();
+	        if (key == null) {
+	            Task.error("Socket: " + port, "Connection closed: Key cannot be null.");
+	            return;
+	        }
+
+	        if (cmd == DataCommand.SEND_DATA || cmd == DataCommand.PUBLISH_DATA) {
+	            String value = in.readLine();
+	            if (value == null && cmd == DataCommand.PUBLISH_DATA) {
+	                memory.remove(key);
+	            } else if (value != null) {
+	                memory.put(key, new Data(key, value, port));
+	            }
+
+	            onDataReceive(new Data(key, value, port), cmd);
+	            out.println(true);
+	            debug("Socket: " + port, "Data receipt sent.");
+	        }
+
+	        if (cmd == DataCommand.REQUEST_DATA) {
+	            Data data = memory.getOrDefault(key, new Data(key, null, port));
+	            out.println(DataCommand.RETURN_DATA.name());
+	            out.println(data.getValue());
+	            debug("Socket: " + port, "Data returned (" + data.getValue() + ").");
+	        }
+
+	        if (cmd == DataCommand.RETURN_DATA) {
+	            throw new UnsupportedOperationException("Data command \"RETURN_DATA\" cannot be used here, please revise.");
+	        }
+	        
+	    } catch (IOException e) {
+	    	
+	        Task.error("Socket (IOException): " + port, e.getMessage());
+	        
+	    } catch (UnsupportedOperationException e) {
+	    	
+	        Task.error("Socket: " + port, e.getMessage());
+	        
+	    } finally {
+			
+	    	if (in != null)
+				try {
+					in.close();
+				} catch (IOException ignore) {}
+	    	
+	    	if (out != null)
+	    		out.close();
+	    	
+	    	if (client != null)
+				try {
+					client.close();
+				} catch (IOException ignore) {}
+	    	
+		}
 	}
 	
 	public void close() throws IOException {
@@ -178,34 +154,17 @@ public abstract class DataServer extends Thread {
     	if (this.port == -1)
     		return;
     	
-    	if (this.in != null)
-    		this.in.close();
-
-    	if (this.out != null)
-    		this.out.close();
-
-    	if (this.client != null)
-    		this.client.close();
-    	
     	if (this.server != null)
     		this.server.close();
     	
     }
 	
-    @SuppressWarnings("deprecation")
-    public void kill() throws IOException {
-    	
-    	this.close();
-    	
-    	/* 
-    	 * As of JDK8, Thread#stop has been de-implemented.
-    	 * It now just throws UnsupportedOperationException.
-    	 */
-    	if (null == null)
-    		return;
-    	
-		this.stop();
-		
+    public void kill() {
+    	try {
+			this.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
     
     public abstract void onDataReceive(Data data, DataCommand command);

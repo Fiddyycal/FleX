@@ -1,13 +1,13 @@
-package org.fukkit.event.data;
+package net.md_5.fungee.event.data;
 
 import io.flex.commons.socket.Data;
 import io.flex.commons.socket.DataCommand;
 
-public class DataReceivedEvent extends DataEvent {
+public class AsyncDataReceivedEvent extends AsyncDataEvent {
 
 	private DataCommand command;
 	
-	public DataReceivedEvent(Data data, DataCommand command) {
+	public AsyncDataReceivedEvent(Data data, DataCommand command) {
 		
 		super(data);
 		

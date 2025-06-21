@@ -33,7 +33,7 @@ public class FleXPlayerDeathEvent extends FleXEntityDeathEvent {
         this.deathMessage = deathMessage;
         
         if (this.deathMessage != null)
-        	this.entity.getWorld().getFleXPlayersUnsafe().stream().forEach(p -> p.sendMessage(this.deathMessage));
+        	this.entity.getWorld().getOnlinePlayers().stream().forEach(p -> p.sendMessage(this.deathMessage));
         
     }
 

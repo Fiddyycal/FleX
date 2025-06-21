@@ -1,6 +1,9 @@
 package org.fukkit.utils;
 
+import java.util.function.Consumer;
+
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.fukkit.Fukkit;
 
 public class BukkitUtils {
@@ -58,44 +61,29 @@ public class BukkitUtils {
 		
 	}
 	
-	public static BukkitRunnable runTimer(Runnable runnable, long delay, long period) {
+	public static BukkitTask runTimer(Consumer<BukkitTask> runnable, long period, boolean async) {
+		return runTimer(runnable, 0L, period, async);
+	}
+	
+	public static BukkitTask runTimer(Consumer<BukkitTask> runnable, long delay, long period) {
 		return runTimer(runnable, delay, period, false);
 	}
 	
-	public static BukkitRunnable runTimer(Runnable runnable, long delay, long period, boolean async) {
-		if (async) {
+	public static BukkitTask runTimer(Consumer<BukkitTask> runnable, long delay, long period, boolean async) {
+		
+		BukkitTask[] ref = new BukkitTask[1];
+		
+		BukkitRunnable task = new BukkitRunnable() {
 			
-			BukkitRunnable task = new BukkitRunnable() {
-				
-				@Override
-				public void run() {
-					runnable.run();
-				}
-				
-			};
+			@Override
+			public void run() {
+				runnable.accept(ref[0]);
+			}
 			
-			task.runTaskTimerAsynchronously(
-					Fukkit.getInstance(), delay, period);
-			
-			return task;
-			
-		} else {
-
-			BukkitRunnable task = new BukkitRunnable() {
-				
-				@Override
-				public void run() {
-					runnable.run();
-				}
-				
-			};
-			
-			task.runTaskTimer(
-					Fukkit.getInstance(), delay, period);
-			
-			return task;
-			
-		}
+		};
+		
+		return ref[0] = (async ? task.runTaskTimerAsynchronously(Fukkit.getInstance(), delay, period) : task.runTaskTimer(Fukkit.getInstance(), delay, period));
+		
 	}
 
 }

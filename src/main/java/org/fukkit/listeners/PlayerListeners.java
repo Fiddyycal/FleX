@@ -51,6 +51,7 @@ import org.fukkit.api.helper.PlayerHelper;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.combat.CombatFactory;
 import org.fukkit.entity.FleXBot;
+import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.FleXEventListener;
@@ -152,6 +153,8 @@ public class PlayerListeners extends FleXEventListener {
 				return;
 			}
 			
+			world.getOnlinePlayers().add(fp);
+			
 			fp.setState(PlayerState.CONNECTING);
 			
 			fp.onConnect(player);
@@ -245,8 +248,14 @@ public class PlayerListeners extends FleXEventListener {
 		
 		if (player != null) {
 			
-			if (player.getWorld() instanceof FleXWorld)
-				((FleXWorld)player.getWorld()).getPlayerData(player).setLastSeen(player.getLocation());
+			if (player.getWorld() instanceof FleXWorld) {
+				
+				FleXWorld world = (FleXWorld) player.getWorld();
+				
+				world.getOnlinePlayers().remove(player);
+				world.getPlayerData(player).setLastSeen(player.getLocation());
+				
+			}
 			
 			try {
 				player.getHistory().getConnections().add("<- " + Bukkit.getPort());
@@ -272,21 +281,45 @@ public class PlayerListeners extends FleXEventListener {
 	@EventHandler(priority = EventPriority.MONITOR)
     public void event(PlayerTeleportEvent event) {
 		
-		Player player = event.getPlayer();
-
+		FleXPlayer player = Fukkit.getPlayer(event.getPlayer().getUniqueId());
+		
 		/**
 		 * Update player visibility.
 		 */
 		BukkitUtils.runLater(() -> {
 			
-			FleXPlayer fp = Fukkit.getPlayer(player.getUniqueId());
-			
-			if (fp == null || !fp.isOnline())
+			if (player == null || !player.isOnline())
 				return;
 			
-			fp.setVisibility(fp.getVisibility());
+			player.setVisibility(player.getVisibility());
 			
 		});
+		
+		Location from = event.getFrom();
+		Location to = event.getTo();
+		
+		if (from.getWorld().equals(to.getWorld()))
+			return;
+		
+		FleXWorld world = to.getWorld() != null ? Fukkit.getWorld(to.getWorld().getUID()) : null;
+		
+		if (world == null) {
+			
+			event.setCancelled(true);
+			
+			player.sendMessage(ChatColor.RED + "This world is broken, please report this to an admin.");
+			return;
+			
+		}
+		
+		if (!world.getState().isJoinable()) {
+			
+			event.setCancelled(true);
+			
+			player.sendMessage(ChatColor.RED + "You cannot enter this world right now.");
+			return;
+			
+		}
 		
     }
 	
@@ -297,14 +330,24 @@ public class PlayerListeners extends FleXEventListener {
 		
 		if (player == null)
 			return;
-		
+
+		FleXWorld from = event.getFrom() != null ? Fukkit.getWorld(event.getFrom().getUID()) : null;
 		FleXWorld world = player.getWorld() != null ? Fukkit.getWorld(player.getWorld().getUniqueId()) : null;
 		
-		if (world == null)
-			return;
+		if (from != null)
+			from.getOnlinePlayers().remove(player);
 		
-		if (!world.getState().isJoinable())
-			player.kick(ChatColor.RED + "You cannot enter this world right now...");
+		if (world == null) {
+			player.kickPlayer(ChatColor.RED + "This world is broken, please report this to an admin.");
+			return;
+		}
+		
+		if (!world.getState().isJoinable()) {
+			player.kickPlayer(ChatColor.RED + "You cannot enter this world right now...");
+			return;
+		}
+		
+		world.getOnlinePlayers().add((FleXHumanEntity)player);
 		
     }
 	

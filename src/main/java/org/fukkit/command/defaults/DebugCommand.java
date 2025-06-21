@@ -25,6 +25,7 @@ import org.fukkit.command.FleXCommandAdapter;
 import org.fukkit.command.GlobalCommand;
 import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.handlers.ServerHandler;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
@@ -391,6 +392,12 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			String name = player.getEntity() != null && player.getEntity().isValid() ? player.getPlayer().getName() : player.getName();
 			
+			String ip = "0.0.0.0";
+			
+			try {
+				ip = player.getIp();
+			} catch (FleXPlayerNotLoadedException ignore) {}
+			
 			sender.sendMessage(ChatColor.GRAY + "User: " + ChatColor.RESET + "(#" + (/*(CraftFleXPlayer)*/id)/*.id*/ + ") " + name);
 			sender.sendMessage(ChatColor.GRAY + "Logged, Display: " + ChatColor.RESET + CollectionUtils.toCollection(player.getName() + "," + player.getDisplayName()));
 			sender.sendMessage(ChatColor.GRAY + "Play time, Last seen: " + ChatColor.RESET + CollectionUtils.toCollection(player.getPlayTime() + "," + player.getLastSeen()));
@@ -403,7 +410,7 @@ public class DebugCommand extends FleXCommandAdapter {
 			sender.sendMessage(ChatColor.GRAY + "Rank: " + ChatColor.RESET + player.getRank().getName());
 			sender.sendMessage(ChatColor.GRAY + "Theme: " + ChatColor.RESET + player.getTheme().getName());
 			sender.sendMessage(ChatColor.GRAY + "Skin: " + ChatColor.RESET + player.getSkin().getValue().substring(0, 6));
-			sender.sendMessage(ChatColor.GRAY + "IP: " + ChatColor.RESET + (silent ? ChatColor.MAGIC : "") + player.getIp());
+			sender.sendMessage(ChatColor.GRAY + "IP: " + ChatColor.RESET + (silent ? ChatColor.MAGIC : "") + ip);
 			sender.sendMessage(ChatColor.GRAY + "Sidebar, Disguised, Airborne: " + ChatColor.RESET + CollectionUtils.toCollection((player.getSidebar() != null) + "," + player.isDisguised() + "," + !player.isOnGround()));
 
 			if (sender instanceof Player || sender instanceof FleXPlayer)

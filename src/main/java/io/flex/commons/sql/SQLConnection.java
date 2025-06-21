@@ -264,6 +264,9 @@ public class SQLConnection {
 		
 		try {
 			
+			if (this.connection == null)
+				return true;
+			
 			// Expire after 6 hours (below MySQL's 8-hour timeout)
 	        return (System.currentTimeMillis() - this.creation > this.lifeSpan) || !this.connection.isValid(2);
 			
@@ -285,8 +288,19 @@ public class SQLConnection {
 		
 		try {
 			
-			if (this.connection == null || (this.connection != null && this.connection.isClosed()))
-				this.connect(this.driver == SQLDriverType.SQLITE);
+			boolean stale = this.isStale();
+			
+			if (this.connection != null) {
+				
+				if (!this.connection.isClosed() && !stale)
+					return;
+				
+				if (stale)
+					this.connection.close();
+				
+			}
+			
+			this.connect(this.driver == SQLDriverType.SQLITE);
 			
 		} catch (SQLException e) {
 			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to open connection: " + e.getMessage());
@@ -295,6 +309,7 @@ public class SQLConnection {
 	}
 	
 	public void release() {
+		Task.print("SQL", "Closing connection.");
 		this.available = true;
 	}
 

@@ -3,11 +3,13 @@ package net.md_5.fungee.event.data;
 import io.flex.commons.socket.Data;
 import net.md_5.bungee.api.plugin.Event;
 
-public class DataEvent extends Event {
+public class AsyncDataEvent extends Event {
 
 	private Data data;
 	
-	public DataEvent(Data data) {
+	private boolean async;
+	
+	public AsyncDataEvent(Data data) {
 		
 		super();
 		
@@ -17,6 +19,10 @@ public class DataEvent extends Event {
 	
 	public Data getData() {
 		return this.data;
+	}
+	
+	public boolean isAsynchronous() {
+		return this.async;
 	}
 
 }

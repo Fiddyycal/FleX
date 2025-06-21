@@ -1,6 +1,5 @@
 package net.md_5.fungee;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,11 +53,7 @@ public class FungeeCord extends Plugin implements Listener {
 	
 	public void onDisable() {
 		
-		try {
-			data_server.kill();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		data_server.kill();
 		
 		instance = null;
 		
