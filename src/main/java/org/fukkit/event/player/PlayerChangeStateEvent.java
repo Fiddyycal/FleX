@@ -1,18 +1,15 @@
 package org.fukkit.event.player;
 
-import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.fukkit.PlayerState;
 import org.fukkit.entity.FleXPlayer;
 
-public class PlayerChangeStateEvent extends Event implements Cancellable {
+public class PlayerChangeStateEvent extends Event {
 	
 	private FleXPlayer player;
 	
 	private PlayerState state;
-	
-	private boolean cancel = false;
 	
 	private static HandlerList handlers = new HandlerList();
 	
@@ -41,16 +38,6 @@ public class PlayerChangeStateEvent extends Event implements Cancellable {
 	
 	public PlayerState getTo() {
 		return this.state;
-	}
-
-	@Override
-	public boolean isCancelled() {
-		return this.cancel;
-	}
-
-	@Override
-	public void setCancelled(boolean cancel) {
-		this.cancel = cancel;
 	}
 
 }

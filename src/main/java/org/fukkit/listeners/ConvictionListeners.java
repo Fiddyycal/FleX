@@ -334,7 +334,7 @@ public class ConvictionListeners extends FleXEventListener {
 	@EventHandler(priority = EventPriority.HIGH)
     public void event(PlayerChangeStateEvent event) {
 		
-		if (event.isCancelled())
+		if (!event.isAsynchronous())
 			return;
 		
 		FleXPlayer player = event.getPlayer();

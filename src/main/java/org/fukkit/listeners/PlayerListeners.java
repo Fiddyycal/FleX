@@ -60,6 +60,7 @@ import org.fukkit.event.hologram.HologramInteractEvent;
 import org.fukkit.event.player.FleXPlayerDisguisedEvent;
 import org.fukkit.event.player.FleXPlayerLoginEvent;
 import org.fukkit.event.player.FleXPlayerMaskEvent;
+import org.fukkit.event.player.FleXPlayerPreLoginEvent;
 import org.fukkit.handlers.ConnectionHandler;
 import org.fukkit.hologram.FloatingItem;
 import org.fukkit.hologram.Hologram;
@@ -100,9 +101,11 @@ public class PlayerListeners extends FleXEventListener {
 				return;
 			}
 			
+			fp.setState(PlayerState.CONNECTING);
+			
 		} catch (Exception e) {
 			
-			disconnect(event, "FleXPlayer failed to login.");
+			disconnect(event, e.getMessage());
 			
 			Console.log("FleXPlayer", Severity.CRITICAL, e);
 	    	return;
@@ -119,43 +122,55 @@ public class PlayerListeners extends FleXEventListener {
 		Player player = event.getPlayer();
 		
 	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.getSafe(player.getUniqueId());
-		FleXWorld world = Fukkit.getServerHandler().getDefaultWorld();
+	    
+	    FleXPlayerPreLoginEvent loginEvent = Fukkit.getEventFactory().call(new FleXPlayerPreLoginEvent(fp));
 		
+	    if (loginEvent.isCancelled()) {
+	    	
+			disconnect(player, loginEvent.getKickMessage());
+			return;
+			
+	    }
+	    
 		Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(player));
 		
-		if (world == null) {
-			
-			Task.error("World", "The default world could not be found.");
-			
-			disconnect(player, null);
-			return;
-			
-		}
-		
-		if (!world.getState().isJoinable()) {
-			
-			Task.error("World", "The world \"" + world.getName() + "\" is not joinable right now.");
-			
-			disconnect(player, "This server is not accessible right now, please wait...");
-			return;
-			
-		}
-		
 		try {
-			
-			if (world.getSpawnLocation() == null && world.getBackupSpawnLocation() == null) {
-				disconnect(player, ConnectTimeoutException.class.getName());
-				return;
-			}
 			
 			if (fp == null) {
 				disconnect(player, FleXPlayerNotLoadedException.class.getName());
 				return;
 			}
 			
+			FleXWorld world = Fukkit.getServerHandler().getDefaultWorld();
+			
+			if (world == null) {
+				
+				Task.error("World", "The default world could not be found.");
+				
+				disconnect(player, null);
+				return;
+				
+			}
+			
+			if (!world.getState().isJoinable()) {
+				
+				Task.error("World", "The world \"" + world.getName() + "\" is not joinable right now.");
+				
+				disconnect(player, "This server is not accessible right now, please wait...");
+				return;
+				
+			}
+			
+			if (world.getSpawnLocation() == null && world.getBackupSpawnLocation() == null) {
+				disconnect(player, ConnectTimeoutException.class.getName());
+				return;
+			}
+			
 			world.getOnlinePlayers().add(fp);
 			
-			fp.setState(PlayerState.CONNECTING);
+			fp.clean(Fukkit.getServerHandler().getSetting(NetworkSetting.CLEAN_TYPE));
+			
+			Fukkit.getEventFactory().call(new FleXPlayerLoginEvent(fp));
 			
 			fp.onConnect(player);
 			
@@ -191,17 +206,6 @@ public class PlayerListeners extends FleXEventListener {
 				disconnect(player, PlayerJoinEvent.class.getName() + ": " + e.getMessage());
 				return;
 			}
-			
-			fp.clean(Fukkit.getServerHandler().getSetting(NetworkSetting.CLEAN_TYPE), true);
-			
-			Bukkit.getOnlinePlayers().forEach(p -> p.showPlayer(player));
-			
-			/**
-			 * Have to re-retrieve for some reason, fixes many bugs.
-			 */
-			(fp = Fukkit.getPlayerExact(player)).setState(PlayerState.IDLE);
-			
-			Fukkit.getEventFactory().call(new FleXPlayerLoginEvent(fp));
 			
 		} catch (Exception e) {
 			

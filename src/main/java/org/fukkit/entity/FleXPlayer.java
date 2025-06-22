@@ -199,9 +199,6 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public void update();
 	
-	@Deprecated
-	public void clean(CleanType type, boolean async);
-	
 	public void clean(CleanType type);
 	
 	public void onConnect(Player player);
