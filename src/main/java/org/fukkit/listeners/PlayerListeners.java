@@ -2,6 +2,8 @@ package org.fukkit.listeners;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -64,6 +66,7 @@ import org.fukkit.event.player.FleXPlayerPreLoginEvent;
 import org.fukkit.handlers.ConnectionHandler;
 import org.fukkit.hologram.FloatingItem;
 import org.fukkit.hologram.Hologram;
+import org.fukkit.metadata.FleXFixedMetadataValue;
 import org.fukkit.reward.Rank;
 import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.FormatUtils;
@@ -166,6 +169,11 @@ public class PlayerListeners extends FleXEventListener {
 				return;
 			}
 			
+			if (fp.hasMetadata("flex.player"))
+				fp.removeMetadata("flex.player", Fukkit.getInstance());
+			
+			fp.setMetadata("flex.player", new FleXFixedMetadataValue(fp));
+			
 			world.getOnlinePlayers().add(fp);
 			
 			fp.clean(Fukkit.getServerHandler().getSetting(NetworkSetting.CLEAN_TYPE));
@@ -248,7 +256,9 @@ public class PlayerListeners extends FleXEventListener {
 	@EventHandler(priority = EventPriority.HIGH)
 	public void event(PlayerQuitEvent event) {
 		
-		FleXPlayer player = Fukkit.getPlayer(event.getPlayer().getUniqueId());
+		UUID uuid = event.getPlayer().getUniqueId();
+		
+		FleXPlayer player = Fukkit.getPlayer(uuid);
 		
 		if (player != null) {
 			
@@ -261,16 +271,15 @@ public class PlayerListeners extends FleXEventListener {
 				
 			}
 			
-			try {
-				player.getHistory().getConnections().add("<- " + Bukkit.getPort());
-			} catch (FleXPlayerNotLoadedException ignore) {}
-			
 			player.onDisconnect(event.getPlayer());
 			
 			/**
 			 * We are removing the FleXPlayer object, so there may be excessive loading when player data is looked up in-game.
 			 * 
+			 * Running this async with a small delay also allows some time for any disconnect logic to finish up.
+			 * 
 			 * TODO: Make a low-latency mode, that does not remove players from cache when they disconnect (like it is atm).
+			 * TODO: MAKE SURE TO CHECK EVERYWHERE REMOVE METHOD IS CALLED (I.e ConvictionListeners).
 			 * 
 			 * Example: When low-latency mode is disabled, players that dc are removed from cache and their data has to be retrieved everytime if they are offline.
 			 */
@@ -896,6 +905,11 @@ public class PlayerListeners extends FleXEventListener {
 		
 		event.setLoginResult(Result.KICK_OTHER);
 		event.setKickMessage(message);
+		
+		FleXHumanEntity fp = Memory.PLAYER_CACHE.getSafe(event.getUniqueId());
+		
+		if (fp != null)
+			Memory.PLAYER_CACHE.remove(fp);
 		
 	}
 	

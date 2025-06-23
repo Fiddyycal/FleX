@@ -39,7 +39,10 @@ public class FukkitChannelHandler extends FleXEventListener implements ChannelHa
 	
 	@EventHandler(priority = EventPriority.LOW)
 	public void event(FleXPlayerLoadEvent event) {
-
+		
+		if (event.isOffline())
+			return;
+		
 		Map<String, String> entries = CACHE.get(event.getPlayer().getUniqueId());
 		
 		if (entries == null || entries.isEmpty())

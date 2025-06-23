@@ -27,7 +27,7 @@ public class ConnectionHistory extends History<String> {
 	}
 	
 	public void onDisconnect(ConnectionReason reason) {
-		this.add("-X " + Bukkit.getServer().getName() + " [" + reason + "]");
+		this.add("<- " + Bukkit.getServer().getName() + " [" + reason + "]");
 	}
 
 }

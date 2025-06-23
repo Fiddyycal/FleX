@@ -10,6 +10,7 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.fukkit.Fukkit;
+import org.fukkit.Memory;
 import org.fukkit.PlayerState;
 import org.fukkit.consequence.Ban;
 import org.fukkit.consequence.Punishment;
@@ -19,6 +20,7 @@ import org.fukkit.consequence.Kick;
 import org.fukkit.consequence.Mute;
 import org.fukkit.consequence.Consequence;
 import org.fukkit.consequence.Report;
+import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.FleXEventListener;
@@ -302,19 +304,25 @@ public class ConvictionListeners extends FleXEventListener {
 					ChatColor.GRAY + "If this persists please contact a staff member" + ChatColor.DARK_GRAY + ".");
 			
 			event.setLoginResult(Result.KICK_OTHER);
-			return;
+			
+		} else {
+			
+			FleXPlayer player = Fukkit.getPlayer(event.getUniqueId());
+			
+			if (player == null)
+				return;
+			
+			if (!player.isBanned())
+				return;
+			
+			player.getBan().onPreBypassAttempt(player, event);
 			
 		}
 		
-		FleXPlayer player = Fukkit.getPlayer(event.getUniqueId());
+		FleXHumanEntity fp = Memory.PLAYER_CACHE.getSafe(event.getUniqueId());
 		
-		if (player == null)
-			return;
-		
-		if (!player.isBanned())
-			return;
-		
-		player.getBan().onPreBypassAttempt(player, event);
+		if (fp != null)
+			Memory.PLAYER_CACHE.remove(fp);
 		
 	}
 	

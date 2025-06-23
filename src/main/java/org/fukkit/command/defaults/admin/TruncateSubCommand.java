@@ -32,9 +32,12 @@ public class TruncateSubCommand extends AbstractAdminSubCommand {
 			
 			BukkitUtils.runLater(() -> {
 				
+				if (event.getPlayer() == null)
+					return;
+				
 				FleXPlayer player = Fukkit.getPlayerExact(event.getPlayer());
 				
-				if (!player.hasMetadata("truncate"))
+				if (!player.isOnline() || !player.hasMetadata("truncate"))
 					return;
 					
 				event.setCancelled(true);

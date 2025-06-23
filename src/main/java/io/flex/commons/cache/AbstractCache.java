@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import io.flex.commons.utils.NumUtils;
@@ -17,6 +18,7 @@ public abstract class AbstractCache<E extends Cacheable, U> implements Cache<E, 
 	
 	// Delegation
 	protected Set<E> set = new HashSet<E>();
+	
 	private BiPredicate<E, U> predacate;
 	
 	public AbstractCache(BiPredicate<E, U> predacate) {
@@ -61,6 +63,19 @@ public abstract class AbstractCache<E extends Cacheable, U> implements Cache<E, 
 		return Arrays.stream(args).anyMatch(e -> {
 			this.onRemove(e);
 			return this.set.remove(e);
+		});
+	}
+	
+	public boolean removeIf(Predicate<E> filter) {
+		return this.set.removeIf(e -> {
+			
+			 if (filter.test(e)) {
+				 this.onRemove(e);
+				 return true;
+			 }
+			 
+			 return false;
+			
 		});
 	}
 

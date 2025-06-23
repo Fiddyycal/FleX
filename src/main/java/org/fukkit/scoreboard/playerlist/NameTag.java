@@ -1,5 +1,6 @@
 package org.fukkit.scoreboard.playerlist;
 
+import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.NameTagVisibility;
 import org.bukkit.scoreboard.Objective;
@@ -196,6 +197,13 @@ public class NameTag implements FleXScoreboard {
 	
 	@Override
 	public void onTick() {
+		
+		if (Bukkit.getPlayer(this.uuid) == null) {
+			
+			this.clear();
+			return;
+			
+		}
 		
 		FleXPlayer player = Fukkit.getPlayer(this.uuid);
 		

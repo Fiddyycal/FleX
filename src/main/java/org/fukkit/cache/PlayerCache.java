@@ -18,22 +18,20 @@ import org.fukkit.PlayerState;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.reward.Rank;
-import org.fukkit.utils.BukkitUtils;
-
 import io.flex.FleX.Task;
 import io.flex.commons.cache.LinkedCache;
 import io.flex.commons.sql.SQLRowWrapper;
 
 public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 
-	public class Meta {
+	public static class PlayerCacheMeta {
 		
 		private String name;
 		private Rank rank;
 		
-		public Meta(String name, String rank) {
+		public PlayerCacheMeta(String name, Rank rank) {
 			this.name = name;
-			this.rank = Memory.RANK_CACHE.getOrDefault(rank, Memory.RANK_CACHE.getDefaultRank());
+			this.rank = rank;
 		}
 		
 		public String getName() {
@@ -44,9 +42,13 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 			return this.rank;
 		}
 		
+		public void setRank(Rank rank) {
+			this.rank = rank;
+		}
+		
 	}
 	
-	private static final Map<UUID, Meta> micro_cache = new HashMap<UUID, Meta>();
+	private static final Map<UUID, PlayerCacheMeta> micro_cache = new HashMap<UUID, PlayerCacheMeta>();
 	
 	public static int getMemberAmount() {
 		return micro_cache.size();
@@ -58,7 +60,7 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 		super((fp, player) -> fp.getUniqueId().equals(player.getUniqueId()));
 	}
 	
-	public static Map<UUID, Meta> getMicroCache() {
+	public static Map<UUID, PlayerCacheMeta> getMicroCache() {
 		return micro_cache;
 	}
 	
@@ -66,7 +68,7 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 	public boolean add(FleXHumanEntity... args) {
 		
 		for (FleXHumanEntity entity : args)
-			micro_cache.put(entity.getUniqueId(), new Meta(entity.getName(), entity.getRank().getName()));
+			micro_cache.put(entity.getUniqueId(), new PlayerCacheMeta(entity.getName(), entity.getRank()));
 		
 		return super.add(args);
 		
@@ -74,11 +76,7 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 	
 	@Override
 	public boolean remove(FleXHumanEntity... args) {
-		
-		/**
-		 * Must allow onDisconnect some time for any async logic to finish up.
-		 */
-		BukkitUtils.runLater(() -> this.remove(args), 5L, true);
+		for (FleXHumanEntity entity : args) this.removeIf(e -> entity.getUniqueId().equals(e.getUniqueId()));
 		return true;
 		
 	}
@@ -118,7 +116,7 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 		
 		if (pl == null) {
 			
-			Meta meta = micro_cache.get(uuid);
+			PlayerCacheMeta meta = micro_cache.get(uuid);
 			
 			if (meta != null)
 				pl = Fukkit.getPlayerFactory().createFukkitSafe(uuid, meta.getName());
@@ -147,7 +145,7 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 		
 		if (pl == null)
 			
-			for (Entry<UUID, Meta> entry : micro_cache.entrySet()) {
+			for (Entry<UUID, PlayerCacheMeta> entry : micro_cache.entrySet()) {
 				
 				UUID u = entry.getKey();
 				String n = entry.getValue().name;
@@ -196,7 +194,7 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 					
 					Task.print("Players", "Caching " + rank + " \"" + row.getString("name") + "\" (" + row.getString("uuid").substring(0, 8) + "...) [" + (i++) + "/" + amount + "]");
 					
-					micro_cache.put(UUID.fromString(uuid), new Meta(name, rank));
+					micro_cache.put(UUID.fromString(uuid), new PlayerCacheMeta(name, Memory.RANK_CACHE.getOrDefault(rank, Memory.RANK_CACHE.getDefaultRank())));
 					
 				} catch (Exception e) {
 					e.printStackTrace();
