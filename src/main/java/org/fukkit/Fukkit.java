@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.InvalidPluginException;
@@ -212,7 +213,7 @@ public final class Fukkit extends JavaPlugin {
 				
 			    Task.print("-O_O-",
 			    		
-			    		"FleX Bot: Fukkit, FleX bukkit engine startup complete in " + NumUtils.toString(timer.getTime(TimeUnit.MILLISECONDS)).toLowerCase() + ".",
+			    		"FleX Bot: Fukkit, FleX bukkit engine startup complete in " + NumUtils.asString(timer.getTime(TimeUnit.MILLISECONDS)).toLowerCase() + ".",
 						"FleX Bot: Or " + timer.getTime(TimeUnit.MILLISECONDS) + " milliseconds to be more precise.",
 						"FleX Bot: In " + timer.getTime(TimeUnit.MICROSECONDS) + " microseconds... and " + timer.getTime(TimeUnit.NANOSECONDS) + " nanoseconds?",
 						"FleX Bot: Sorry, it gets boring around here when the server is offline.",
@@ -379,23 +380,41 @@ public final class Fukkit extends JavaPlugin {
 		Fukkit.plugin = plugin;
 		
 	}
-
+	
+	/**
+	 * 
+	 * This will create a new FleXPlayer object and load
+	 * it if no FleXPlayer player object exists in the cache.
+	 * 
+	 * @param name
+	 * @return FleXPlayer object from cache, create new one if player exists but is offline.
+	 */
 	public static FleXPlayer getPlayer(String name) {
 		return (FleXPlayer) Memory.PLAYER_CACHE.getByName(name);
 	}
-
+	
+	/**
+	 * 
+	 * This will create a new FleXPlayer object and load
+	 * it if no FleXPlayer player object exists in the cache.
+	 * 
+	 * @param uuid
+	 * @return FleXPlayer object from cache, create new one if player exists but is offline.
+	 */
 	public static FleXPlayer getPlayer(UUID uuid) {
 		return (FleXPlayer) Memory.PLAYER_CACHE.getByUniqueId(uuid);
 	}
 
 	/**
-	 * @deprecated Use {@link Fukkit#getPlayer(UUID)} instead.
+	 * 
+	 * Unlike other player fetching methods this one will NOT
+	 * create a new object and load it if the player is offline.
+	 * 
 	 * @param uuid
-	 * @return Offline FleXPlayer
+	 * @return FleXPlayer object from cache, null if none exists.
 	 */
-	@Deprecated
-	public static FleXPlayer getPlayerSafe(UUID uuid) {
-		return (FleXPlayer) Memory.PLAYER_CACHE.getSafe(uuid);
+	public static FleXPlayer getCachedPlayer(UUID uuid) {
+		return (FleXPlayer) Memory.PLAYER_CACHE.getFromCache(uuid);
 	}
 
 	public static FleXPlayer getPlayerExact(String name) {
@@ -424,6 +443,10 @@ public final class Fukkit extends JavaPlugin {
 	@Deprecated
 	public static Collection<? extends FleXLivingEntity> getOnlineEntities() {
 		return serverHandler.getOnlineEntitiesUnsafe();
+	}
+
+	public static FleXWorld createWorld(World existing) {
+		return worldFactory.createWorld(existing);
 	}
 
 	public static FleXWorld createWorld(FleXWorldCreator creator) {

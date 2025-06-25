@@ -92,19 +92,17 @@ public class PlayerListeners extends FleXEventListener {
 	@EventHandler(priority = EventPriority.LOW)
 	public void event(AsyncPlayerPreLoginEvent event) {
 
-	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.getSafe(event.getUniqueId());
+	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.getFromCache(event.getUniqueId());
 		
 		try {
 			
 			if (fp == null)
-				Memory.PLAYER_CACHE.add(fp = Fukkit.getPlayerFactory().createFukkitSafe(event.getUniqueId(), event.getName()));
+				Memory.PLAYER_CACHE.add(fp = Fukkit.getPlayerFactory().createFukkitSafe(event.getUniqueId(), event.getName(), PlayerState.CONNECTING));
 			
 			if (fp == null) {
 				disconnect(event, FleXPlayerNotLoadedException.class.getName());
 				return;
 			}
-			
-			fp.setState(PlayerState.CONNECTING);
 			
 		} catch (Exception e) {
 			
@@ -124,7 +122,7 @@ public class PlayerListeners extends FleXEventListener {
 		
 		Player player = event.getPlayer();
 		
-	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.getSafe(player.getUniqueId());
+	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.getFromCache(player.getUniqueId());
 	    
 	    FleXPlayerPreLoginEvent loginEvent = Fukkit.getEventFactory().call(new FleXPlayerPreLoginEvent(fp));
 		
@@ -238,7 +236,7 @@ public class PlayerListeners extends FleXEventListener {
 				
 				if (row == null) {
 					
-					disconnect(player, "FleXPlayer failed to login. Please contact a staff member if this persists.");
+					BukkitUtils.mainThread(() -> disconnect(player, "FleXPlayer failed to login. Please contact a staff member if this persists."));
 					
 					Console.log("FleXPlayer", Severity.CRITICAL, new FleXMissingResourceException("Player was not found in the FleX database: Search returned null in flex_user table."));
 			    	return;
@@ -249,7 +247,7 @@ public class PlayerListeners extends FleXEventListener {
 				disconnect(player, "FleXPlayer failed to login: " + e.getMessage());
 			}
 			
-		}, 20L);
+		}, 60L, true);
 		
 	}
 	
@@ -318,9 +316,10 @@ public class PlayerListeners extends FleXEventListener {
 		
 		if (world == null) {
 			
-			event.setCancelled(true);
+			// TODO
+			//event.setCancelled(true);
 			
-			player.sendMessage(ChatColor.RED + "This world is broken, please report this to an admin.");
+			//player.sendMessage(ChatColor.RED + "Teleport failed, the world you attempted to move to is broken, please report this to an admin.");
 			return;
 			
 		}
@@ -329,7 +328,7 @@ public class PlayerListeners extends FleXEventListener {
 			
 			event.setCancelled(true);
 			
-			player.sendMessage(ChatColor.RED + "You cannot enter this world right now.");
+			player.sendMessage(ChatColor.RED + "Teleport failed, the world you attempted to move to is not joinable right now.");
 			return;
 			
 		}
@@ -351,7 +350,10 @@ public class PlayerListeners extends FleXEventListener {
 			from.getOnlinePlayers().remove(player);
 		
 		if (world == null) {
-			player.kickPlayer(ChatColor.RED + "This world is broken, please report this to an admin.");
+			
+			// TODO finish this.
+			
+			//player.kickPlayer(ChatColor.RED + "This world is broken, please report this to an admin.");
 			return;
 		}
 		
@@ -894,6 +896,9 @@ public class PlayerListeners extends FleXEventListener {
 	
 	private static void disconnect(AsyncPlayerPreLoginEvent event, String reason) {
 		
+		if (event.getLoginResult() != Result.ALLOWED)
+			return;
+		
 		String message = "Disconnected";
 		
 		StringBuilder sb = new StringBuilder();
@@ -906,7 +911,7 @@ public class PlayerListeners extends FleXEventListener {
 		event.setLoginResult(Result.KICK_OTHER);
 		event.setKickMessage(message);
 		
-		FleXHumanEntity fp = Memory.PLAYER_CACHE.getSafe(event.getUniqueId());
+		FleXHumanEntity fp = Memory.PLAYER_CACHE.getFromCache(event.getUniqueId());
 		
 		if (fp != null)
 			Memory.PLAYER_CACHE.remove(fp);
@@ -914,6 +919,9 @@ public class PlayerListeners extends FleXEventListener {
 	}
 	
 	private static void disconnect(Player player, String reason) {
+		
+		if (player == null)
+			return;
 		
 		String message = "Disconnected";
 		

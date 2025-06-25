@@ -94,7 +94,7 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 		// TODO Make get async method in PlayerController
 	}
 	
-	public FleXHumanEntity getSafe(UUID uuid) {
+	public FleXHumanEntity getFromCache(UUID uuid) {
 		return this.stream().filter(p -> p.getUniqueId() != null && p.getUniqueId().equals(uuid)).findFirst().orElse(null);
 	}
 	
@@ -107,9 +107,9 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 			pl = this.getByMeta(player);
 		
 		if (pl == null) {
-			pl = this.getSafe(uuid);
+			pl = this.getFromCache(uuid);
 			
-			if (pl != null && player != null && player.isOnline() && pl.getState() != PlayerState.DISCONNECTING)
+			if (pl != null && player != null && player.isOnline() && player.isValid() && pl.getState() != PlayerState.DISCONNECTING)
 				player.setMetadata("flex.player", new FixedMetadataValue(Fukkit.getInstance(), pl));
 				
 		}

@@ -1,5 +1,6 @@
 package io.flex.commons.utils;
 
+import java.text.SimpleDateFormat;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -138,8 +139,32 @@ public class NumUtils {
         return s;
         
     }
+	
+	public static String asTime(long ms) {
+		return asTime(ms, true);
+	}
+	
+	public static String asTime(long ms, boolean fileSafe) {
+		return (fileSafe ? new SimpleDateFormat("hh_mm_ss a") : new SimpleDateFormat("hh:mm:ss a")).format(ms);
+	}
+	
+	public static String asDate(long ms) {
+		return asDate(ms, true);
+	}
+	
+	public static String asDate(long ms, boolean fileSafe) {
+		return (fileSafe ? new SimpleDateFormat("dd-MM-yyyy") : new SimpleDateFormat("EEE, MMM d, yyyy")).format(ms);
+	}
+	
+	public static String asDateTime(long ms) {
+		return asDateTime(ms, true);
+	}
+	
+	public static String asDateTime(long ms, boolean fileSafe) {
+		return (fileSafe ? new SimpleDateFormat("[hh_mm_ss a] dd-MM-yyyy") : new SimpleDateFormat("(hh:mm:ss a) EEE, MMM d, yyyy")).format(ms);
+	}
     
-	public static String toString(long ms) {
+	public static String asString(long ms) {
 		
 		if (ms <= 0)
 			return "Now";
@@ -185,7 +210,7 @@ public class NumUtils {
         
 	}
 	
-	public static String toClock(double seconds, boolean showFractional, boolean showZeros) {
+	public static String asClock(double seconds, boolean showFractional, boolean showZeros) {
 		
 		int total = (int) seconds;
 		int days = (int) TimeUnit.SECONDS.toDays(total);

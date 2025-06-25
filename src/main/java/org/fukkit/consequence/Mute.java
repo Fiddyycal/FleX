@@ -57,7 +57,7 @@ public class Mute extends Punishment {
 		
 		boolean perm = this.duration >= NumUtils.YEAR_TO_MILLIS;
 		
-		String duration = perm ? "Permanent" : NumUtils.toString(this.duration);
+		String duration = perm ? "Permanent" : NumUtils.asString(this.duration);
 		
 		if (!this.silent) {
 			
@@ -98,7 +98,7 @@ public class Mute extends Punishment {
 		
 		boolean perm = this.duration >= NumUtils.YEAR_TO_MILLIS;
 		
-		String duration = perm ? "Permanent" : NumUtils.toString(initial ? this.duration : this.getRemaining());
+		String duration = perm ? "Permanent" : NumUtils.asString(initial ? this.duration : this.getRemaining());
 		
 		Theme theme = player.getTheme();
 		

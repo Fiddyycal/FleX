@@ -52,7 +52,7 @@ public class SanctionGui extends Menu {
 					lore.add("");
 				
 				if (consequenceType != PunishmentType.KICK && reason.getDuration() > 0) {
-					String duration = reason.getDuration() >= NumUtils.YEAR_TO_MILLIS ? "Permanent" : NumUtils.toString(reason.getDuration());
+					String duration = reason.getDuration() >= NumUtils.YEAR_TO_MILLIS ? "Permanent" : NumUtils.asString(reason.getDuration());
 					lore.add(theme.format("<tc>Duration<pp>:" + Theme.reset + " <lore>" + duration + (this.hasMetadata("punishment_ip") ? " IPv4" : "")));
 				}
 				

@@ -319,7 +319,7 @@ public class ConvictionListeners extends FleXEventListener {
 			
 		}
 		
-		FleXHumanEntity fp = Memory.PLAYER_CACHE.getSafe(event.getUniqueId());
+		FleXHumanEntity fp = Memory.PLAYER_CACHE.getFromCache(event.getUniqueId());
 		
 		if (fp != null)
 			Memory.PLAYER_CACHE.remove(fp);

@@ -26,6 +26,15 @@ public class WorldUtils {
 		
 	}
 	
+	public static boolean unloadWorld(World world, boolean saveChunks) {
+		
+		if (world == null)
+			return true;
+		
+		return Bukkit.getServer().unloadWorld(world, saveChunks);
+		
+	}
+	
 	public static boolean unloadWorld(World world) {
 		
 		if (world == null)

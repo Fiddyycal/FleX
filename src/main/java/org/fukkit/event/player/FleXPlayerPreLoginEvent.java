@@ -5,6 +5,12 @@ import org.fukkit.entity.FleXPlayer;
 
 import net.md_5.fungee.event.FleXPlayerEvent;
 
+/**
+ * 
+ * This Event is called after the FleXPlayer object is
+ * created and far before it has loaded, this event is cancellable.
+ * 
+ */
 public class FleXPlayerPreLoginEvent extends FleXPlayerEvent implements Cancellable {
 	
 	private boolean cancel = false;

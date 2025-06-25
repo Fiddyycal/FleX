@@ -38,13 +38,14 @@ public abstract class FukkitRunnable implements Runnable {
 		    		
 		    		Task.debug("Task Manager", "====================================");
 		    		Task.debug("Task Manager",
-		    				
+
 		    				"Tasks: " + runnables.size(),
 		    				"Teams: " + t,
 		    				"Objectives: " + o,
 		    				"Loadouts: " + Fukkit.getServerHandler().getOnlinePlayersUnsafe().stream().filter(p -> p.getLoadout() != null).count(),
 		    		        "Channels: " + net.md_5.fungee.Memory.CHANNEL_CACHE.size(),
 		    		        "Commands: " + Memory.COMMAND_CACHE.size(),
+		    				"Players: " + Memory.PLAYER_CACHE.size(),
 		    		        "Buttons: " + Memory.BUTTON_CACHE.size(),
 		    		        "Themes: " + Memory.THEME_CACHE.size(),
 		    		        "Skins: " + Memory.SKIN_CACHE.size(),

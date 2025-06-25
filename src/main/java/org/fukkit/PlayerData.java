@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.bukkit.Location;
 import org.fukkit.utils.WorldUtils;
 import org.fukkit.world.FleXWorld;
+import org.fukkit.world.FleXWorldNotLoadedException;
 
 import io.flex.commons.file.DataFile;
 
@@ -15,7 +16,7 @@ public class PlayerData extends DataFile<UUID> {
 	
 	private Location lastSeen;
 	
-	public PlayerData(FleXWorld world, UUID uuid) {
+	public PlayerData(FleXWorld world, UUID uuid) throws FleXWorldNotLoadedException {
 		
 		super(world.getWorld().getWorldFolder().getAbsolutePath() + File.separator + "playerdata", uuid.toString() + ".dat", uuid, false);
 		

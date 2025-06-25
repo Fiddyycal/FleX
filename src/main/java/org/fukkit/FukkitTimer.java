@@ -84,7 +84,7 @@ public abstract class FukkitTimer extends FukkitRunnable {
     }
     
     public String asClock(boolean showFractional, boolean showZeros) {
-        return NumUtils.toClock(this.elapsed, showFractional, showZeros);
+        return NumUtils.asClock(this.elapsed, showFractional, showZeros);
     }
     
     public abstract void onTick();

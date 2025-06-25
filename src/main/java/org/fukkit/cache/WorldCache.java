@@ -67,7 +67,7 @@ public class WorldCache extends LinkedCache<FleXWorld, UUID> {
 			Task.print("Network",
 					
 					"Loading worlds...",
-					"Average load time: " + NumUtils.toString(average).toLowerCase() + ". (" + average + "ms)");
+					"Average load time: " + NumUtils.asString(average).toLowerCase() + ". (" + average + "ms)");
 			
 			this.unloadWorlds();
 			this.loadWorlds();

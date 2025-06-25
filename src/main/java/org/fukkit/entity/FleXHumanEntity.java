@@ -48,7 +48,7 @@ public interface FleXHumanEntity extends FleXLivingEntity {
 	
 	public void setMask(Rank mask);
 	
-	public void setState(PlayerState state);
+	public void setState(PlayerState state) throws FleXPlayerNotLoadedException;
 	
 	public void setLoadout(Loadout loadout, boolean overwrite);
 	

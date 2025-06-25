@@ -92,7 +92,7 @@ public class Ban extends Punishment {
 		
 		boolean perm = this.getDuration() >= NumUtils.YEAR_TO_MILLIS;
 		
-		String duration = perm ? "Permanent" : NumUtils.toString(this.getDuration());
+		String duration = perm ? "Permanent" : NumUtils.asString(this.getDuration());
 		
 		this.gtfoAndDontComeBack(true);
 
@@ -147,7 +147,7 @@ public class Ban extends Punishment {
 		
 		boolean perm = this.duration >= NumUtils.YEAR_TO_MILLIS;
 		
-		String duration = perm ? "Permanent" : NumUtils.toString(initial ? this.duration : this.getRemaining());
+		String duration = perm ? "Permanent" : NumUtils.asString(initial ? this.duration : this.getRemaining());
 		
 		Theme theme = player.getTheme();
 		

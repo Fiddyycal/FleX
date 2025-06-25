@@ -41,9 +41,9 @@ public class BadgeCache extends LinkedCache<Badge, String> {
 		 */
 		
 		this.add(new Badge('➀', "ONE_YEAR_VETARAN", "Expert", Tier.TIER_TWO, "<lore>Achieved playing the network for <sv>1<reset> <lore>year<pp>."));
-		this.add(new Badge('➀', "TWO_YEAR_VETARAN", "Expert", Tier.TIER_TWO, "<lore>Achieved playing the network for <sv>2<reset> <lore>consecutive years<pp>."));
-		this.add(new Badge('➀', "THREE_YEAR_VETARAN", "Expert", Tier.TIER_TWO, "<lore>Achieved playing the network for <sv>3<reset> <lore>consecutive years<pp>."));
-		this.add(new Badge('➀', "FOUR_YEAR_VETARAN", "Expert", Tier.TIER_TWO, "<lore>Achieved playing the network for <sv>4<reset> <lore>consecutive years<pp>."));
+		this.add(new Badge('➁', "TWO_YEAR_VETARAN", "Expert", Tier.TIER_TWO, "<lore>Achieved playing the network for <sv>2<reset> <lore>consecutive years<pp>."));
+		this.add(new Badge('➂', "THREE_YEAR_VETARAN", "Expert", Tier.TIER_TWO, "<lore>Achieved playing the network for <sv>3<reset> <lore>consecutive years<pp>."));
+		this.add(new Badge('➃', "FOUR_YEAR_VETARAN", "Expert", Tier.TIER_TWO, "<lore>Achieved playing the network for <sv>4<reset> <lore>consecutive years<pp>."));
 		
 		this.add(new Badge('➊', "ONE_YEAR_STAFF", "Veteran", Tier.TIER_ONE, "<lore>Achieved by completing <sv>1<reset> <lore>year as a member of the staff team<pp>."));
 		this.add(new Badge('➋', "TWO_YEAR_STAFF", "Veteran", Tier.TIER_ONE, "<lore>Achieved by completing <sv>2<reset> <lore>consecutive years as a member of the staff team<pp>."));
@@ -53,7 +53,14 @@ public class BadgeCache extends LinkedCache<Badge, String> {
 		this.add(new Badge('☾', "LUNAR", "Lunar", Tier.TIER_THREE, "<lore>Awarded for using the <sc>Lunar Client<pp>."));
 		this.add(new Badge('☯', "LION", "Lion", Tier.TIER_THREE, "<lore>Awarded for using the <sc>Badlion Client<pp>."));
 		
-		this.add(new Badge('㊌', "TRANSLATOR", "Translator", Tier.TIER_THREE, "<lore>Awarded for translating for the network."));
+		/**
+		 * MCGamer Reunion
+		 */
+		this.add(new Badge('☂', "FAB", "Fab", Tier.TIER_ONE, "<lore>Awarded for being fabulous<pp>.")); // Alyssa
+		this.add(new Badge('✿', "DOLLY", "ImNotYourDolly", Tier.TIER_ONE, "<lore>Awarded for repeated attendance to the MCGamer reunion<pp>."));
+		this.add(new Badge('★', "HELPER", "Helper", Tier.TIER_TWO, "<lore>Awarded for helping out with the MCGamer Reunion<pp>."));
+		
+		this.add(new Badge('㊌', "TRANSLATOR", "Translator", Tier.TIER_THREE, "<lore>Awarded for translating for the network<pp>."));
 		this.add(new Badge('⚠', "GLITCHED", "Glitched", Tier.TIER_THREE, "<lore>Awarded for contributing to development by reporting a bug or glitch<pp>."));
 		this.add(new Badge('ℼ', "TESTER", "Tester", Tier.TIER_THREE, "<lore>Awarded for joining the server during a pre-alpha testing session<pp>."));
 		this.add(new Badge('ℹ', "GUIDE", "Guide", Tier.TIER_THREE, "<lore>Achieved by creating a guide on the network forums<pp>."));
@@ -75,9 +82,7 @@ public class BadgeCache extends LinkedCache<Badge, String> {
 		this.add(new Badge('☣', "TOXIC", "Toxic", Tier.TIER_ONE, "<lore>Achieved by being reported by 10 different people<pp>."));
 		this.add(new Badge('☮', "PEACEFUL", "Peaceful", Tier.TIER_THREE, "<lore>Achieved by winning a game without killing anyone<pp>."));
 		
-		this.add(new Badge('☂', "FAB", "Fab", Tier.TIER_ONE, "<lore>Awarded for being fabulous<pp>."));
-		
-		this.add(new Badge('✿', "GIRLFRIEND", "Missus", Tier.TIER_ONE, "<sc>5Ocal<lore>'s girlfriend<pp>."));
+		//this.add(new Badge('✿', "GIRLFRIEND", "Missus", Tier.TIER_ONE, "<sc>5Ocal<lore>'s girlfriend<pp>."));
 		return true;
 		
 	}

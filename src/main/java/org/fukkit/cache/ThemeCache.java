@@ -44,7 +44,7 @@ public class ThemeCache extends LinkedCache<Theme, String> {
 		Task.print("Themes",
 				
 				"Loading themes...",
-				"Average load time: " + NumUtils.toString(guestimatedLoadTime).toLowerCase() + ". (" + guestimatedLoadTime + "ms)");
+				"Average load time: " + NumUtils.asString(guestimatedLoadTime).toLowerCase() + ". (" + guestimatedLoadTime + "ms)");
 		
 		YamlConfig conf = Fukkit.getResourceHandler().getYaml(Configuration.THEMES);
 		File themes = conf.getParentFile();
