@@ -134,8 +134,12 @@ public class ConnectionHandler {
 		
 		int data = Integer.valueOf("1" + bukkit.substring(1, bukkit.length()));
 		
+		Task.print("Sockets", "Opening socket for data transfer on unique port " + data + "...");
+		
 		this.server = new BukkitLocalDataServer(data);
 		this.server.start();
+		
+		Task.print("Sockets", "Done.");
 		
 		registered = true;
 		
