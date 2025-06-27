@@ -14,7 +14,7 @@ import net.md_5.fungee.utils.NetworkUtils;
 
 public class DataHelper {
 
-	public static void send(String key, Object value, int port) {
+	public static void send(String key, Object value, String ip, int port) {
 		
 		if (NetworkUtils.isProxy())
 			FungeeCord.getDataServer().sendData(new Data(key, String.valueOf(value), DataServer.DEFAULT_DATA_RECEIVING_PORT), port);
@@ -29,71 +29,51 @@ public class DataHelper {
 		
 	}
 
-	public static void send(String key, Object value) {
-		send(key, value, DataServer.DEFAULT_DATA_RECEIVING_PORT);
-	}
-
-	public static void set(String key, Object value, int port) {
-		
-		if (NetworkUtils.isProxy())
-			FungeeCord.getDataServer().setData(new Data(key, String.valueOf(value), DataServer.DEFAULT_DATA_RECEIVING_PORT), port);
-			
-		else {
-			
-			DataServer server = Fukkit.getConnectionHandler().getLocalData();
-			
-			server.setData(new Data(key, String.valueOf(value), server.getPort()), port);
-			
-		}
-		
-	}
-
 	public static void set(String key, Object value) {
-		set(key, value, DataServer.DEFAULT_DATA_RECEIVING_PORT);
-	}
-	
-	public static String getString(String key, int port) {
 		
 		if (NetworkUtils.isProxy())
-			return FungeeCord.getDataServer().getData(key, port);
+			FungeeCord.getDataServer().setData(new Data(key, String.valueOf(value), DataServer.DEFAULT_DATA_RECEIVING_PORT), DataServer.DEFAULT_DATA_RECEIVING_PORT);
 			
 		else {
 			
 			DataServer server = Fukkit.getConnectionHandler().getLocalData();
 			
-			return server.getData(key, port);
+			server.setData(new Data(key, String.valueOf(value), server.getPort()), DataServer.DEFAULT_DATA_RECEIVING_PORT);
 			
 		}
 		
 	}
 	
 	public static String getString(String key) {
-		return getString(key, DataServer.DEFAULT_DATA_RECEIVING_PORT);
+		
+		if (NetworkUtils.isProxy())
+			return FungeeCord.getDataServer().getData(key, DataServer.DEFAULT_DATA_RECEIVING_PORT);
+			
+		else {
+			
+			DataServer server = Fukkit.getConnectionHandler().getLocalData();
+			
+			return server.getData(key, DataServer.DEFAULT_DATA_RECEIVING_PORT);
+			
+		}
+		
 	}
 	
-	public static int getInt(String key, int port) {
+	public static int getInt(String key) {
 		try {
-			return Integer.parseInt(getString(key, port));
+			return Integer.parseInt(getString(key));
 		} catch (NumberFormatException e) {
 			return -1;
 		}
 	}
 	
-	public static int getInt(String key) {
-		return getInt(key, DataServer.DEFAULT_DATA_RECEIVING_PORT);
-	}
-	
-	public static boolean getBoolean(String key, int port) {
-		return Boolean.parseBoolean(getString(key, port));
-	}
-	
 	public static boolean getBoolean(String key) {
-		return getBoolean(key, DataServer.DEFAULT_DATA_RECEIVING_PORT);
+		return Boolean.parseBoolean(getString(key));
 	}
 	
-	public static List<String> getList(String key, int port) {
+	public static List<String> getList(String key) {
 		
-		String list = getString(key, port);
+		String list = getString(key);
 		
 		if (list != null)
 			return (List<String>) CollectionUtils.toCollection(list);
@@ -102,23 +82,15 @@ public class DataHelper {
 		
 	}
 	
-	public static List<String> getList(String key) {
-		return getList(key, DataServer.DEFAULT_DATA_RECEIVING_PORT);
-	}
-	
-	public static Map<String, String> getMap(String key, int port) {
+	public static Map<String, String> getMap(String key) {
 		
-		String map = getString(key, port);
+		String map = getString(key);
 		
 		if (map != null)
 			return (Map<String, String>) CollectionUtils.toMap(map);
 		
 		return new HashMap<String, String>();
 		
-	}
-	
-	public static Map<String, String> getMap(String key) {
-		return getMap(key, DataServer.DEFAULT_DATA_RECEIVING_PORT);
 	}
 	
 }

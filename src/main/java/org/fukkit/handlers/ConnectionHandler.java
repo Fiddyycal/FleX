@@ -1,6 +1,8 @@
 package org.fukkit.handlers;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 
@@ -134,12 +136,21 @@ public class ConnectionHandler {
 		
 		int data = Integer.valueOf("1" + bukkit.substring(1, bukkit.length()));
 		
-		Task.print("Sockets", "Opening socket for data transfer on unique port " + data + "...");
-		
-		this.server = new BukkitLocalDataServer(data);
-		this.server.start();
-		
-		Task.print("Sockets", "Done.");
+		try {
+			
+			Task.print("Sockets", "Opening socket on " + InetAddress.getLocalHost().getHostAddress() + " for data transfer on unique port " + data + "...");
+			
+			this.server = new BukkitLocalDataServer(data);
+			this.server.start();
+			
+			Task.print("Sockets", "Done.");
+			
+		} catch (UnknownHostException e) {
+			
+			Task.error("Sockets (" + Severity.EMERG + ")", "Failed to open socket.");
+	    	Console.log("Sockets", Severity.EMERG, e);
+	    	
+		}
 		
 		registered = true;
 		
