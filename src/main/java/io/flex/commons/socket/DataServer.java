@@ -17,55 +17,13 @@ import net.md_5.fungee.utils.NetworkUtils;
 
 public abstract class DataServer extends Thread {
 
-	public static final int DEFAULT_DATA_RECEIVING_PORT = 15565;
-	
-	public static final String DEFAULT_DATA_RECEIVING_IP = scanForDefaultDataReceivingIp();
-    
 	private static final Map<String, Data> memory = new ConcurrentHashMap<String, Data>();
 	
 	private int port;
 	
 	private ServerSocket server;
 	
-	private boolean readOnly = true;
-	
-	private static String scanForDefaultDataReceivingIp() {
-		
-		debug("Sockets", "Scanning for default data receiving server on port " + DEFAULT_DATA_RECEIVING_PORT + "...");
-		
-		try {
-	    	
-		    Socket client = new Socket(FleX.LOCALHOST_IP, DEFAULT_DATA_RECEIVING_PORT);
-            
-    		debug("Sockets", "Connection successful on ip " + FleX.LOCALHOST_IP + ".");
-		    
-    		client.close();
-    		
-    		return FleX.LOCALHOST_IP;
-			
-		} catch (IOException ignore) {}
-		
-		for (int i = 1; i < 50; i++) {
-			
-		    String check = "172.18.0." + i;
-		    
-		    try {
-		    	
-			    Socket client = new Socket(check, DEFAULT_DATA_RECEIVING_PORT);
-	            
-	    		debug("Sockets", "Connection successful on ip " + check + ":" + DEFAULT_DATA_RECEIVING_PORT + ".");
-			    
-	    		client.close();
-	    		
-	    		return check;
-				
-			} catch (IOException ignore) {}
-    		
-		}
-		
-		throw new UnsupportedOperationException("No default data recieving server found at port " + DEFAULT_DATA_RECEIVING_PORT + ", please ensure that there is a socket open on this port.");
-		
-	}
+	private boolean readOnly = false;
 	
 	public DataServer(int port) throws IOException {
 		
@@ -74,7 +32,7 @@ public abstract class DataServer extends Thread {
     	if (this.port <= -1)
     		return;
     	
-    	Task.print("Sockets", "Opening socket server... (" + FleX.LOCALHOST_IP + ":" + port + ")");
+    	Task.print("Sockets", "Opening socket to listen on... (" + FleX.LOCALHOST_IP + ":" + port + ")");
     	
 		this.server = new ServerSocket(port);
     	
@@ -128,18 +86,15 @@ public abstract class DataServer extends Thread {
 	            return;
 	            
 	        }
-
-	        debug("Socket: " + port, "Deciphering command from string " + command + ".");
-
+	        
 	        DataCommand cmd;
+	        
 	        try {
 	            cmd = DataCommand.valueOf(command);
 	        } catch (IllegalArgumentException e) {
 	            Task.error("Socket: " + port, "Closing connection: Unable to resolve command " + command + ".");
 	            return;
 	        }
-
-	        debug("Socket: " + port, "Requesting key...");
 	        
 	        String key = in.readLine();
 	        
@@ -155,6 +110,9 @@ public abstract class DataServer extends Thread {
 	            String value = in.readLine();
 	            
 	            if (cmd == DataCommand.PUBLISH_DATA) {
+		        	
+		        	if (this.readOnly)
+			            throw new UnsupportedOperationException("Data command \"" + cmd.name() + "\" cannot be used here, this socket is read only.");
 	            	
 	            	if (value == null)
 		                memory.remove(key);
@@ -165,25 +123,25 @@ public abstract class DataServer extends Thread {
 	            
 	            this.onDataReceive(new Data(key, value, port), cmd);
 	            
+	            // Sending receipt.
 	            out.println(true);
-	            
-	            debug("Socket: " + port, "Data receipt sent.");
 	            
 	        }
 
 	        if (cmd == DataCommand.REQUEST_DATA) {
+	        	
+	        	if (this.readOnly)
+		            throw new UnsupportedOperationException("Data command \"" + cmd.name() + "\" cannot be used here, this socket is read only.");
 	        	
 	            Data data = memory.getOrDefault(key, new Data(key, null, port));
 	            
 	            out.println(DataCommand.RETURN_DATA.name());
 	            out.println(data.getValue());
 	            
-	            debug("Socket: " + port, "Data returned (" + data.getValue() + ").");
-	            
 	        }
 
 	        if (cmd == DataCommand.RETURN_DATA)
-	            throw new UnsupportedOperationException("Data command \"RETURN_DATA\" cannot be used here, please revise.");
+	            throw new UnsupportedOperationException("Data command \"" + cmd.name() + "\" cannot be used here, please revise.");
 	        
 	    } catch (IOException e) {
 	    	
@@ -228,9 +186,9 @@ public abstract class DataServer extends Thread {
     
     public abstract void onDataReceive(Data data, DataCommand command);
     
-	public String getData(String key, int port) {
+	public String getData(String key, String ip, int port) {
 		
-		Socket client = attemptConnection(FleX.LOCALHOST_IP, port);
+		Socket client = attemptConnection(ip, port);
 		
 		if (client == null)
 			return null;
@@ -310,9 +268,9 @@ public abstract class DataServer extends Thread {
 		
 	}
 	
-	public void setData(Data data, int port) {
+	public void setData(Data data, String ip, int port) {
 		
-        Socket client = attemptConnection(FleX.LOCALHOST_IP, port);
+        Socket client = attemptConnection(ip, port);
         
 		if (client == null)
 			return;
