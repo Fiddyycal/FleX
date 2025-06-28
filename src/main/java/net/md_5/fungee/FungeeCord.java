@@ -1,5 +1,6 @@
 package net.md_5.fungee;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +22,15 @@ public class FungeeCord extends Plugin implements Listener {
 	public static final String AUTHOR = "md_5";
 	public static final String ADDJUNCT = String.valueOf(new char[]{ '5', 'O', 'c', 'a', 'l' });
 	
-	private static final DataServer data_server = new ProxyLocalDataServer(DataServer.DEFAULT_DATA_RECEIVING_PORT);
+	private static final DataServer data_server = createDataServer();
+	
+	private static DataServer createDataServer() {
+		try {
+			return new ProxyLocalDataServer(DataServer.DEFAULT_DATA_RECEIVING_PORT);
+		} catch (IOException e) {
+			throw new UnsupportedOperationException("An error occurred while attempting to create local data server: " + e.getMessage());
+		}
+	}
 	
 	private static FungeeCord instance;
 	

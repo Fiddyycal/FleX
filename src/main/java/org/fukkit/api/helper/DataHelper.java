@@ -17,13 +17,13 @@ public class DataHelper {
 	public static void send(String key, Object value, String ip, int port) {
 		
 		if (NetworkUtils.isProxy())
-			FungeeCord.getDataServer().sendData(new Data(key, String.valueOf(value), DataServer.DEFAULT_DATA_RECEIVING_PORT), port);
+			FungeeCord.getDataServer().sendData(new Data(key, String.valueOf(value), DataServer.DEFAULT_DATA_RECEIVING_PORT), ip, port);
 			
 		else {
 			
 			DataServer server = Fukkit.getConnectionHandler().getLocalData();
 			
-			server.sendData(new Data(key, String.valueOf(value), server.getPort()), port);
+			server.sendData(new Data(key, String.valueOf(value), server.getPort()), ip, port);
 			
 		}
 		

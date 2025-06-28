@@ -1,7 +1,9 @@
 package io.flex;
 
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import io.flex.commons.utils.ArrayUtils;
@@ -34,8 +36,17 @@ public class FleX {
 	
 	public static final String FLEX_JAR_PATH_ABSOLUTE = FleX.class.getProtectionDomain().getCodeSource().getLocation().toString();
 	public static final String EXE_PATH = System.getProperty("user.dir").replace("/", separator);
+	public static final String LOCALHOST_IP = retrieveIp();
 	
 	public static final String[] PRODUCT_KEYS = { "EYPCZ-ZHFN1-FQ6OR-IXWK0-KEDFM" };
+	
+	private static String retrieveIp() {
+		try {
+			return InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			throw new UnsupportedOperationException("An error occurred while attempting to retrieve local ip: " + e.getMessage());
+		}
+	}
 	
 	public static boolean isProductKey(String key, boolean validate) {
 		
