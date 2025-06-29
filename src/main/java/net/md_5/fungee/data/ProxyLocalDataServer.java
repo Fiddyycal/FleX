@@ -5,7 +5,6 @@ import java.io.IOException;
 import io.flex.commons.socket.Data;
 import io.flex.commons.socket.DataCommand;
 import io.flex.commons.socket.DataServer;
-
 import net.md_5.fungee.FungeeCord;
 import net.md_5.fungee.event.data.AsyncDataReceivedEvent;
 

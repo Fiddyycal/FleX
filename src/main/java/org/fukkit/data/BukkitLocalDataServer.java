@@ -8,9 +8,9 @@ import org.fukkit.utils.BukkitUtils;
 
 import io.flex.commons.socket.Data;
 import io.flex.commons.socket.DataCommand;
-import io.flex.commons.socket.DataServer;
+import io.flex.commons.socket.RelayDataServer;
 
-public class BukkitLocalDataServer extends DataServer {
+public class BukkitLocalDataServer extends RelayDataServer {
 	
 	public BukkitLocalDataServer(int port) throws IOException {
 		super(port);

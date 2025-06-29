@@ -309,7 +309,7 @@ public class SQLConnection {
 	}
 	
 	public void release() {
-		Task.print("SQL", "Closing connection.");
+		Task.debug("SQL", "Closing connection.");
 		this.available = true;
 	}
 

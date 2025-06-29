@@ -17,46 +17,13 @@ import net.md_5.fungee.utils.NetworkUtils;
 
 public abstract class DataServer extends Thread {
 
-	public static final String DEFAULT_DATA_IP = scanForProxyIp();
-	
-	private static String scanForProxyIp() {
-		
-		String ip;
-		Socket client;
-		
-		Task.print("Sockets", "Scanning for proxy ip for efficient inter-server socket communication.");
-		
-		client = attemptConnection(ip = "localhost", DEFAULT_DATA_PORT);
-		
-		if (client == null)
-			client = attemptConnection(ip = "127.0.0.1", DEFAULT_DATA_PORT);
-		
-		if (client == null)
-			for (int i = 0; i < 50; i++)
-				client = attemptConnection(ip = "172.18.0." + i, DEFAULT_DATA_PORT);
-		
-		if (client == null)
-			throw new UnsupportedOperationException("All connection attempts for local data communication have failed, startup cannot continue until this is resolved. Ensure that the proxy server is online and try again.");
-		
-		try {
-			client.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		return ip;
-		
-	}
-	
-	public static final int DEFAULT_DATA_PORT = 15565;
+	public static final int DEFAULT_WRITABLE_PORT = 15565;
 	
 	private static final Map<String, Data> memory = new ConcurrentHashMap<String, Data>();
 	
 	private int port;
 	
 	private ServerSocket server;
-	
-	private boolean writable;
 	
 	public DataServer(int port) throws IOException {
 		
@@ -65,12 +32,10 @@ public abstract class DataServer extends Thread {
     	if (this.port <= -1)
     		return;
     	
-    	Task.print("Sockets", "Opening socket to listen on... (" + FleX.LOCALHOST_IP + ":" + port + ")");
+    	Task.print("Sockets", "Opening socket to listen" + (this instanceof RelayDataServer == false ? " and write " : " ") + "on... (" + FleX.LOCALHOST_IP + ":" + port + ")");
     	
 		this.server = new ServerSocket();
 		this.server.bind(new InetSocketAddress(FleX.LOCALHOST_IP, port));
-		
-		this.writable = port == DEFAULT_DATA_PORT;
 		
     	Task.print("Sockets", "This socket is reachable via " + FleX.LOCALHOST_IP + ".");
     	Task.print("Sockets", "If you are not using docker or some kind of firewall, it is highly recommended that you use point-to-point authentication keys before transfers to provent data spoofing.");
@@ -79,6 +44,86 @@ public abstract class DataServer extends Thread {
 	
 	public int getPort() {
 		return this.port;
+	}
+	
+	public String getData(String key, String ip, int port) {
+		
+		Socket client = attemptConnection(ip, port);
+		
+		if (client == null)
+			return null;
+		
+	    PrintWriter out = null;
+	    BufferedReader in = null;
+	    
+		try {
+			
+            debug("Socket: " + port, "Sending " + DataCommand.REQUEST_DATA + "::" + key + ".");
+			
+            out = new PrintWriter(client.getOutputStream());
+    		
+            out.println(DataCommand.REQUEST_DATA.name());
+            out.println(key);
+            
+            out.flush();
+    		
+            in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+            
+            String command = in.readLine();
+			
+			if (command == null) {
+				Task.error("Socket: " + port, "Connection closed: Unable to resolve command: Command cannot be null.");
+				return null;
+			}
+			
+			DataCommand cmd;
+			
+			try {
+				cmd = DataCommand.valueOf(command);
+			} catch (IllegalArgumentException e) {
+				Task.error("Socket: " + port, "Connection closed: Unable to resolve command " + command + ".");
+				return null;
+			}
+				
+			String value = in.readLine();
+				
+	        debug("Socket: " + port, "Found value (" + value + ").");
+    		
+            if (cmd != DataCommand.RETURN_DATA)
+				throw new UnsupportedOperationException("Data command is not \"RETURN_DATA\" and cannot be used here, please revise.");
+    		
+            debug("Socket: " + port, "Completed request: " + cmd + "::" + key + "::" + value);
+			
+            if (value.equalsIgnoreCase("null"))
+            	return null;
+            
+            return value;
+            
+        } catch (IOException e) {
+        	
+            e.printStackTrace();
+            
+            return null;
+            
+        } finally {
+			
+        	try {
+        		
+        		if (out != null)
+            		out.close();
+    			
+            	if (in != null)
+    				in.close();
+    			
+            	if (client != null)
+            		client.close();
+            	
+        	} catch (IOException e) {
+        		e.printStackTrace();
+        	}
+        	
+		}
+		
 	}
 	
 	@Override
@@ -148,8 +193,8 @@ public abstract class DataServer extends Thread {
 	            
 	            if (cmd == DataCommand.PUBLISH_DATA) {
 		        	
-		        	if (!this.writable)
-			            throw new UnsupportedOperationException("Data command \"" + cmd.name() + "\" cannot be used here, this socket is read only.");
+		        	if (this instanceof RelayDataServer)
+			            throw new UnsupportedOperationException("Data command \"" + cmd.name() + "\" cannot be used here, this socket is a listener only.");
 	            	
 	            	if (value == null)
 		                memory.remove(key);
@@ -167,8 +212,8 @@ public abstract class DataServer extends Thread {
 
 	        if (cmd == DataCommand.REQUEST_DATA) {
 	        	
-	        	if (!this.writable)
-		            throw new UnsupportedOperationException("Data command \"" + cmd.name() + "\" cannot be used here, this socket is read only.");
+	        	if (this instanceof RelayDataServer)
+		            throw new UnsupportedOperationException("Data command \"" + cmd.name() + "\" cannot be used here, this socket is a listener only.");
 	        	
 	            Data data = memory.getOrDefault(key, new Data(key, null, port));
 	            
@@ -222,88 +267,6 @@ public abstract class DataServer extends Thread {
     }
     
     public abstract void onDataReceive(Data data, DataCommand command);
-    
-	public String getData(String key, String ip, int port) {
-		
-		Socket client = attemptConnection(ip, port);
-		
-		if (client == null)
-			return null;
-		
-	    PrintWriter out = null;
-	    BufferedReader in = null;
-	    
-		try {
-			
-            debug("Socket: " + port, "Sending " + DataCommand.REQUEST_DATA + "::" + key + ".");
-			
-            out = new PrintWriter(client.getOutputStream());
-    		
-            out.println(DataCommand.REQUEST_DATA.name());
-            out.println(key);
-            
-            out.flush();
-    		
-            in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            
-            String command = in.readLine();
-			
-			if (command == null) {
-				Task.error("Socket: " + port, "Connection closed: Unable to resolve command: Command cannot be null.");
-				return null;
-			}
-			
-            debug("Socket: " + port, "Deciphering command from string " + command + ".");
-			
-			DataCommand cmd;
-			
-			try {
-				cmd = DataCommand.valueOf(command);
-			} catch (IllegalArgumentException e) {
-				Task.error("Socket: " + port, "Connection closed: Unable to resolve command " + command + ".");
-				return null;
-			}
-				
-			String value = in.readLine();
-				
-	        debug("Socket: " + port, "Found value (" + value + ").");
-    		
-            if (cmd != DataCommand.RETURN_DATA)
-				throw new UnsupportedOperationException("Data command is not \"RETURN_DATA\" and cannot be used here, please revise.");
-    		
-            debug("Socket: " + port, "Completed request: " + cmd + "::" + key + "::" + value);
-			
-            if (value.equalsIgnoreCase("null"))
-            	return null;
-            
-            return value;
-            
-        } catch (IOException e) {
-        	
-            e.printStackTrace();
-            
-            return null;
-            
-        } finally {
-			
-        	try {
-        		
-        		if (out != null)
-            		out.close();
-    			
-            	if (in != null)
-    				in.close();
-    			
-            	if (client != null)
-            		client.close();
-            	
-        	} catch (IOException e) {
-        		e.printStackTrace();
-        	}
-        	
-		}
-		
-	}
 	
 	public void setData(Data data, String ip, int port) {
 		
@@ -410,7 +373,7 @@ public abstract class DataServer extends Thread {
         
     }
 	
-	private static Socket attemptConnection(String ip, int port) {
+	protected static Socket attemptConnection(String ip, int port) {
 		
 		debug("Sockets", "Attempting to connect to " + ip + ":" + port + "...");
 		
@@ -434,7 +397,7 @@ public abstract class DataServer extends Thread {
 		
 	}
     
-    private static void debug(String prefix, String message) {
+	protected static void debug(String prefix, String message) {
 
 		if (NetworkUtils.isProxy())
 			Task.print(prefix, message);

@@ -139,24 +139,11 @@ public class ConnectionHandler {
 		
 		try {
 			
-			Task.print("Sockets", "Opening socket on " + InetAddress.getLocalHost().getHostAddress() + " for data transfer on unique port " + data + "...");
+			this.server = new BukkitLocalDataServer(data);
+			this.server.start();
 			
-			try {
-				
-				this.server = new BukkitLocalDataServer(data);
-				this.server.start();
-				
-			} catch (IOException e) {
-				throw new UnsupportedOperationException("An error occurred while attempting to create local data server: " + e.getMessage());
-			}
-			
-			Task.print("Sockets", "Done.");
-			
-		} catch (UnknownHostException e) {
-			
-			Task.error("Sockets (" + Severity.EMERG + ")", "Failed to open socket.");
-	    	Console.log("Sockets", Severity.EMERG, e);
-	    	
+		} catch (IOException e) {
+			throw new UnsupportedOperationException("An error occurred while attempting to create local data server: " + e.getMessage());
 		}
 		
 		registered = true;

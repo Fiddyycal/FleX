@@ -91,7 +91,7 @@ public class SQLDatabase implements Serializable {
 	
 	public SQLConnection open() throws SQLException {
 		
-		Task.print("SQL", "Opening connection, connections in use: " + this.pool.size());
+		Task.debug("SQL", "Opening connection, connections in use: " + this.pool.size());
 		
 		for (SQLConnection connection : this.pool) {
 			

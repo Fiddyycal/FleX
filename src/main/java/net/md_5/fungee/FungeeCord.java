@@ -26,7 +26,7 @@ public class FungeeCord extends Plugin implements Listener {
 	
 	private static DataServer createDataServer() {
 		try {
-			return new ProxyLocalDataServer(15565);
+			return new ProxyLocalDataServer(DataServer.DEFAULT_WRITABLE_PORT);
 		} catch (IOException e) {
 			throw new UnsupportedOperationException("An error occurred while attempting to create local data server: " + e.getMessage());
 		}
