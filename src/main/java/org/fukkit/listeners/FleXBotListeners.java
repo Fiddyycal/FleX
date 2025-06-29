@@ -18,7 +18,6 @@ public class FleXBotListeners extends FleXEventListener {
 	
 	private static final String[] unknown_response = {
 			"FleX Bot: Sorry, I can't help you with that.",
-			"FleX Bot: ...",
 		    "FleX Bot: I don't understand...",
 			"FleX Bot: My programming limits me, please elaborate.",
 			"FleX Bot: I'm sorry, I don't quite understand.",
@@ -35,7 +34,7 @@ public class FleXBotListeners extends FleXEventListener {
 			return;
 		
 		if (StringUtils.equalsIgnoreCaseAny(event.getCommand(), Console.BLOCKED_COMMANDS)) {
-			Task.print("-O_O-", "FleX Bot: Sorry, I can't allow you to use that gesture.");
+			Task.print("-O_O-", "FleX Bot: Sorry, I can't allow you to do that.");
 			event.setCancelled(true);
 			return;
 		}

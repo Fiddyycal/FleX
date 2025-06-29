@@ -20,8 +20,15 @@ public class DataHelper {
 
 		DataServer server = NetworkUtils.isProxy() ? FungeeCord.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
 		
-		if (NetworkUtils.isProxy())
-			FungeeCord.getDataServer().setData(new Data(key, String.valueOf(value), server.getPort()), ip, port);
+		server.setData(new Data(key, String.valueOf(value), server.getPort()), ip, port);
+		
+	}
+
+	public static String get(String key, Object value, String ip, int port) {
+		
+		DataServer server = NetworkUtils.isProxy() ? FungeeCord.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
+		
+		return server.getData(key, ip, port);
 		
 	}
 	
