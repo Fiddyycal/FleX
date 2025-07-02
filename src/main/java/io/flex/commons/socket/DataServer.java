@@ -277,6 +277,8 @@ public abstract class DataServer extends Thread {
 
 	    PrintWriter out = null;
 	    BufferedReader in = null;
+        
+        String response = null;
 	    
         try {
         	
@@ -296,16 +298,16 @@ public abstract class DataServer extends Thread {
             
             debug("Socket: " + port, "Reading response...");
             
-            String response = in.readLine();
+            response = in.readLine();
             
             debug("Socket: " + port, "Read response.");
-            
-            if (response == null || !response.equalsIgnoreCase("true"))
-            	Task.error("Socket: " + port, "Unable to publish data " + data.getKey() + "::" + data.getValue() + ": no futher information.");
             
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            
+            if (response == null || !response.equalsIgnoreCase("true"))
+            	Task.error("Socket: " + port, "Unable to publish data " + data.getKey() + "::" + data.getValue() + ": no futher information.");
 			
         	try {
         		
@@ -336,6 +338,8 @@ public abstract class DataServer extends Thread {
 	    PrintWriter out = null;
 	    BufferedReader in = null;
 	    
+	    String response = null;
+	    
         try {
         	
         	out = new PrintWriter(client.getOutputStream());
@@ -350,9 +354,20 @@ public abstract class DataServer extends Thread {
             
             debug("Socket: " + port, "Done.");
             
+            in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+            
+            debug("Socket: " + port, "Reading response...");
+            
+            response = in.readLine();
+            
+            debug("Socket: " + port, "Read response.");
+            
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            
+            if (response == null || !response.equalsIgnoreCase("true"))
+            	Task.error("Socket: " + port, "Unable to send data " + data.getKey() + "::" + data.getValue() + ": no futher information.");
 			
         	try {
         		

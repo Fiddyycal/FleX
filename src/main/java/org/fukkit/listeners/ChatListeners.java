@@ -149,7 +149,7 @@ public class ChatListeners extends FleXEventListener {
 		
 		recipients.clear();
 		
-		boolean sent = ChatUtils.sendChat(player, player.isMasked() ? player.getMask() : player.getRank(), message, null, mentions, recipientsFp, event.isAsynchronous());
+		boolean sent = ChatUtils.sendChat(player, player.isMasked() ? player.getMask() : player.getRank(), message, null, mentions, recipientsFp);
 		
 		if (!sent) {
 			event.setCancelled(true);

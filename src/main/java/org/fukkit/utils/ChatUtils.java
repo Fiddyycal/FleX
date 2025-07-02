@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.json.ChatJsonBuffer;
 import org.fukkit.json.JsonBuffer;
 import org.fukkit.json.JsonComponent;
 import org.fukkit.reward.Rank;
@@ -17,7 +18,8 @@ import io.flex.commons.Nullable;
 import io.flex.commons.file.Language;
 import io.flex.commons.file.Variable;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
-import net.md_5.fungee.event.FleXPlayerChatEvent;
+import net.md_5.fungee.event.FleXPlayerAsyncChatEvent;
+import net.md_5.fungee.event.FleXPlayerAsyncChatReceiveEvent;
 import net.md_5.fungee.event.FleXPlayerMentionEvent;
 
 public class ChatUtils {
@@ -37,23 +39,22 @@ public class ChatUtils {
 			
 		});
 		
-		return sendChat(player, player.isMasked() ? player.getMask() : player.getRank(), message, null, null, recipients, true);
+		return sendChat(player, player.isMasked() ? player.getMask() : player.getRank(), message, null, null, recipients);
 	}
 
 	@SuppressWarnings("deprecation")
-	public static boolean sendChat(FleXPlayer player, Rank rank, String message, @Nullable String fromServer, @Nullable Set<FleXPlayer> mentions, Set<FleXPlayer> recipients, boolean async) {
+	public static boolean sendChat(FleXPlayer player, Rank rank, String message, @Nullable String fromServer, @Nullable Set<FleXPlayer> mentions, Set<FleXPlayer> recipients) {
 		
 		boolean mention = mentions != null && mentions.size() > 0;
 		
-		FleXPlayerChatEvent event = new FleXPlayerChatEvent(
+		FleXPlayerAsyncChatEvent event = new FleXPlayerAsyncChatEvent(
 				
 				player,
 				rank,
 				message,
 				fromServer != null ? fromServer : Fukkit.getServerHandler().getName(),
 				recipients,
-				mention ? mentions : new HashSet<FleXPlayer>(),
-				async);
+				mention ? mentions : new HashSet<FleXPlayer>());
 		
 		Fukkit.getEventFactory().call(event);
 		
@@ -68,6 +69,19 @@ public class ChatUtils {
 			Language lang = p.getLanguage();
 			
 			if (theme == null)
+				continue;
+			
+			FleXPlayerAsyncChatReceiveEvent receiveEvent = new FleXPlayerAsyncChatReceiveEvent(
+					
+					player,
+					p,
+					message);
+			
+			Fukkit.getEventFactory().call(event);
+			
+			message = receiveEvent.getMessage();
+			
+			if (receiveEvent.isCancelled())
 				continue;
 			
 			if (mention) {
@@ -107,12 +121,16 @@ public class ChatUtils {
 			
 			for (String m : format) {
 				
+				/* 
+				 * Default json, less like mcgamer one.
+				 * 
 				JsonBuffer buffer = new JsonBuffer().append(new JsonComponent(m)).replace("%interactable%", new JsonComponent(theme.format("<clickable>Panel"))
 						
 						.onHover(p.getTheme().format("<interactable>Open the FleX panel<pp>."))
 						.onClick(Action.RUN_COMMAND, "/flex " + player.getName()));
+				*/
 				
-				p.sendJsonMessage(buffer);
+				p.sendJsonMessage(new ChatJsonBuffer(player, p, m));
 				
 			}
 			

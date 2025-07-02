@@ -2,6 +2,7 @@ package org.fukkit.command.defaults.admin;
 
 import java.util.Arrays;
 
+import org.bukkit.command.ConsoleCommandSender;
 import org.fukkit.Memory;
 import org.fukkit.command.Command;
 import org.fukkit.command.ConsoleCommand;
@@ -60,7 +61,7 @@ public class AdminCommand extends FleXCommandAdapter {
 			return false;
 		}
 		
-		if (!args[0].equalsIgnoreCase("setrank") && !args[0].equalsIgnoreCase("giverank") && !args[0].equalsIgnoreCase("rank") && !args[0].equalsIgnoreCase("r")) {
+		if (this.getSender() instanceof ConsoleCommandSender && !args[0].equalsIgnoreCase("setrank") && !args[0].equalsIgnoreCase("giverank") && !args[0].equalsIgnoreCase("rank") && !args[0].equalsIgnoreCase("r")) {
 			
 			this.getSender().sendMessage(ThemeMessage.COMMAND_DENIED_STATE_CONSOLE.format(Memory.THEME_CACHE.stream().findFirst().get(), Language.ENGLISH, new Variable<String>("%command%", this.getName())));
 			return true;

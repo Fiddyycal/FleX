@@ -2,8 +2,6 @@ package org.fukkit.handlers;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 
@@ -92,6 +90,7 @@ public class ConnectionHandler {
 			user_columns.put("play_time", SQLDataType.BIGINT);
 			user_columns.put("last_seen", SQLDataType.BIGINT);
 			user_columns.put("rank", SQLDataType.VARCHAR);
+			user_columns.put("badge", SQLDataType.VARCHAR);
 			user_columns.put("theme", SQLDataType.VARCHAR);
 			user_columns.put("language", SQLDataType.VARCHAR);
 			user_columns.put("skin", SQLDataType.TEXT);

@@ -42,7 +42,7 @@ import io.flex.commons.utils.FileUtils;
 import io.flex.commons.utils.NumUtils;
 
 import net.md_5.fungee.event.FleXFinalizeEvent;
-import net.md_5.fungee.event.FleXPlayerChatEvent;
+import net.md_5.fungee.event.FleXPlayerAsyncChatEvent;
 
 public class ConvictionListeners extends FleXEventListener {
 	
@@ -270,7 +270,7 @@ public class ConvictionListeners extends FleXEventListener {
 	}
 	
 	@EventHandler(priority = EventPriority.HIGH)
-    public void event(FleXPlayerChatEvent event) {
+    public void event(FleXPlayerAsyncChatEvent event) {
 		
 		if (event.isCancelled())
 			return;

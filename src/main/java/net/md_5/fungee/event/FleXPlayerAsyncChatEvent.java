@@ -7,7 +7,7 @@ import org.bukkit.event.Cancellable;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.reward.Rank;
 
-public class FleXPlayerChatEvent extends FleXPlayerEvent implements Cancellable {
+public class FleXPlayerAsyncChatEvent extends FleXPlayerEvent implements Cancellable {
 	
 	private String message, server;
 	
@@ -15,9 +15,9 @@ public class FleXPlayerChatEvent extends FleXPlayerEvent implements Cancellable 
 	
 	private boolean cancel = false;
 	
-	public FleXPlayerChatEvent(final FleXPlayer player, Rank display, String message, String originServer, Set<FleXPlayer> recipients, Set<FleXPlayer> mentioned, boolean async) {
+	public FleXPlayerAsyncChatEvent(final FleXPlayer player, Rank display, String message, String originServer, Set<FleXPlayer> recipients, Set<FleXPlayer> mentioned) {
 		
-		super(player, async);
+		super(player, true);
 		
 		this.message = message;
 		this.server = originServer != null ? originServer : Bukkit.getServer().getName();

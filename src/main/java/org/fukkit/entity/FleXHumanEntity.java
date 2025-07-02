@@ -4,6 +4,7 @@ import org.bukkit.inventory.ItemStack;
 import org.fukkit.PlayerState;
 import org.fukkit.clickable.Loadout;
 import org.fukkit.disguise.FleXSkin;
+import org.fukkit.reward.Badge;
 import org.fukkit.reward.Rank;
 
 import io.flex.commons.Nullable;
@@ -17,6 +18,8 @@ public interface FleXHumanEntity extends FleXLivingEntity {
 	public Rank getRank();
 	
 	public Rank getMask();
+	
+	public Badge getBadge();
 	
 	public FleXSkin getSkin();
 	
@@ -47,6 +50,8 @@ public interface FleXHumanEntity extends FleXLivingEntity {
 	public void setRank(Rank rank);
 	
 	public void setMask(Rank mask);
+	
+	public void setBadge(Badge badge);
 	
 	public void setState(PlayerState state) throws FleXPlayerNotLoadedException;
 	

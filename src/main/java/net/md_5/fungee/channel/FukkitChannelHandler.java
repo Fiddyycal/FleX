@@ -174,7 +174,7 @@ public class FukkitChannelHandler extends FleXEventListener implements ChannelHa
 						
 					});
 					
-					ChatUtils.sendChat(player, player.isMasked() ? player.getMask() : player.getRank(), message, origin, mentions, recipients, false);
+					BukkitUtils.asyncThread(() -> ChatUtils.sendChat(player, player.isMasked() ? player.getMask() : player.getRank(), message, origin, mentions, recipients));
 					
 				}
 				
