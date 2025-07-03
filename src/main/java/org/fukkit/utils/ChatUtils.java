@@ -7,7 +7,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.json.ChatJsonBuffer;
+import org.fukkit.json.ChatJsonDisplayBuffer;
+import org.fukkit.json.ChatJsonInteractableBuffer;
 import org.fukkit.json.JsonBuffer;
 import org.fukkit.json.JsonComponent;
 import org.fukkit.reward.Rank;
@@ -17,7 +18,6 @@ import org.fukkit.theme.ThemeMessage;
 import io.flex.commons.Nullable;
 import io.flex.commons.file.Language;
 import io.flex.commons.file.Variable;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
 import net.md_5.fungee.event.FleXPlayerAsyncChatEvent;
 import net.md_5.fungee.event.FleXPlayerAsyncChatReceiveEvent;
 import net.md_5.fungee.event.FleXPlayerMentionEvent;
@@ -107,7 +107,6 @@ public class ChatUtils {
 				
 					new Variable<String>("%name%", player.getDisplayName()),
 					new Variable<String>("%player%", player.getName()),
-					new Variable<String>("%display%", player.getDisplayName(theme)),
 					new Variable<String>("%role%", rank.getDisplay(theme, false)),
 					new Variable<String>("%rank%", rank.getDisplay(theme, true)),
 					new Variable<String>("%message%", message.replace("\\", "\\\\").replace("\"", "\\\""))
@@ -130,7 +129,14 @@ public class ChatUtils {
 						.onClick(Action.RUN_COMMAND, "/flex " + player.getName()));
 				*/
 				
-				p.sendJsonMessage(new ChatJsonBuffer(player, p, m));
+				JsonBuffer buff = new JsonBuffer().append(new JsonComponent(m))
+						
+						.replace("%interactable%", new ChatJsonInteractableBuffer(player, p))
+						.replace("%display%", new ChatJsonDisplayBuffer(player, p));
+				
+				System.out.println(buff);
+				
+				p.sendJsonMessage(buff);
 				
 			}
 			

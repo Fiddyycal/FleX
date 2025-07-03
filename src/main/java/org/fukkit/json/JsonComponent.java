@@ -4,128 +4,128 @@ import java.io.Serializable;
 
 import org.bukkit.Statistic;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 public class JsonComponent implements CharSequence, Serializable {
-	
-	private static final long serialVersionUID = 6094766172447703133L;
-	
-	private String text, json;
-	
-	public JsonComponent(String text) {
-		this.text = text;
-		this.json = "{\"text\":\"" + text + "\"";
-	}
-	
-	private JsonComponent() {}
-	
-	public JsonComponent onHover(String text) {
-		
-		JsonComponent component = new JsonComponent();
 
-		component.text = this.text + text;
-		component.json = this.json + ",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"" + text + "\"}";
-		
-		return component;
-		
-	}
-	
-	public JsonComponent onHover(Entity entity) {
-		
-		JsonComponent component = new JsonComponent();
+    private static final long serialVersionUID = 3173343685650932944L;
 
-		// TODO:
-		
-		return component;
-		
-	}
-	
-	public JsonComponent onHover(ItemStack item) {
-		
-		JsonComponent component = new JsonComponent();
+    private final String text;
+    private JsonObject json;
 
-		// TODO:
-		
-		component.text = this.text + item;
-		component.json = this.json + ",\"hoverEvent\":{\"action\":\"show_item\",\"value\":\"{id:cake,tag:{display:{Name:\\\"A Cake\\\",Lore:[\\\"Made by\\\",\\\"Steve & Alex\\\",\\\"With Love <3\\\"]}}}\"}";
-		
-		return component;
-		
-	}
-	
-	public JsonComponent onHover(Block block) {
-		
-		JsonComponent component = new JsonComponent();
-		
-		// TODO:
-		
-		component.text = this.text + block;
-		component.json = this.json + ",\"hoverEvent\":{\"action\":\"show_item\",\"value\":\"{id:cake,tag:{display:{Name:\\\"A Cake\\\",Lore:[\\\"Made by\\\",\\\"Steve & Alex\\\",\\\"With Love <3\\\"]}}}\"}";
-		
-		return component;
-		
-	}
-	
-	/* ... Changed to advancement ...
-	public JsonComponent onHover(Achievement achievement) {
+    public JsonComponent(String text) {
+    	
+        this.text = text;
+        this.json = new JsonObject();
+        this.json.addProperty("text", text);
+        
+    }
 
-		JsonComponent component = new JsonComponent();
-		
-		component.text = this.text + achievement;
-		component.json = this.json + ",\"hoverEvent\":{\"action\":\"show_achievement\",\"value\":\"achievement." + achievement + "\"}";
-		
-		return component;
-		
-	}
-	*/
-	
-	public JsonComponent onHover(Statistic statistic) {
-		
-		JsonComponent component = new JsonComponent();
-		
-		component.text = this.text + statistic;
-		component.json = this.json + ",\"hoverEvent\":{\"action\":\"show_achievement\",\"value\":\"stat." + statistic + "\"}";
-		
-		return component;
-		
-	}
-	
-	public JsonComponent onClick(Action action, String text) {
-		
-		JsonComponent component = new JsonComponent();
-		
-		component.text = this.text + text;
-		component.json = this.json + ",\"clickEvent\":{\"action\":\"" + action.name().toLowerCase() + "\",\"value\":\"" + text + "\"}";
-		
-		return component;
-		
-	}
-	
-	public String getText() {
-		return this.text;
-	}
-	
-	@Override
-	public int length() {
-		return this.text.length();
-	}
+    private JsonComponent(String text, JsonObject json) {
+    	
+        this.text = text;
+        this.json = json;
+        
+    }
 
-	@Override
-	public char charAt(int index) {
-		return this.text.charAt(index);
-	}
+    public JsonComponent onHover(String hoverText) {
+    	
+        JsonObject newJson = this.json.deepCopy();
+        JsonObject hoverEvent = new JsonObject();
+        
+        hoverEvent.addProperty("action", "show_text");
 
-	@Override
-	public CharSequence subSequence(int start, int end) {
-		return this.text.subSequence(start, end);
-	}
-	
-	@Override
-	public String toString() {
-		return this.json + "}";
-	}
+        JsonObject value = new JsonObject();
+        
+        value.addProperty("text", "");
+        
+        JsonArray extra = new JsonArray();
 
+        JsonObject hoverTextObj = new JsonObject();
+        
+        hoverTextObj.addProperty("text", hoverText);
+        
+        extra.add(hoverTextObj);
+
+        value.add("extra", extra);
+        hoverEvent.add("value", value);
+
+        newJson.add("hoverEvent", hoverEvent);
+
+        return new JsonComponent(this.text, newJson);
+        
+    }
+    
+    // TODO
+    public JsonComponent onHover(ItemStack item) {
+        // maybe serialize ItemStack to JSON format?
+        // For now, just placeholder text:
+        return this.onHover("Item: " + item.getType().name());
+    }
+
+    public JsonComponent onHover(Block block) {
+        return this.onHover("Block: " + block.getType().name());
+    }
+
+    public JsonComponent onHover(Statistic statistic) {
+    	
+        JsonObject newJson = json.deepCopy();
+        JsonObject hoverEvent = new JsonObject();
+        
+        hoverEvent.addProperty("action", "show_achievement");
+        hoverEvent.addProperty("value", "stat." + statistic.name());
+
+        newJson.add("hoverEvent", hoverEvent);
+        
+        return new JsonComponent(this.text, newJson);
+        
+    }
+
+    public JsonComponent onClick(Action action, String value) {
+    	
+        JsonObject newJson = this.json.deepCopy();
+        JsonObject clickEvent = new JsonObject();
+        
+        clickEvent.addProperty("action", action.name().toLowerCase());
+        clickEvent.addProperty("value", value);
+
+        newJson.add("clickEvent", clickEvent);
+        
+        return new JsonComponent(this.text, newJson);
+        
+    }
+
+    public String getText() {
+        return this.text;
+    }
+    
+    public JsonObject toJson() {
+        return this.json.deepCopy();
+    }
+
+    @Override
+    public int length() {
+        return this.text.length();
+    }
+
+    @Override
+    public char charAt(int index) {
+        return this.text.charAt(index);
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+        return this.text.subSequence(start, end);
+    }
+
+    @Override
+    public String toString() {
+        return this.json.toString();
+    }
+    
 }

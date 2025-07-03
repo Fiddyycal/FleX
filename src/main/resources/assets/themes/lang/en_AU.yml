@@ -73,12 +73,12 @@ Message:
   
     Format:
     
-      Default: '%role%%name%<pp>: <reset>%message%'
-      Hover: '<pc>Rank<pp>: <sc>%rank%\n<lore>Click to open profile<pp>.'
+      Default: '%display%<pp>: <reset>%message%'
+      Hover: '<pc>Rank<pp>: <sc>%rank%\n\n<pc>Badges:\n%badges%\n\n<lore>Click to open profile<pp>.'
       
       Staff:
       
-        Default: '<pp>[<reset>%interactable%<pp>] <reset>%role%%name%<pp>:<reset> %message%'
+        Default: '<pp>[<reset>%interactable%<pp>] <reset>%display%<pp>:<reset> %message%'
         Disguised: '<pp>[<reset>%interactable%<pp>] <pp>(<spc>%name%<pp>) <reset>%role%%player%<pp>:<reset> %message%'
   
     Mention:
