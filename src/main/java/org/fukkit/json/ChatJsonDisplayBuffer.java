@@ -3,7 +3,6 @@ package org.fukkit.json;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.fukkit.Memory;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.reward.Badge;
@@ -14,6 +13,8 @@ import io.flex.commons.emoji.Emoji;
 import io.flex.commons.file.Variable;
 import io.flex.commons.utils.StringUtils;
 
+import net.md_5.bungee.api.chat.ClickEvent.Action;
+
 public class ChatJsonDisplayBuffer extends JsonBuffer {
 	
 	private static final long serialVersionUID = 6759819969891361278L;
@@ -22,16 +23,18 @@ public class ChatJsonDisplayBuffer extends JsonBuffer {
 		
 		Theme theme = recipient.getTheme();
 		
+		boolean mcgamer = theme.getName().equalsIgnoreCase("mcgamer");
+		
 		Badge badge = player.getBadge();
 		
 		List<String> badges = new LinkedList<String>();
 		
-		badges.add("<pc>Badge on display<pp>:<reset> <sc>&l" + (badge != null ? badge.getIcon() : "None"));
+		badges.add("<pc>Badge on display<pp>:<reset> <sc>" + (badge != null ? "&l" + badge.getIcon() : "None"));
 		badges.add("");
 	    
 		try {
 			player.getHistory().getBadges().badgeSet().forEach(b -> {
-				badges.add("<reset>" + b.getDisplay(theme, true) + "<reset> <pp>&l" + Emoji.DOUBLE_RIGHT_POINTING_ARROW + "<reset> <lore>" + b.getDescription().replace("%rank%", Memory.RANK_CACHE.get("Owner").getDisplay(theme, false)));
+				badges.add("<reset>" + b.getDisplay(theme, true) + "<reset> <pp>&l" + Emoji.DOUBLE_RIGHT_POINTING_ARROW + "<reset> <lore>" + b.getDescription(theme));
 			});
 		} catch (FleXPlayerNotLoadedException e) {
 			badges.add("<failure>Badges failed to load<pp>.");
@@ -46,13 +49,20 @@ public class ChatJsonDisplayBuffer extends JsonBuffer {
 			
 		};
 		
-		String format = ThemeMessage.CHAT_FORMAT_HOVER.format(theme, recipient.getLanguage(), variables)[0];
+		String[] format = ThemeMessage.CHAT_FORMAT_HOVER.format(theme, recipient.getLanguage(), variables);
 		
 		this.append(new JsonComponent(player.getDisplayName(theme))
 				
-				.onHover(format));
+				.onHover(theme.format(StringUtils.join(format, "\n")))
+				.onClick(Action.RUN_COMMAND, "/stats " + player.getName()));
 		
-		this.append(new JsonComponent(theme.format(badge != null ? "<sc>" + badge.getIcon() : "<reset>")));
+		if (badge != null) {
+			
+			this.append(new JsonComponent(mcgamer ? theme.format("&a" + badge.getIcon()) : " " + badge.getDisplay(theme, false))
+					
+					.onHover(theme.format("<reset>" + badge.getDisplay(theme, true) + "<reset> <pp>&l" + Emoji.DOUBLE_RIGHT_POINTING_ARROW + "<reset> <lore>" + badge.getDescription(theme))));
+			
+		}
 		
 	}
 

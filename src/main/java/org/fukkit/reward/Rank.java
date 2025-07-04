@@ -96,6 +96,8 @@ public class Rank extends FleXEventListener implements Cacheable {
 		if (present && !entry.getValue().contains(this.name))
 			display = display + this.name;
 		
+		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " + display);
+		
 		return theme.format(present && display.contains(" ") ? display.substring(0, display.lastIndexOf(' ')) : display);
 		
 	}
@@ -130,6 +132,7 @@ public class Rank extends FleXEventListener implements Cacheable {
 			this.displays.clear();
 		
 		YamlConfig rankYml = Fukkit.getResourceHandler().getYaml(Configuration.RANKS);
+		
 		FileConfiguration rankConf = rankYml.getConfig();
 		
 		for (Theme theme : Memory.THEME_CACHE) {
@@ -138,9 +141,11 @@ public class Rank extends FleXEventListener implements Cacheable {
 			String defaultFromPath = ConfigHelper.assets + "themes" + File.separator;
 			String def = "<pp>[" + (this.name.equalsIgnoreCase("probation") ? "&fMember<sp>(<failure>P<sp>)" : this.name.equalsIgnoreCase("owner") ? "&4%rank%" : "&f%rank%") + "<pp>]<reset> <reset>";
 			
-			if (rankConf.getBoolean("Theme-Specific", true)) {
-				
-				rankYml = new YamlConfig(Fukkit.getInstance(), writeToPath, "ranks", defaultFromPath + "ranks.yml");
+			boolean perTheme = rankConf.getBoolean("Theme-Specific", true);
+			
+			YamlConfig themeYml = perTheme ? new YamlConfig(Fukkit.getInstance(), writeToPath, "ranks", defaultFromPath + "ranks.yml") : null;
+			
+			if (perTheme) {
 				
 				if (rankYml.getConfig().getString("Ranks." + this.name) == null) {
 					rankYml.getConfig().set("Ranks." + this.name, def);
@@ -149,7 +154,7 @@ public class Rank extends FleXEventListener implements Cacheable {
 				
 			}
 			
-			String rank = rankConf.getString("Ranks." + this.name + ".Display", def);
+			String rank = perTheme ? themeYml.getConfig().getString("Ranks." + this.name, def) : rankConf.getString("Ranks." + this.name + ".Display", def);
 			
 			this.displays.put(new BiCell<String, String>() {
 

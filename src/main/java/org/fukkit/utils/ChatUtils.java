@@ -134,8 +134,6 @@ public class ChatUtils {
 						.replace("%interactable%", new ChatJsonInteractableBuffer(player, p))
 						.replace("%display%", new ChatJsonDisplayBuffer(player, p));
 				
-				System.out.println(buff);
-				
 				p.sendJsonMessage(buff);
 				
 			}

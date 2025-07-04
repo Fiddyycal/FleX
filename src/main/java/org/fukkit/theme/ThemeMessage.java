@@ -209,7 +209,8 @@ public enum ThemeMessage {
 	
 	public String[] format(Theme theme, Language language, Variable<?>... variables) {
 		
-		String tagged = theme.format(theme.getMessage(language, this) != null ? theme.getMessage(language, this) : THEME_MESSAGE_NOT_FOUND.key);
+		String message = theme.getMessage(language, this);
+		String tagged = theme.format(message != null ? message : THEME_MESSAGE_NOT_FOUND.key);
 		
 		if (theme.getMessage(this) == null) {
 			

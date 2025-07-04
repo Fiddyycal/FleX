@@ -3,6 +3,7 @@ package org.fukkit.reward;
 import static java.util.Objects.requireNonNull;
 
 import org.bukkit.ChatColor;
+import org.fukkit.Memory;
 import org.fukkit.event.FleXEventListener;
 import org.fukkit.theme.Theme;
 
@@ -47,8 +48,13 @@ public class Badge extends FleXEventListener implements Cacheable {
 		return this.name;
 	}
 	
-	public String getDescription() {
-		return this.description;
+	public String getDescription(Theme theme) {
+		
+		if (this.description.contains("%rank%"))
+			this.description = this.description.replace("%rank%", Memory.RANK_CACHE.get("Owner").getDisplay(theme, false));
+		
+		return theme.format(this.description);
+		
 	}
 	
 	public Tier getTier() {

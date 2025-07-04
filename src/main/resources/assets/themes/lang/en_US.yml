@@ -74,7 +74,7 @@ Message:
     Format:
     
       Default: '%display%<pp>: <reset>%message%'
-      Hover: '<pc>Rank<pp>: <sc>%rank%\n\n<pc>Badges:\n%badges%\n\n<lore>Click to open profile<pp>.'
+      Hover: '<pc>Rank<pp>: <sc>%rank%\n\n%badges%\n\n<lore>Click to open profile<pp>.'
       
       Staff:
       
