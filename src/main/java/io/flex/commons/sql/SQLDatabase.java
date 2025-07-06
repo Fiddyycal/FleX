@@ -26,6 +26,8 @@ import io.flex.commons.StopWatch;
 import io.flex.commons.console.Console;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.Serializable;
 
 import static io.flex.commons.utils.ClassUtils.is;
@@ -335,79 +337,90 @@ public class SQLDatabase implements Serializable {
 	 * @throws SQLException
 	 */
 	public SQLRowWrapper addRow(String table, @Nullable String identifier, LinkedHashMap<String, Object> entries) throws SQLException {
-		
-	    if (entries == null || entries.size() == 0)
+		 
+	    if (entries == null || entries.isEmpty())
 	        throw new SQLException("Cannot insert an empty row into table " + table + ", please provide values.");
-	    
+ 
 	    SQLConnection connection = this.open();
-		
-		PreparedStatement statement = null;
-		
-		try {
-			
-			if (identifier == null) {
-				
-		        DatabaseMetaData databaseMeta = connection.getDriverConnection().getMetaData();
-		        
-		        try (ResultSet rs = databaseMeta.getPrimaryKeys(null, null, table)) {
-		            if (rs.next())
-		            	identifier = rs.getString("COLUMN_NAME");
-		        }
-				
-			}
-			
-			List<String> columns = this.getColumns(table);
-	        
-	        Map<String, Object> filtered = new LinkedHashMap<String, Object>();
-	        
-	        for (String col : columns)
-	            if (entries.containsKey(col))
-	            	filtered.put(col, entries.get(col) instanceof UUID ? entries.get(col).toString() : entries.get(col));
-	        
+	    PreparedStatement statement = null;
+ 
+	    try {
+ 
+	        if (identifier == null) {
+ 
+	            DatabaseMetaData databaseMeta = connection.getDriverConnection().getMetaData();
+ 
+	            try (ResultSet rs = databaseMeta.getPrimaryKeys(null, null, table)) {
+	                if (rs.next())
+	                    identifier = rs.getString("COLUMN_NAME");
+	            }
+ 
+	        }
+ 
+	        List<String> columns = this.getColumns(table);
+ 
+	        Map<String, Object> filtered = new LinkedHashMap<>();
+ 
+	        for (String col : columns) {
+	            if (entries.containsKey(col)) {
+	                Object val = entries.get(col);
+	                if (val instanceof UUID) {
+	                    filtered.put(col, val.toString());
+	                } else {
+	                    filtered.put(col, val);
+	                }
+	            }
+	        }
+ 
 	        if (filtered.isEmpty())
 	            throw new SQLException("No valid columns provided for table " + table + ".");
-	        
+ 
 	        StringBuilder query = new StringBuilder("INSERT INTO ").append(table).append(" (");
 	        StringBuilder placeholders = new StringBuilder();
-	        
+ 
 	        for (String col : filtered.keySet()) {
 	            query.append(col).append(", ");
 	            placeholders.append("?, ");
 	        }
-	        
+ 
 	        query.setLength(query.length() - 2);
 	        placeholders.setLength(placeholders.length() - 2);
-	        
+ 
 	        query.append(") VALUES (").append(placeholders).append(")");
-	        
+ 
 	        statement = connection.getDriverConnection().prepareStatement(query.toString());
-	        
+ 
 	        int index = 1;
-	        
-	        for (Object value : filtered.values())
-	            statement.setObject(index++, value);
-	        
+ 
+	        for (Object value : filtered.values()) {
+	            if (value instanceof File) {
+ 
+	            	File file = (File) value;
+ 
+	                try (FileInputStream fis = new FileInputStream((File) value)) {
+	                    statement.setBinaryStream(index++, fis, (int) file.length());
+	                } catch (IOException e) {
+						throw new SQLException("Exception occured writing file to database: (" + e.getCause().getClass().getSimpleName() + ") " + e.getMessage());
+					}
+ 
+	            } else statement.setObject(index++, value);
+	        }
+ 
 	        statement.executeUpdate();
-	        
+ 
 	        return new SQLRowWrapper(this, table, identifier, filtered);
-	        
-		} catch (SQLException e) {
-    	
-			Console.log("SQL", Severity.ERROR, e);
-			throw e;
-        
-		} finally {
-    	
-			if (statement != null) {
-				try {
-					statement.close();
-				} catch (SQLException ignore) {}
-			}
-			
-			connection.release();
-			
-		}
-	    
+ 
+	    } catch (SQLException e) {
+	        Console.log("SQL", Severity.ERROR, e);
+	        throw e;
+	    } finally {
+	        if (statement != null) {
+	            try {
+	                statement.close();
+	            } catch (SQLException ignore) {}
+	        }
+	        connection.release();
+	    }
 	}
 	
 	/**
