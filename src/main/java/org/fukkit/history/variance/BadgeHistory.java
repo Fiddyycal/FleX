@@ -49,4 +49,14 @@ public class BadgeHistory extends History<String> {
 		
 	}
 	
+	public void onBadgeRemove(Badge badge, @Nullable String reason) {
+		
+		if (badge == null)
+			return;
+		
+		if (!this.log.containsValue(badge.toString()))
+			super.add("- " + badge.toString() + " [" + (reason != null ? reason : "No reason found") + "]");
+		
+	}
+	
 }
