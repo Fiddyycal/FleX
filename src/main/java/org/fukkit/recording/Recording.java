@@ -60,7 +60,7 @@ public class Recording extends BukkitRunnable {
 		
 		FileUtils.copy(this.world.getWorldFolder(), this.file.getParentFile());
 		
-		this.runTaskTimer(Fukkit.getInstance(), 0L, 2L);
+		this.runTaskTimerAsynchronous(Fukkit.getInstance(), 0L, 2L);
 		
 	}
 	
