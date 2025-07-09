@@ -12,25 +12,32 @@ import io.flex.commons.utils.ArrayUtils;
 public class BadgeSubCommand extends AbstractAdminSubCommand {
 	
 	public BadgeSubCommand(AdminCommand command) {
-		super(command, "givebadge", "badge", "b");
+		super(command, "badge", "b");
 	}
 
 	@Override
 	public boolean perform(String[] args, String[] flags) {
 		
-		if (args.length < 2) {
-			this.command.usage("/<command> givebadge/badge/b <player> <badge> [reason]");
+		if (args.length < 3) {
+			this.command.usage("/<command> badge/b add/remove <player> <badge> [reason]");
+			return false;
+		}
+		
+		boolean add = args[0].equalsIgnoreCase("add");
+		
+		if (!add && !args[0].equalsIgnoreCase("remove")) {
+			this.command.usage("/<command> badge/b add/remove <player> <badge> [reason]");
 			return false;
 		}
 		
 		FleXPlayer player = this.command.getPlayer();
 		
 		Theme theme = player.getTheme();
-		String name = args[0];
+		String name = args[1];
 		
 		StringBuilder reason = new StringBuilder();
 		
-	    for (String arg : ArrayUtils.remove(args, args[0], args[1])) {
+	    for (String arg : ArrayUtils.remove(args, args[0], args[1], args[2])) {
 	    	
 	        if (reason.length() != 0)
 	        	reason.append(" ");
@@ -40,7 +47,7 @@ public class BadgeSubCommand extends AbstractAdminSubCommand {
 	    }
 		
 		FleXPlayer fp = Fukkit.getPlayer(name);
-		Badge badge = Memory.BADGE_CACHE.get(args[1]);
+		Badge badge = Memory.BADGE_CACHE.get(args[2]);
 		
 		if (fp == null) {
 			this.command.playerNotFound(name);
@@ -54,28 +61,51 @@ public class BadgeSubCommand extends AbstractAdminSubCommand {
 		}
 		
 		// TODO
-		this.command.getPlayer().sendMessage(theme.format("<engine><sc>Adding badge to<reset> <spc>" + fp.getDisplayName(theme) + "<pp>..."));
+		this.command.getPlayer().sendMessage(theme.format("<engine><sc>" + (add ? "Adding badge to" : "Removing badge from") + " <reset> <spc>" + fp.getDisplayName(theme) + "<pp>..."));
 		
 		fp.getHistoryAsync(history -> {
 			
 			if (!player.isOnline())
 				return;
+
+			boolean exists = history.getBadges().badgeSet().contains(badge);
 			
-			if (history.getBadges().badgeSet().contains(badge)) {
-				// TODO
-				player.sendMessage(theme.format("<engine><sc>" + fp.getDisplayName(theme) + "<failure> already has that badge<pp>."));
-				return;
+			String reas = reason.length() > 0 ? reason.toString() : "No reason found";
+			
+			if (add) {
 				
-			}
-			
-			String reas = args.length > 2 ? reason.toString() : "No reason found";
-			
-			history.getBadges().onBadgeReceive(badge, reas);
-			
-			if (this.command.getPlayer() == fp || (player != fp && fp.isOnline())) {
+				if (exists) {
+					// TODO
+					player.sendMessage(theme.format("<engine><sc>" + fp.getDisplayName(theme) + "<failure> already has that badge<pp>."));
+					return;
 				
-				fp.getPlayer().playSound(fp.getLocation(), VersionUtils.sound("LEVEL_UP", "ENTITY_PLAYER_LEVELUP"), 1F, 0.1F);
-				fp.sendMessage(theme.format("<engine><success>You have been given the badge <spc>" + badge.getName() + "<pp>. (<sc>" + reas + "<pp>)"));
+				}
+			
+				history.getBadges().onBadgeReceive(badge, reas);
+			
+				if (this.command.getPlayer() == fp || (player != fp && fp.isOnline())) {
+				
+					fp.getPlayer().playSound(fp.getLocation(), VersionUtils.sound("LEVEL_UP", "ENTITY_PLAYER_LEVELUP"), 1F, 0.1F);
+					fp.sendMessage(theme.format("<engine><success>You have been given the badge <spc>" + badge.getName() + "<pp>. (<sc>" + reas + "<pp>)"));
+				
+				}
+				
+			} else {
+
+				if (!exists) {
+					// TODO
+					player.sendMessage(theme.format("<engine><sc>" + fp.getDisplayName(theme) + "<failure> does not have that badge<pp>."));
+					return;
+				
+				}
+			
+				history.getBadges().onBadgeRemove(badge, reas);
+			
+				if (this.command.getPlayer() == fp || (player != fp && fp.isOnline())) {
+				
+					fp.sendMessage(theme.format("<engine><failure>The badge <spc>" + badge.getName() + "<reset> <failure>has been taken from you<pp>. (<sc>" + reas + "<pp>)"));
+				
+				}
 				
 			}
 			
