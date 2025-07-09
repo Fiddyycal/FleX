@@ -47,19 +47,19 @@ public class OpenAi {
  
 		String json = "\"{\"model\": \"gpt-3.5-turbo\",\"messages\": [{\"role\": \"system\", \"content\": \"You are a helpful assistant.\"}, {\"role\": \"user\", \"content\": \"" + request + "\"} ]}\"";
  
-        try (OutputStream os = connection.getOutputStream()) {
+        try (OutputStream os = this.connection.getOutputStream()) {
  
             byte[] input = json.getBytes("utf-8");
  
             os.write(input, 0, input.length);
  
         }
- 
-        int status = connection.getResponseCode();
- 
+        
+        int status = this.connection.getResponseCode();
+        
         InputStream responseStream = (status < 400)
-            ? connection.getInputStream()
-            : connection.getErrorStream();
+            ? this.connection.getInputStream()
+            : this.connection.getErrorStream();
  
         StringBuilder response = new StringBuilder();
  

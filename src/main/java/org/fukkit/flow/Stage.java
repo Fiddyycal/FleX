@@ -1,12 +1,26 @@
-package org.fukkit.fle.flow;
+package org.fukkit.flow;
 
-public class OverwatchStage {
-	/*
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.fukkit.entity.FleXPlayer;
+import org.fukkit.handlers.FlowLineEnforcementHandler;
+import org.fukkit.recording.Recording;
+import org.fukkit.utils.WorldUtils;
+
+import io.flex.commons.Nullable;
+
+public class Stage {
+	
 	private UUID uuid = UUID.randomUUID();
 	
 	private Set<FleXPlayer> watchers;
 	
-	private OverwatchData recording;
+	private Recording recording;
 	
 	private World world;
 	
@@ -14,50 +28,20 @@ public class OverwatchStage {
 	
 	private boolean pause;
 	
-	public OverwatchStage(OverwatchReplay recording, @Nullable FleXPlayer... watchers) {
+	public Stage(Recording recording, @Nullable FleXPlayer... watchers) {
+		
+		this.recording = recording;
 		
 		this.watchers = new HashSet<FleXPlayer>();
 		
 		for (FleXPlayer watcher : watchers)
 			this.watchers.add(watcher);
 		
-		this.recording = recording;
+		recording.getData()
 		
-		FleXPlayer reported = recording.getSuspect();
+		World world = WorldUtils.copyWorld(recording.getData(), Bukkit.getWorldContainer().getPath() + File.separator + "flow-" + this.uuid);
 		
-		if (reported == null)
-			throw new UnsupportedOperationException("reported cannot be null.");
-		
-		if (!this.isWatching()) {
-			
-			if (!reported.isOnline())
-				throw new UnsupportedOperationException("Player is not online.");
-			
-			this.world = reported.getPlayer().getWorld();
-			
-			if (this.world == null)
-				throw new UnsupportedOperationException("world cannot be null.");
-			
-			Fukkit.getFlowLineEnforcementHandler().setRecording(reported, true);
-			
-		} else {
-			
-			FlowLineEnforcementHandler fle = Fukkit.getFlowLineEnforcementHandler();
-			
-			if (fle.isFlowEnabled() && fle.getAIDriver() == AIDriver.FLEX)
-				throw new UnsupportedOperationException(
-						
-						"The FleX AI driver is undergoing heavy maintenance, "
-						+ "please do not use this driver: "
-						+ "You have FloW enabled but Citizens plugin could not be found, "
-						+ "please correct this error before continuing startup.");
-			
-			if (this.recording.getFrames().isEmpty())
-				throw new UnsupportedOperationException("Frames map cannot be empty.");
-			
-			World world = WorldUtils.copyWorld(FlowLineEnforcementHandler.flowPath(), Bukkit.getWorldContainer().getPath() + File.separator + "flow-" + this.uuid);
-			
-			this.world = world;
+		this.world = world;
 			
 			Location tp = null;
 			
@@ -226,5 +210,5 @@ public class OverwatchStage {
 	public boolean isWatching() {
 		return !this.watchers.isEmpty();
 	}
-*/
+	
 }

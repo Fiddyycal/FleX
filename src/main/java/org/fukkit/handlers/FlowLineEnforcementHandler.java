@@ -1,7 +1,6 @@
 package org.fukkit.handlers;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,10 +10,11 @@ import java.util.stream.Collectors;
 import org.fukkit.Fukkit;
 import org.fukkit.ai.AIDriver;
 import org.fukkit.api.helper.ConfigHelper;
+import org.fukkit.api.helper.DataHelper;
 import org.fukkit.config.Configuration;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.fle.CriticalHitListeners;
-import org.fukkit.fle.flow.CommandLogListeners;
+import org.fukkit.fle.CommandLogListeners;
 
 import io.flex.FleX;
 
@@ -36,7 +36,7 @@ public class FlowLineEnforcementHandler {
 		new CriticalHitListeners();
 		new CommandLogListeners();
 		
-		//DataHelper.set("flow.suspects.recording", new HashSet<UUID>());
+		DataHelper.set("flow.suspects.recording", new HashSet<UUID>());
 		
 		registered = true;
 		
@@ -52,7 +52,7 @@ public class FlowLineEnforcementHandler {
 	
 	public Set<UUID> getPendingUnsafe() {
 		
-		List<String> pending = new ArrayList<String>();//DataHelper.getList("flow.suspects.pending");
+		List<String> pending = DataHelper.getList("flow.suspects.pending");
 		
 		if (pending == null || pending.isEmpty())
 			return new HashSet<UUID>();
@@ -75,7 +75,7 @@ public class FlowLineEnforcementHandler {
 	
 	public Set<UUID> getRecordingUnsafe() {
 		
-		List<String> recording = new ArrayList<String>();//DataHelper.getList("flow.suspects.recording");
+		List<String> recording = DataHelper.getList("flow.suspects.recording");
 		
 		if (recording == null || recording.isEmpty())
 			return new HashSet<UUID>();
@@ -119,7 +119,7 @@ public class FlowLineEnforcementHandler {
 			
 		else list.remove(player.getUniqueId());
 		
-		//DataHelper.set("flow.suspects.pending", list);
+		DataHelper.set("flow.suspects.pending", list);
 		
 	}
 	
@@ -137,7 +137,7 @@ public class FlowLineEnforcementHandler {
 			
 		else list.remove(player.getUniqueId());
 		
-		//DataHelper.set("flow.suspects.recording", list);
+		DataHelper.set("flow.suspects.recording", list);
 		
 	}
 	

@@ -1,6 +1,9 @@
 package org.fukkit.listeners;
 
+import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Set;
+
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -33,11 +36,12 @@ import org.fukkit.event.consequence.FleXReportEvent;
 import org.fukkit.event.player.PlayerChangeStateEvent;
 import org.fukkit.handlers.FlowLineEnforcementHandler;
 import org.fukkit.metadata.FleXFixedMetadataValue;
+import org.fukkit.recording.Recording;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.BukkitUtils;
-
 import io.flex.commons.cache.cell.BiCell;
+import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.FileUtils;
 import io.flex.commons.utils.NumUtils;
 
@@ -352,8 +356,9 @@ public class ConvictionListeners extends FleXEventListener {
 		if (event.getTo() == PlayerState.INGAME) {
 			
 			if (fle.isPending(player)) {
-				/* TODO local cache of reports so this doesn't contact database every time player state changes.
-				List<Report> reports;
+				
+				// TODO local cache of reports so this doesn't contact database every time player state changes.
+				Set<Report> reports;
 				
 				try {
 					reports = Report.download(player);
@@ -364,9 +369,43 @@ public class ConvictionListeners extends FleXEventListener {
 					
 				}
 				
-				if (!reports.isEmpty())
-					reports.stream().forEach(r -> r.onBypassAttempt());
-				*/
+				if (!reports.isEmpty()) {
+					
+					boolean alreadyRecording = Fukkit.getFlowLineEnforcementHandler().isRecording(player);
+					
+					for (Report report : reports) {
+						
+						if (ArrayUtils.contains(report.getReason().getRequiredEvidence(), EvidenceType.RECORDING_REFERENCE)) {
+							
+							if (!alreadyRecording) {
+								
+								System.out.println("Starting recording............................ 1");
+								
+								Fukkit.getFlowLineEnforcementHandler().setRecording(player, true);
+								
+								new Recording() {
+									
+									@Override
+									public void onPlayerDisconnect(FleXPlayer player) {
+										// TODO Auto-generated method stub
+										
+									}
+									
+								};
+								
+								// This ensures that there are never multiple of the same recording for the same suspect.
+								alreadyRecording = true;
+								
+							}
+							
+							// Still send recording started message.
+							report.onBypassAttempt();
+							
+						}
+						
+					}
+				}
+				
 			}
 			
 		}

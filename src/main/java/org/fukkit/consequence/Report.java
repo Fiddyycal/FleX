@@ -8,7 +8,6 @@ import org.fukkit.Fukkit;
 import org.fukkit.PlayerState;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.fle.flow.OverwatchReplay;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.ThemeUtils;
 
@@ -108,21 +107,10 @@ public class Report extends Punishment {
 	
 	private void watchLikeAFuckinHawk(boolean initial) {
 		
-		// TODO Place new recording logic here, NOTE: MAKE SURE- that if more than 1 report is made, only 1 recording is made and reference that for all reports.
-		// ^^^^^^^^^^^^ just check if a recording is already started............ FLE.isRecording(), make sure setRecording is set when stage recording starts.
-		// TODO world copy logic.
+		FleXPlayer by = this.getBy();
 		
-		if (Fukkit.getFlowLineEnforcementHandler().isRecording(this.getPlayer()))
-			return;
-		
-		System.out.println("Starting recording............................ 1");
-		
-		Fukkit.getFlowLineEnforcementHandler().setRecording(this.getPlayer(), true);
-		
-		new OverwatchReplay(this);
-		
-		if (initial && this.getBy().isOnline())
-			this.getBy().sendMessage(ThemeMessage.FLOW_RECORDING_STARTED.format(this.getBy().getTheme(), this.getBy().getLanguage(), ThemeUtils.getNameVariables(this.getPlayer(), this.getBy().getTheme())));
+		if (by.isOnline())
+			by.sendMessage(ThemeMessage.FLOW_RECORDING_STARTED.format(by.getTheme(), by.getLanguage(), ThemeUtils.getNameVariables(this.getPlayer(), by.getTheme())));
 		
 	}
 

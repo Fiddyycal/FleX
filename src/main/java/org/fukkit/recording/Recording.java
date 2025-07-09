@@ -1,34 +1,25 @@
 package org.fukkit.recording;
 
-import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
-import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.fukkit.Fukkit;
-import org.fukkit.ai.AIDriver;
-import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.handlers.FlowLineEnforcementHandler;
-import org.fukkit.utils.WorldUtils;
-
+import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
 import io.flex.commons.file.DataFile;
 import io.flex.commons.utils.FileUtils;
 
-public class Recording extends BukkitRunnable {
+public abstract class Recording extends BukkitRunnable {
 	
-	public static final int RECORDING_LENGTH = 300;
+	public static final int DEFAULT_RECORDING_LENGTH = 300;
 	
 	private DataFile<HashMap<UUID, String[]>> file;
 	
@@ -36,34 +27,53 @@ public class Recording extends BukkitRunnable {
 	
 	private boolean pause = false;
 	
-	private long tick = 0;
+	private long tick = 0, length;
 	
-	private Set<FleXPlayer> watchers = new HashSet<FleXPlayer>();
-	private Set<Recordable> recorded = new HashSet<Recordable>();
+	private Map<UUID, Recordable> recorded = new HashMap<UUID, Recordable>();
 	
 	private RecordingListeners listener;
 	
-	public Recording(@Nullable String path, String name, World world, FleXPlayer... record) {
+	public Recording(@Nullable String path, String name, World world, long length, FleXPlayer... players) {
 		
-		this.file = new DataFile<HashMap<UUID, String[]>>(path != null ? path : "", name + ".rec", new LinkedHashMap<UUID, String[]>(), false);
+		this(path, name);
 		
 		this.world = world;
+		
+		this.length = length < 0 ? DEFAULT_RECORDING_LENGTH : length;
 		
 		if (!this.file.isFresh())
 			throw new UnsupportedOperationException("recording data file already exists");
 		
-		if (record == null || record.length == 0)
-			throw new UnsupportedOperationException("record cannot be null");
+		if (players == null || players.length == 0)
+			throw new UnsupportedOperationException("players cannot be null");
 		
-		for (FleXPlayer fp : record)
-			this.recorded.add(CraftRecordable.of(fp));
+		for (FleXPlayer fp : players)
+			this.recorded.put(fp.getUniqueId(), CraftRecordable.of(fp));
 		
-		FileUtils.copy(this.world.getWorldFolder(), this.file.getParentFile());
-		
-		this.runTaskTimerAsynchronous(Fukkit.getInstance(), 0L, 2L);
+		this.runTaskTimerAsynchronously(Fukkit.getInstance(), 0L, 2L);
 		
 	}
 	
+	private Recording(@Nullable String path, String name) {
+		
+		this.file = new DataFile<HashMap<UUID, String[]>>(path != null ? path : "", name + ".rec", new LinkedHashMap<UUID, String[]>(), false);
+		
+		this.length = this.file.getTag("Length", -1);
+		
+		if (this.length < 1)
+			throw new UnsupportedOperationException("length must be more than 1");
+		
+	}
+	
+	public static Recording download(String path, String name) {
+		return new Recording(path, name) {
+			
+			@Override
+			public void onPlayerDisconnect(FleXPlayer player) {}
+			
+		};
+	}
+	/*
 	public Recording(@Nullable String path, String name, FleXPlayer... watchers) {
 		
 		this.file = new DataFile<HashMap<UUID, String[]>>(path != null ? path : "", name + ".rec", new LinkedHashMap<UUID, String[]>(), false);
@@ -165,17 +175,13 @@ public class Recording extends BukkitRunnable {
 		this.runTaskTimer(Fukkit.getInstance(), 20L, 2L);
 		
 	}
-	
+	*/
 	public DataFile<HashMap<UUID, String[]>> getData() {
 		return this.file;
 	}
 	
-	public Set<Recordable> getRecorded() {
+	public Map<UUID, Recordable> getRecorded() {
 		return this.recorded;
-	}
-	
-	public World getWorld() {
-		return this.world;
 	}
 	
 	public long getTick() {
@@ -183,7 +189,7 @@ public class Recording extends BukkitRunnable {
 	}
 	
 	public boolean isRecording(Entity entity) {
-		return this.isRecording() && this.recorded.stream().anyMatch(r -> r.getUniqueId().equals(entity.getUniqueId()));
+		return this.isRecording() && this.recorded.containsKey(entity.getUniqueId());
 	}
 	
 	public boolean isRecording(FleXPlayer player) {
@@ -191,7 +197,7 @@ public class Recording extends BukkitRunnable {
 	}
 	
 	public boolean isRecording() {
-		return this.watchers.isEmpty();
+		return !this.isCancelled();
 	}
 
 	@Override
@@ -203,76 +209,50 @@ public class Recording extends BukkitRunnable {
 		if (this.listener == null)
 			this.listener = new RecordingListeners(this);
 		
-		if (this.isRecording()) {
+		if (Bukkit.getWorld(this.world.getUID()) == null) {
 			
-			for (Recordable recorded : this.recorded) {
-				
-				FleXPlayer fp = recorded.toPlayer();
-				
-				if (fp == null) {
-					
-					this.end("fp cannot be null");
-					return;
-					
-				}
-				
-				List<Frame> frames = recorded.getFrames();
-				
-				if (fp == null || !fp.isOnline() || !fp.getPlayer().getWorld().getUID().equals(this.world.getUID())) {
-					
-					// Player is not present, but may come back.
-					frames.add(null);
-					continue;
-					
-				}
-				
-				frames.add(new Frame(RecordedAction.MOVE, fp.getLocation()));
-				
-			}
+			this.end("world cannot be null.");
+			return;
 			
-			if (this.tick == RECORDING_LENGTH) {
+		}
+		
+		for (Recordable recorded : this.recorded.values()) {
+			
+			FleXPlayer player = recorded.toPlayer();
+			
+			if (player == null) {
 				
-				this.end("End of recording.");
+				this.end("player cannot be null.");
 				return;
 				
 			}
 			
-		} else {
+			List<Frame> frames = recorded.getFrames();
 			
-			for (Recordable recorded : this.recorded) {
+			if (!player.isOnline()) {
 				
-				if (recorded instanceof FleXBot == false)
-					continue;
-				
-				FleXBot bot = (FleXBot) recorded;
-				
-				try {
-					
-					Frame frame = recorded.getFrames().get((int)this.tick);
-					
-					if (frame.getAction() == null || frame.getAction() == RecordedAction.IDLE)
-						continue;
-					
-					bot.teleport(frame.getLocation());
-					
-					if (frame.getAction().isAnimation())
-						bot.playAnimation(frame.getAction());
-						
-					continue;
-					
-				} catch (Exception e) {}
-
-				// If an exception is thrown as a result of location being null or IndexOutOfBounds, delete the bot.
-				bot.delete();
-				
-			}
-			
-			if (this.tick == RECORDING_LENGTH) {
-				
-				this.tick = 0;
+				// Player has disconnected but may come back...
+				frames.add(null);
 				return;
 				
 			}
+			
+			if (!player.getPlayer().getWorld().getUID().equals(this.world.getUID())) {
+				
+				// Player has moved worlds but may come back...
+				frames.add(null);
+				return;
+				
+			}
+			
+			frames.add(new Frame(RecordedAction.MOVE, player.getLocation()));
+			
+		}
+		
+		if (this.tick == this.length) {
+			
+			this.end();
+			return;
 			
 		}
 		
@@ -283,68 +263,42 @@ public class Recording extends BukkitRunnable {
 	public void end(String... reason) {
 		
 		if (reason == null || reason.length == 0)
-			reason = new String[]{ "No further information." };
+			reason = new String[]{ "End of recording." };
 		
-		System.out.println("Stopping recording: " + reason[0]);
+		boolean end = reason[0].equals("End of recording.");
+		
+		if (end)
+			Task.debug("Stopping recording: " + reason[0]);
+		
+		else Task.error("Cancelled recording: " + reason[0]);
 		
 		this.cancel();
 		
-		if (this.isRecording()) {
+		if (this.listener != null)
+			this.listener.unregister();
 			
-			if (this.listener != null)
-				this.listener.unregister();
+		if (end) {
+			
+			FileUtils.copy(this.world.getWorldFolder(), this.file.getParentFile());
+			
+			this.file.setTag("Length", this.tick);
+			
+			LinkedHashMap<UUID, String[]> recorded = new LinkedHashMap<UUID, String[]>();
+			
+			for (Recordable recordable : this.recorded.values()) {
 				
-			if (reason[0].equals("End of recording.")) {
+				String[] frames = recordable.getFrames().stream().map(f -> f.toString()).toArray(i -> new String[i]);
 				
-				this.file.setTag("Length", this.tick);
-				
-				LinkedHashMap<UUID, String[]> recorded = new LinkedHashMap<UUID, String[]>();
-				
-				for (Recordable recordable : this.recorded) {
-					
-					String[] frames = recordable.getFrames().stream().map(f -> f.toString()).toArray(i -> new String[i]);
-					
-					recorded.put(recordable.getUniqueId(), frames);
-					
-				}
-				
-				this.file.write(recorded);
+				recorded.put(recordable.getUniqueId(), frames);
 				
 			}
 			
-		} else {
-			
-			if (reason[0].equals("End of recording.")) {
-				
-				System.out.println("Stopping stage: " + reason[0]);
-				
-				for (FleXPlayer fp : this.watchers) {
-					
-					if (fp != null && fp.isOnline())
-						fp.kick("The stage has closed: " + reason[0]);
-						
-				}
-				
-				for (Recordable recorded : this.recorded)
-					if (recorded instanceof FleXBot)
-						((FleXBot)recorded).delete();
-				
-				try {
-					
-					if (this.world != null)
-						WorldUtils.unloadWorld(this.world);
-					
-				} catch (Exception e) {}
-				
-				File file = this.world.getWorldFolder();
-				
-				if (file.exists())
-					FileUtils.delete(file);
-				
-			}
+			this.file.write(recorded);
 			
 		}
 		
 	}
+	
+	public abstract void onPlayerDisconnect(FleXPlayer player);
 
 }
