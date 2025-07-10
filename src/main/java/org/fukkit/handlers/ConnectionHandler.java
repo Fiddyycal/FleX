@@ -113,6 +113,13 @@ public class ConnectionHandler {
 			
 			this.database.createTable("flex_punishment", "id", punishment_columns);
 			
+			LinkedHashMap<String, SQLDataType> flow_columns = new LinkedHashMap<String, SQLDataType>();
+			
+			flow_columns.put("name", SQLDataType.BOOLEAN);
+			flow_columns.put("data", SQLDataType.BOOLEAN);
+			
+			this.database.createTable("flex_overwatch", flow_columns);
+			
 			this.createHistoryTable(BadgeHistory.TABLE_NAME);
 			this.createHistoryTable(ChatCommandHistory.TABLE_NAME);
 			this.createHistoryTable(ConnectionHistory.TABLE_NAME);
