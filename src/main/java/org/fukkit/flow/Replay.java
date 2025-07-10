@@ -17,22 +17,20 @@ import io.flex.commons.Nullable;
 import io.flex.commons.utils.FileUtils;
 import io.flex.commons.utils.StringUtils;
 
-public class Replay extends Recording {
+public class Overwatch extends Recording {
 
 	private boolean anonymous = false;
 	
-	public Replay(Report report, @Nullable FleXPlayer... record) {
+	public Overwatch(Report report, @Nullable FleXPlayer... record) {
 		
 		super(FlowLineEnforcementHandler.flowPath() + report.getPlayer().getUniqueId().toString() + File.separator + report.getReference(), 
 				unique_file_name(report), 
 				report.getPlayer().getPlayer().getWorld(), 
 				record_players(report, record));
 		
-		this.getData().setTag("Report", report.getReference());
-		
 	}
 	
-	public Replay(Report report, boolean anonymous, FleXPlayer... watchers) {
+	public Overwatch(Report report, boolean anonymous, FleXPlayer... watchers) {
 		
 		super(FlowLineEnforcementHandler.flowPath() + report.getPlayer().getUniqueId().toString() + File.separator + report.getReference(), 
 				unique_file_name(report), 
@@ -54,6 +52,8 @@ public class Replay extends Recording {
 				else recorded.setName(StringUtils.generate(16, true));
 				
 			});
+		
+		this.getData().setTag("Report", report.getReference());
 		
 	}
 	
