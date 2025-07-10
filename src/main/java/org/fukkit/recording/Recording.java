@@ -298,8 +298,21 @@ public abstract class Recording extends BukkitRunnable {
 			
 				this.file.write(recorded);
 
-				// TODO upload to database
-				Fukkit.getConnectionHandler().getConnection().addRow("flex_flow", SQLRow.of(""))
+				// TODO ZIP FILE
+				File zipped = this.file;
+				
+				SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
+			
+				try {
+				
+					database.addRow("flex_overwatch", SQLMap.of(
+						
+						SQLMap.entry("name", this.file.getName()),
+						SQLMap.entry("data", zipped)));
+				
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			
 			}
 			
@@ -309,10 +322,10 @@ public abstract class Recording extends BukkitRunnable {
 			
 		} finally {
 			
+			// Cleanup
 			if (this.listener != null)
 				this.listener.unregister();
 			
-			// Cleanup
 			this.file.getParentFile().delete();
 			this.file = null;
 			this.world = null;
