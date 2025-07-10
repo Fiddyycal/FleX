@@ -260,40 +260,67 @@ public abstract class Recording extends BukkitRunnable {
 		
 	}
 	
-	public void end(String... reason) {
-		
-		if (reason == null || reason.length == 0)
-			reason = new String[]{ "End of recording." };
-		
-		boolean end = reason[0].equals("End of recording.");
-		
-		if (end)
-			Task.debug("Stopping recording: " + reason[0]);
-		
-		else Task.error("Cancelled recording: " + reason[0]);
+	public void end() {
+		this.end(null);
+	}
+	
+	public void end(@Nullable String reason) {
 		
 		this.cancel();
 		
-		if (this.listener != null)
-			this.listener.unregister();
+		if (reason == null)
+			reason = "End of recording.";
+		
+		boolean end = reason.equalsIgnoreCase("End of recording.");
+		
+		if (end)
+			Task.debug("Stopping recording: " + reason);
+		
+		else Task.error("Cancelled recording: " + reason);
+
+		try {
+
+			if (end) {
 			
-		if (end) {
+				FileUtils.copy(this.world.getWorldFolder(), this.file.getParentFile());
 			
-			FileUtils.copy(this.world.getWorldFolder(), this.file.getParentFile());
+				this.file.setTag("Length", this.tick);
 			
-			this.file.setTag("Length", this.tick);
+				LinkedHashMap<UUID, String[]> recorded = new LinkedHashMap<UUID, String[]>();
 			
-			LinkedHashMap<UUID, String[]> recorded = new LinkedHashMap<UUID, String[]>();
-			
-			for (Recordable recordable : this.recorded.values()) {
+				for (Recordable recordable : this.recorded.values()) {
 				
-				String[] frames = recordable.getFrames().stream().map(f -> f.toString()).toArray(i -> new String[i]);
+					String[] frames = recordable.getFrames().stream().map(f -> f.toString()).toArray(i -> new String[i]);
 				
-				recorded.put(recordable.getUniqueId(), frames);
+					recorded.put(recordable.getUniqueId(), frames);
 				
+				}
+			
+				this.file.write(recorded);
+
+				// TODO upload to database
+				Fukkit.getConnectionHandler().getConnection().addRow("flex_flow", SQLRow.of(""))
+			
 			}
 			
-			this.file.write(recorded);
+		} catch(Exception e) {
+
+			e.printStackTrace();
+			
+		} finally {
+			
+			if (this.listener != null)
+				this.listener.unregister();
+			
+			// Cleanup
+			this.file.getParentFile().delete();
+			this.file = null;
+			this.world = null;
+
+			if (!this.recorded.isEmpty())
+				this.recorded.clear();
+
+			this.recorded = null;
 			
 		}
 		
