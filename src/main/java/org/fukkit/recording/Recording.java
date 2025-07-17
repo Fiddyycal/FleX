@@ -1,5 +1,7 @@
 package org.fukkit.recording;
 
+import java.io.File;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,6 +17,8 @@ import org.fukkit.entity.FleXPlayer;
 import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
 import io.flex.commons.file.DataFile;
+import io.flex.commons.sql.SQLDatabase;
+import io.flex.commons.sql.SQLMap;
 import io.flex.commons.utils.FileUtils;
 
 public abstract class Recording extends BukkitRunnable {
@@ -297,12 +301,11 @@ public abstract class Recording extends BukkitRunnable {
 				}
 			
 				this.file.write(recorded);
-
-				// TODO ZIP FILE
-				File zipped = this.file;
+				
+				File zipped = this.file.zip();
 				
 				SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
-			
+				
 				try {
 				
 					database.addRow("flex_overwatch", SQLMap.of(

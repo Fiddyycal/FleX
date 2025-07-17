@@ -31,7 +31,7 @@ public class RecordingListeners extends FleXEventListener {
 		if (!this.recording.isRecording(player))
 			return;
 		
-		Recordable recordable = this.recording.getRecorded().stream().filter(r -> r.getUniqueId().equals(player.getUniqueId())).findFirst().orElse(null);
+		Recordable recordable = this.recording.getRecorded().get(player.getUniqueId());
 		
 		recordable.getFrames().add(new Frame(RecordedAction.SWING_ARM, player.getLocation(), event.getClickedBlock() != null ? event.getClickedBlock().getLocation() : null));
 		
@@ -55,7 +55,7 @@ public class RecordingListeners extends FleXEventListener {
     	if (cause == DamageCause.ENTITY_ATTACK || cause == DamageCause.ENTITY_EXPLOSION || (version.ordinal() > ServerVersion.v1_8_R3.ordinal() && cause == DamageCause.valueOf("ENTITY_SWEEP_ATTACK")))
     		return;
     	
-		Recordable recordable = this.recording.getRecorded().stream().filter(r -> r.getUniqueId().equals(entity.getUniqueId())).findFirst().orElse(null);
+		Recordable recordable = this.recording.getRecorded().get(entity.getUniqueId());
 		
 		recordable.getFrames().add(new Frame(RecordedAction.DAMAGE, entity.getLocation()));
 		
@@ -78,7 +78,7 @@ public class RecordingListeners extends FleXEventListener {
 			
 		}
 		
-		Recordable recordable = this.recording.getRecorded().stream().filter(r -> r.getUniqueId().equals(entity.getUniqueId())).findFirst().orElse(null);
+		Recordable recordable = this.recording.getRecorded().get(entity.getUniqueId());
 		
 		recordable.getFrames().add(new Frame(RecordedAction.DAMAGE /* TODO Determine if this is a critical hit or hit with damage multiplying enchantment. */, entity.getLocation(), damager != null ? damager.getLocation() : null));
 		

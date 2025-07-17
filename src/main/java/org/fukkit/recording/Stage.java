@@ -1,4 +1,4 @@
-package org.fukkit.flow;
+package org.fukkit.recording;
 
 import java.io.File;
 import java.util.HashSet;
@@ -36,8 +36,6 @@ public class Stage {
 		
 		for (FleXPlayer watcher : watchers)
 			this.watchers.add(watcher);
-		
-		recording.getData()
 		
 		World world = WorldUtils.copyWorld(recording.getData(), Bukkit.getWorldContainer().getPath() + File.separator + "flow-" + this.uuid);
 		

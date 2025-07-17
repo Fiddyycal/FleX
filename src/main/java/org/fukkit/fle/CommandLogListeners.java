@@ -1,4 +1,4 @@
-package org.fukkit.fle.flow;
+package org.fukkit.fle;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
