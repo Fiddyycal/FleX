@@ -12,9 +12,10 @@ import org.fukkit.command.FleXCommandAdapter;
 import org.fukkit.command.GlobalCommand;
 import org.fukkit.command.RestrictCommand;
 import org.fukkit.consequence.Report;
-import org.fukkit.flow.Stage;
+import org.fukkit.flow.Overwatch;
 import org.fukkit.json.JsonBuffer;
 import org.fukkit.json.JsonComponent;
+import org.fukkit.recording.Stage;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.ThemeUtils;
@@ -87,7 +88,7 @@ public class FlowCommand extends FleXCommandAdapter {
 						
 						try {
 							
-							new OverwatchReplay(report, true, this.getPlayer());
+							new Stage(Overwatch.download(report), true, this.getPlayer());
 							return true;
 							
 						} catch (Exception e) {

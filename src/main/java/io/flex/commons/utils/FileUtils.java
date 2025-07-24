@@ -269,21 +269,12 @@ public class FileUtils {
 		
 	}
 	
-	public static String getTimeStamp(long ms, boolean fileFriendly) {
-		
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH" + (fileFriendly ? "-" : ":") + "mm" + (fileFriendly ? "-" : ":") + "ss");
-		Date date = new Date(ms);
-		
-		return format.format(date);
-		
-	}
-	
 	public static String getTimeStamp(long ms) {
-		return getTimeStamp(ms, true);
+		return NumUtils.asDateTime(ms, true);
 	}
 	
 	public static String getTimeStamp() {
-		return getTimeStamp(System.currentTimeMillis(), true);
+		return NumUtils.asDateTime(System.currentTimeMillis() , true);
 	}
 	
 }

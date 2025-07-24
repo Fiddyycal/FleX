@@ -16,10 +16,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import io.flex.FleX.Task;
+import io.flex.commons.Nullable;
 import io.flex.commons.Severity;
 import io.flex.commons.console.Console;
 import io.flex.commons.utils.FileUtils;
-import io.flex.commons.utils.StringUtils;
 
 @SuppressWarnings("unchecked")
 public class DataFile<T extends Serializable> extends File implements Serializable {
@@ -32,7 +32,15 @@ public class DataFile<T extends Serializable> extends File implements Serializab
 	
 	private boolean fresh;
 	
-	public DataFile(String path, String name, T write, boolean overwrite) {
+	public DataFile(String path, T write, boolean overwrite) {
+		this(path, null, write, overwrite);
+	}
+	
+	public DataFile(String path) {
+		this(path, null);
+	}
+	
+	public DataFile(String path, @Nullable String name, T write, boolean overwrite) {
 		
 		this(path, name);
 		
@@ -41,9 +49,9 @@ public class DataFile<T extends Serializable> extends File implements Serializab
 		
 	}
 	
-	public DataFile(String path, String name) {
+	public DataFile(String path, @Nullable String name) {
 		
-		super(path, name = name != null ? name : (name = "file-" + StringUtils.generate(6, false)));
+		super(fileAbsolutePath(path, name));
 		
 		boolean exists = new File(path, name).exists();
 		
@@ -55,6 +63,17 @@ public class DataFile<T extends Serializable> extends File implements Serializab
 			} catch (IOException | ClassNotFoundException e) {}
 		}
 		
+	}
+	
+	private static String fileAbsolutePath(String path, String name) {
+		
+		boolean dir = path.endsWith(File.separator) || path.endsWith("/") || path.endsWith("\\");
+		
+		if (dir && name == null)
+			throw new UnsupportedOperationException("DataFile failed, path is present but no file name was provided, please revise.");
+			
+		return dir ? path + name : (path + (name != null ?  File.separator + name : ""));
+			
 	}
 	
 	public <V extends Serializable> V getTag(String tag, V def) {

@@ -1,6 +1,7 @@
 package org.fukkit.recording;
 
 import java.io.File;
+import java.nio.file.FileAlreadyExistsException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -25,6 +26,8 @@ public abstract class Recording extends BukkitRunnable {
 	
 	public static final int DEFAULT_RECORDING_LENGTH = 300;
 	
+	protected UUID uuid;
+	
 	private DataFile<HashMap<UUID, String[]>> file;
 	
 	private World world;
@@ -37,16 +40,22 @@ public abstract class Recording extends BukkitRunnable {
 	
 	private RecordingListeners listener;
 	
-	public Recording(@Nullable String path, String name, World world, long length, FleXPlayer... players) {
+	public Recording(@Nullable String path, String name, World world, long length, FleXPlayer... players) throws FileAlreadyExistsException {
 		
-		this(path, name);
+		this((path.endsWith(File.separator) ? path : path + File.separator) + name);
+		
+		UUID uid = UUID.fromString(this.file.getTag("UniqueId"));
+		
+		this.uuid = uid != null ? uid : UUID.randomUUID();
+		
+		this.file.setTag("UniqueId", uid.toString());
 		
 		this.world = world;
 		
 		this.length = length < 0 ? DEFAULT_RECORDING_LENGTH : length;
 		
 		if (!this.file.isFresh())
-			throw new UnsupportedOperationException("recording data file already exists");
+			throw new FileAlreadyExistsException("recording data file with that name already exists");
 		
 		if (players == null || players.length == 0)
 			throw new UnsupportedOperationException("players cannot be null");
@@ -58,9 +67,12 @@ public abstract class Recording extends BukkitRunnable {
 		
 	}
 	
-	private Recording(@Nullable String path, String name) {
+	protected Recording(String path) {
 		
-		this.file = new DataFile<HashMap<UUID, String[]>>(path != null ? path : "", name + ".rec", new LinkedHashMap<UUID, String[]>(), false);
+		if (path == null)
+			throw new UnsupportedOperationException("path cannot be null");
+		
+		this.file = new DataFile<HashMap<UUID, String[]>>(path, new LinkedHashMap<UUID, String[]>(), false);
 		
 		this.length = this.file.getTag("Length", -1);
 		
@@ -69,8 +81,16 @@ public abstract class Recording extends BukkitRunnable {
 		
 	}
 	
-	public static Recording download(String path, String name) {
-		return new Recording(path, name) {
+	public UUID getUniqueId() {
+		return this.uuid;
+	}
+	
+	public long getLength() {
+		return this.length;
+	}
+	
+	public static Recording download(String path) {
+		return new Recording(path) {
 			
 			@Override
 			public void onPlayerDisconnect(FleXPlayer player) {}
@@ -237,6 +257,8 @@ public abstract class Recording extends BukkitRunnable {
 				
 				// Player has disconnected but may come back...
 				frames.add(null);
+				
+				this.onPlayerDisconnect(player);
 				return;
 				
 			}
@@ -293,13 +315,13 @@ public abstract class Recording extends BukkitRunnable {
 				LinkedHashMap<UUID, String[]> recorded = new LinkedHashMap<UUID, String[]>();
 			
 				for (Recordable recordable : this.recorded.values()) {
-				
+					
 					String[] frames = recordable.getFrames().stream().map(f -> f.toString()).toArray(i -> new String[i]);
-				
+					
 					recorded.put(recordable.getUniqueId(), frames);
 				
 				}
-			
+				
 				this.file.write(recorded);
 				
 				File zipped = this.file.zip();

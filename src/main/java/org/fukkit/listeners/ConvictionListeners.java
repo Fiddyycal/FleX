@@ -1,5 +1,6 @@
 package org.fukkit.listeners;
 
+import java.nio.file.FileAlreadyExistsException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Set;
@@ -34,12 +35,13 @@ import org.fukkit.event.consequence.FleXMuteEvent;
 import org.fukkit.event.consequence.FleXPreConsequenceEvent;
 import org.fukkit.event.consequence.FleXReportEvent;
 import org.fukkit.event.player.PlayerChangeStateEvent;
+import org.fukkit.flow.Overwatch;
 import org.fukkit.handlers.FlowLineEnforcementHandler;
 import org.fukkit.metadata.FleXFixedMetadataValue;
-import org.fukkit.recording.Recording;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.BukkitUtils;
+
 import io.flex.commons.cache.cell.BiCell;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.FileUtils;
@@ -371,34 +373,31 @@ public class ConvictionListeners extends FleXEventListener {
 				
 				if (!reports.isEmpty()) {
 					
-					boolean alreadyRecording = Fukkit.getFlowLineEnforcementHandler().isRecording(player);
+					boolean recording = Fukkit.getFlowLineEnforcementHandler().isRecording(player);
 					
 					for (Report report : reports) {
 						
 						if (ArrayUtils.contains(report.getReason().getRequiredEvidence(), EvidenceType.RECORDING_REFERENCE)) {
 							
-							if (!alreadyRecording) {
+							if (!recording) {
 								
 								System.out.println("Starting recording............................ 1");
 								
+								FleXPlayer[] record = player.getWorld().getOnlinePlayers().stream().filter(p -> p.getState() == PlayerState.INGAME).toArray(i -> new FleXPlayer[i]);
+								
 								Fukkit.getFlowLineEnforcementHandler().setRecording(player, true);
 								
-								new Recording() {
-									
-									@Override
-									public void onPlayerDisconnect(FleXPlayer player) {
-										// TODO Auto-generated method stub
-										
-									}
-									
-								};
+								try {
+									new Overwatch(report, record);
+								} catch (FileAlreadyExistsException ignore) {
+									System.out.println("File already exists, this may be due to multiple reports of the same person. You can ignore this, otherwise if you are a developer reading this, you can remove this message in the back end to confirm recording duplicates cannot be made.");
+								}
 								
-								// This ensures that there are never multiple of the same recording for the same suspect.
-								alreadyRecording = true;
+								recording = true;
 								
 							}
 							
-							// Still send recording started message.
+							// Still send recording started message to all who reported.
 							report.onBypassAttempt();
 							
 						}
