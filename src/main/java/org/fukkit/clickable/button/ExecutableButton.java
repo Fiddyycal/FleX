@@ -4,11 +4,11 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
-import java.util.stream.IntStream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.fukkit.Fukkit;
@@ -166,35 +166,40 @@ public abstract class ExecutableButton extends UniqueItem implements Button, Ser
 			
 		} else {
 			
-			Bukkit.getOnlinePlayers().forEach(p -> IntStream.range(0, p.getOpenInventory().countSlots()).forEach(i -> {
+			Bukkit.getOnlinePlayers().forEach(p -> {
 				
-				ItemStack item = p.getOpenInventory().getItem(i);
-				
-				if (item == null)
-					return;
-				
-				if (item.getType() == Material.AIR)
-					return;
-				
-				if (!similar(item, this))
-					return;
+			    InventoryView view = p.getOpenInventory();
+			    
+			    int slotLimit = view.countSlots();
 
-				UUID uid = Fukkit.getImplementation().getItemStackUniqueId(item);
-				
-				if (uid == null)
-					return;
-				
-				if (uid.equals(uuid)) {
-					
-					copy(item, this);
-					
-					try {
-						p.getOpenInventory().setItem(i, item);
-					} catch (NullPointerException e) {}
-					
-				}
-				
-			}));
+			    for (int i = 0; i < slotLimit; i++) {
+			    	
+			        try {
+			        	
+			            ItemStack item = view.getItem(i);
+			            
+			            if (item == null || item.getType() == Material.AIR)
+			                continue;
+
+			            if (!similar(item, this))
+			                continue;
+			            
+			            UUID uid = Fukkit.getImplementation().getItemStackUniqueId(item);
+			            
+			            if (uid != null && uid.equals(uuid)) {
+			            	
+			                copy(item, this);
+			                
+			                view.setItem(i, item);
+			                
+			            }
+			            
+			        } catch (IndexOutOfBoundsException ignored) {
+			            break;
+			        }
+			        
+			    }
+			});
 			
 		}
 		

@@ -5,7 +5,6 @@ import org.fukkit.disguise.Disguise;
 import org.fukkit.entity.FleXPlayer;
 
 import io.flex.commons.Nullable;
-import net.md_5.fungee.event.FleXPlayerEvent;
 
 public class FleXPlayerDisguiseEvent extends FleXPlayerEvent implements Cancellable {
 

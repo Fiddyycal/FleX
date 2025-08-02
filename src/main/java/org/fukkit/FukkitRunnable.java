@@ -3,131 +3,120 @@ package org.fukkit;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.fukkit.entity.FleXPlayer;
+import org.bukkit.scheduler.BukkitTask;
 
-import io.flex.FleX.Task;
-
-public abstract class FukkitRunnable implements Runnable {
+public abstract class FukkitRunnable extends BukkitRunnable {
 	
 	private static final Set<FukkitRunnable> runnables = new HashSet<FukkitRunnable>();
 	
-	private static BukkitRunnable tasks;
-	
-	private BukkitRunnable delegate;
-	
-	public FukkitRunnable() {
-		
-		if (Task.isDebugEnabled() && tasks == null) {
-			tasks = new BukkitRunnable() {
-				
-			    @Override
-			    public void run() {
-			    	
-			    	Task.debug("Task Manager", "Loading tasks...");
-		    		
-		    		int o = 0;
-		    		
-		    		for (FleXPlayer player : Fukkit.getServerHandler().getOnlinePlayersUnsafe())
-						o = o + player.getPlayer().getScoreboard().getObjectives().size();
-		    		
-		    		int t = 0;
-		    		
-		    		for (FleXPlayer player : Fukkit.getServerHandler().getOnlinePlayersUnsafe())
-						t = t + player.getPlayer().getScoreboard().getTeams().size();
-		    		
-		    		Task.debug("Task Manager", "====================================");
-		    		Task.debug("Task Manager",
-
-		    				"Tasks: " + runnables.size(),
-		    				"Teams: " + t,
-		    				"Objectives: " + o,
-		    				"Loadouts: " + Fukkit.getServerHandler().getOnlinePlayersUnsafe().stream().filter(p -> p.getLoadout() != null).count(),
-		    		        "Channels: " + net.md_5.fungee.Memory.CHANNEL_CACHE.size(),
-		    		        "Commands: " + Memory.COMMAND_CACHE.size(),
-		    				"Players: " + Memory.PLAYER_CACHE.size(),
-		    		        "Buttons: " + Memory.BUTTON_CACHE.size(),
-		    		        "Themes: " + Memory.THEME_CACHE.size(),
-		    		        "Skins: " + Memory.SKIN_CACHE.size(),
-		    		        "Badges: " + Memory.BADGE_CACHE.size(),
-		    		        "Ranks: " + Memory.RANK_CACHE.size(),
-		    		        "Menus: " + Memory.GUI_CACHE.size());
-		    		
-		    		Task.debug("Task Manager", "====================================");
-				    
-			    }
-			
-		    };
-			
-		    tasks.runTaskTimer(Fukkit.getInstance(), 0L, 1200L);
-		
-	    }
-		
-		this.init();
-		
+	public static Set<FukkitRunnable> getTasks() {
+		return runnables;
 	}
 	
-	private BukkitRunnable init() {
-		
-		this.cancel();
-		
-		if (this.delegate == null)
-			this.delegate = new BukkitRunnable() {
-			
-			    @Override
-			    public void run() {
-			    	FukkitRunnable.this.run();
-			    }
-			
-		    };
-		    
-		return this.delegate;
-		
-	}
+	private boolean later = false;
 	
-	public FukkitRunnable runTask() throws IllegalArgumentException, IllegalStateException {
-		return this.runLater(0);
-	}
-	
-	public FukkitRunnable runTimer(long period) throws IllegalArgumentException, IllegalStateException {
-		return this.runTimer(0, period);
-	}
-	
-	public FukkitRunnable runLater(long delay) throws IllegalArgumentException, IllegalStateException {
+	@Override
+	public synchronized void cancel() throws IllegalStateException {
 		
-		this.init().runTaskLater(Fukkit.getInstance(), delay < 0 ? 0 : delay);
-		
-		runnables.add(this);
-		
-		return this;
-		
-	}
-	
-	public FukkitRunnable runTimer(long delay, long period) throws IllegalArgumentException, IllegalStateException {
-		
-		this.init().runTaskTimer(Fukkit.getInstance(), delay < 0 ? 0 : delay, period);
-		
-		runnables.add(this);
-		
-		return this;
-		
-	}
-	
-	public void cancel() throws IllegalStateException {
-		
-		if (runnables.contains(this)) {
-			
-			this.delegate.cancel();
-			this.delegate = null;
-			
-		}
+		super.cancel();
 		
 		runnables.remove(this);
 		
 	}
 	
-	public boolean isCancelled() {
-		return !runnables.contains(this);
+	/**
+	 * @deprecated Please use {@link #execute()} insead.
+	 */
+	@Override
+	@Deprecated
+	public void run() {
+		
+		this.execute();
+		
+		if (this.later)
+			runnables.remove(this);
+		
+	}
+	
+	public abstract void execute();
+	
+	public synchronized BukkitTask runTask() throws IllegalArgumentException, IllegalStateException {
+		return this.runTask(Fukkit.getInstance());
+	}
+
+	public synchronized BukkitTask runTaskAsynchronously() throws IllegalArgumentException, IllegalStateException {
+		return this.runTaskAsynchronously(Fukkit.getInstance());
+	}
+	
+	public synchronized BukkitTask runTaskLater(long delay) throws IllegalArgumentException, IllegalStateException {
+		return this.runTaskLater(Fukkit.getInstance(), delay);
+	}
+	
+	public synchronized BukkitTask runTaskLaterAsynchronously(long delay) throws IllegalArgumentException, IllegalStateException {
+		return this.runTaskLaterAsynchronously(Fukkit.getInstance(), delay);
+	}
+	
+	public synchronized BukkitTask runTaskTimer(long delay, long period) throws IllegalArgumentException, IllegalStateException {
+		
+		runnables.add(this);
+		
+		return this.runTaskTimer(Fukkit.getInstance(), delay, period);
+		
+	}
+	
+	public synchronized BukkitTask runTaskTimerAsynchronously(long delay, long period) throws IllegalArgumentException, IllegalStateException {
+		
+		runnables.add(this);
+		
+		return this.runTaskTimerAsynchronously(Fukkit.getInstance(), delay, period);
+		
+	}
+	
+	@Override
+	public synchronized BukkitTask runTask(Plugin plugin) throws IllegalArgumentException, IllegalStateException {
+		
+		this.later = true;
+		
+		return super.runTask(plugin);
+		
+	}
+	
+	@Override
+	public synchronized BukkitTask runTaskAsynchronously(Plugin plugin) throws IllegalArgumentException, IllegalStateException {
+		
+		this.later = true;
+		
+		return super.runTaskAsynchronously(plugin);
+		
+	}
+	
+	@Override
+	public synchronized BukkitTask runTaskLater(Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException {
+		
+		this.later = true;
+		
+		return super.runTaskLater(plugin, delay);
+		
+	}
+	
+	@Override
+	public synchronized BukkitTask runTaskLaterAsynchronously(Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException {
+		
+		this.later = true;
+		
+		return super.runTaskLaterAsynchronously(plugin, delay);
+	}
+	
+	@Override
+	public synchronized BukkitTask runTaskTimer(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
+		return super.runTaskTimer(plugin, delay, period);
+	}
+	
+	@Override
+	public synchronized BukkitTask runTaskTimerAsynchronously(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
+		return super.runTaskTimerAsynchronously(plugin, delay, period);
 	}
 	
 }

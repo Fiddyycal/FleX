@@ -1,4 +1,4 @@
-package net.md_5.fungee.event;
+package org.fukkit.event.player;
 
 import org.bukkit.event.Cancellable;
 import org.fukkit.entity.FleXPlayer;

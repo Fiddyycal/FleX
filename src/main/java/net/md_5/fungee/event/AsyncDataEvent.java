@@ -1,4 +1,4 @@
-package net.md_5.fungee.event.data;
+package net.md_5.fungee.event;
 
 import io.flex.commons.socket.Data;
 import net.md_5.bungee.api.plugin.Event;

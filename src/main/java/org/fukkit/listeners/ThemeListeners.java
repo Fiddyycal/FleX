@@ -19,6 +19,7 @@ import org.fukkit.api.helper.ConfigHelper;
 import org.fukkit.config.YamlConfig;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.FleXEventListener;
+import org.fukkit.event.FleXFinalizeEvent;
 import org.fukkit.event.player.PlayerGuiCloseEvent;
 import org.fukkit.event.theme.ThemeChangedEvent;
 import org.fukkit.theme.Theme;
@@ -26,7 +27,6 @@ import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.VersionUtils;
 
 import io.flex.commons.utils.NumUtils;
-import net.md_5.fungee.event.FleXFinalizeEvent;
 
 public class ThemeListeners extends FleXEventListener {
 	

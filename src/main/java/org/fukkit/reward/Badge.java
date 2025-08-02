@@ -68,7 +68,7 @@ public class Badge extends FleXEventListener implements Cacheable {
 				this.tier == Tier.TIER_ONE ? "<spc>" : 
 				this.tier == Tier.TIER_TWO ? "<qc>" : "<sc>"
 					
-		) + "&l";
+		);
 		
 		return theme.format(prefix + this.icon + (present ? (ChatColor.RESET + " <sc>" + (this.name.contains(" ") ? this.name.substring(0, this.name.lastIndexOf(' ')) : this.name)) : ""));
 		

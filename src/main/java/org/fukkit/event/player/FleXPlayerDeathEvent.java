@@ -1,9 +1,10 @@
-package net.md_5.fungee.event;
+package org.fukkit.event.player;
 
 import java.util.List;
 
 import org.bukkit.inventory.ItemStack;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.event.entity.FleXEntityDeathEvent;
 
 public class FleXPlayerDeathEvent extends FleXEntityDeathEvent {
 	

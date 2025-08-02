@@ -1,4 +1,4 @@
-package net.md_5.fungee.event;
+package org.fukkit.event.entity;
 
 import java.util.List;
 

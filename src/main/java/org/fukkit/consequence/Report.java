@@ -8,6 +8,7 @@ import org.fukkit.Fukkit;
 import org.fukkit.PlayerState;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.ThemeUtils;
 
@@ -89,12 +90,14 @@ public class Report extends Punishment {
 		
 		FleXPlayer player = this.getPlayer();
 		
+		Theme theme = this.getBy().getTheme();
+		
 		if (!player.isOnline() || player.getState() != PlayerState.INGAME) {
 			
 			Fukkit.getFlowLineEnforcementHandler().setPending(player, true);
 			
-			// TODO:
-			this.getBy().sendMessage("[ThemeMessage=FLOW_RECORDING_PENDING]");
+			// TODO: [FLOW_RECORDING_PENDING]
+			this.getBy().sendMessage(theme.format("<flow><pc>FloW has been staged to monitor<reset> <sc>" + player.getDisplayName(theme) + "<pp>."));
 			
 		} else this.watchLikeAFuckinHawk(true);
 		

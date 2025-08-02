@@ -2,38 +2,38 @@ package org.fukkit.utils;
 
 import java.util.function.Consumer;
 
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.fukkit.Fukkit;
+import org.fukkit.FukkitRunnable;
 
 public class BukkitUtils {
 	
-	public static BukkitRunnable mainThread(Runnable runnable) {
+	public static FukkitRunnable mainThread(Runnable runnable) {
 		return runLater(runnable, false);
 	}
 	
-	public static BukkitRunnable asyncThread(Runnable runnable) {
+	public static FukkitRunnable asyncThread(Runnable runnable) {
 		return runLater(runnable, -1, true);
 	}
 	
-	public static BukkitRunnable runLater(Runnable runnable) {
+	public static FukkitRunnable runLater(Runnable runnable) {
 		return runLater(runnable, false);
 	}
 	
-	public static BukkitRunnable runLater(Runnable runnable, long delay) {
+	public static FukkitRunnable runLater(Runnable runnable, long delay) {
 		return runLater(runnable, delay, false);
 	}
 	
-	public static BukkitRunnable runLater(Runnable runnable, boolean async) {
+	public static FukkitRunnable runLater(Runnable runnable, boolean async) {
 		return runLater(runnable, -1, false);
 	}
 	
-	public static BukkitRunnable runLater(Runnable runnable, long delay, boolean async) {
+	public static FukkitRunnable runLater(Runnable runnable, long delay, boolean async) {
 		
-		BukkitRunnable task = new BukkitRunnable() {
+		FukkitRunnable task = new FukkitRunnable() {
 			
 			@Override
-			public void run() {
+			public void execute() {
 				runnable.run();
 			}
 			
@@ -73,10 +73,10 @@ public class BukkitUtils {
 		
 		BukkitTask[] ref = new BukkitTask[1];
 		
-		BukkitRunnable task = new BukkitRunnable() {
+		FukkitRunnable task = new FukkitRunnable() {
 			
 			@Override
-			public void run() {
+			public void execute() {
 				runnable.accept(ref[0]);
 			}
 			

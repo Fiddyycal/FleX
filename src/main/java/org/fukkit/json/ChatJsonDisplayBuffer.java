@@ -29,7 +29,7 @@ public class ChatJsonDisplayBuffer extends JsonBuffer {
 		
 		List<String> badges = new LinkedList<String>();
 		
-		badges.add("<pc>Badge on display<pp>:<reset> <sc>" + (badge != null ? "&l" + badge.getIcon() : "None"));
+		badges.add("<pc>Badge on display<pp>:<reset> <sc>" + (badge != null ? badge.getIcon() : "None"));
 		badges.add("");
 	    
 		try {
@@ -51,10 +51,14 @@ public class ChatJsonDisplayBuffer extends JsonBuffer {
 		
 		String[] format = ThemeMessage.CHAT_FORMAT_HOVER.format(theme, recipient.getLanguage(), variables);
 		
-		this.append(new JsonComponent(player.getDisplayName(theme))
-				
-				.onHover(theme.format(StringUtils.join(format, "\n")))
-				.onClick(Action.RUN_COMMAND, "/stats " + player.getName()));
+		JsonComponent comp = new JsonComponent(player.getDisplayName(theme))
+		
+		.onHover(theme.format(StringUtils.join(format, "\n")))
+		.onClick(Action.RUN_COMMAND, "/stats " + player.getName());
+		
+		System.out.println(comp.toString());
+		
+		this.append(comp);
 		
 		if (badge != null) {
 			

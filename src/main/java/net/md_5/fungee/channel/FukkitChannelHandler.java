@@ -12,15 +12,18 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.messaging.Messenger;
 import org.fukkit.Fukkit;
+import org.fukkit.FukkitRunnable;
+import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.FleXEventListener;
 import org.fukkit.event.channel.ChannelMessageReceivedEvent;
 import org.fukkit.event.channel.ChannelMessageSendEvent;
 import org.fukkit.event.player.FleXPlayerLoadEvent;
+import org.fukkit.theme.Theme;
 import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.ChatUtils;
 
@@ -43,12 +46,28 @@ public class FukkitChannelHandler extends FleXEventListener implements ChannelHa
 		if (event.isOffline())
 			return;
 		
-		Map<String, String> entries = CACHE.get(event.getPlayer().getUniqueId());
-		
-		if (entries == null || entries.isEmpty())
+		if (event.getPlayer() instanceof FleXBot)
 			return;
 		
+		UUID uid = event.getPlayer().getUniqueId();
+		
+		Map<String, String> entries = CACHE.get(uid);
+		
 		FleXPlayer player = event.getPlayer();
+		
+		Theme theme = player.getTheme();
+		
+		if (theme == null)
+			theme = org.fukkit.Memory.THEME_CACHE.getDefaultTheme();
+		
+		if (entries == null || entries.isEmpty()) {
+			
+			player.kick(theme.format("<failure>Failed to load version: Player updater not cached, please try again."));
+			
+			System.err.println(player.getName() + "'s FleXPlayer loaded but the domain and version could not be found, please review.");
+			return;
+			
+		}
 		
 		if (entries.containsKey("Version")) {
 
@@ -57,6 +76,15 @@ public class FukkitChannelHandler extends FleXEventListener implements ChannelHa
 			if (ClassUtils.canParseAsInteger(ver)) {
 				
 				ProtocolVersion version = ProtocolVersion.fromProtocol(Integer.parseInt(ver));
+				
+				if (version == null) {
+					
+					player.kick(theme.format("<failure>Your client version is not supported."));
+					
+					System.err.println(player.getName() + " tried to connect on protocol " + ver + ": Although it is a minecraft version it was not recognized by flex, please review.");
+					return;
+					
+				}
 				
 				player.setVersion(version);
 				
@@ -92,10 +120,12 @@ public class FukkitChannelHandler extends FleXEventListener implements ChannelHa
 		
 		player.getHistoryAsync(history -> history.getConnections().add(con), null);
 		
+		CACHE.remove(uid);
+		
 	}
 	
-	@EventHandler
-	public void event(PlayerJoinEvent event) {
+	@EventHandler(priority = EventPriority.LOW)
+	public void event(PlayerLoginEvent event) {
 		
 		Map<String, String> entries = CACHE.get(event.getPlayer().getUniqueId());
 		
@@ -135,7 +165,19 @@ public class FukkitChannelHandler extends FleXEventListener implements ChannelHa
 					/**
 					 * Timeout...
 					 */
-					BukkitUtils.runLater(() -> CACHE.remove(uid), 1200L);
+					new FukkitRunnable() {
+						
+						private String time = entries.get("Time");
+						
+						@Override
+						public void execute() {
+							
+							if (CACHE.containsKey(uid) && CACHE.get(uid).get("Time").equals(this.time))
+								CACHE.remove(uid);
+							
+						}
+						
+					}.runTaskLaterAsynchronously(1200L);
 					
 				}
 				

@@ -74,7 +74,7 @@ public class JsonComponent implements CharSequence, Serializable {
 
     public JsonComponent onHover(Statistic statistic) {
     	
-        JsonObject newJson = json.deepCopy();
+        JsonObject newJson = this.json.deepCopy();
         JsonObject hoverEvent = new JsonObject();
         
         hoverEvent.addProperty("action", "show_achievement");

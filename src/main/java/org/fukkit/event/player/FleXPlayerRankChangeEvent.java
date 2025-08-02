@@ -4,8 +4,6 @@ import org.bukkit.event.Cancellable;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.reward.Rank;
 
-import net.md_5.fungee.event.FleXHumanEntityEvent;
-
 public class FleXPlayerRankChangeEvent extends FleXHumanEntityEvent implements Cancellable {
 
 	private Rank rank;

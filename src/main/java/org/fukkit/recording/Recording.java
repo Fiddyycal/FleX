@@ -15,6 +15,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.handlers.FlowLineEnforcementHandler;
+
 import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
 import io.flex.commons.file.DataFile;
@@ -42,7 +44,9 @@ public abstract class Recording extends BukkitRunnable {
 	
 	public Recording(@Nullable String path, String name, World world, long length, FleXPlayer... players) throws FileAlreadyExistsException {
 		
-		this((path.endsWith(File.separator) ? path : path + File.separator) + name);
+		this((path != null ? (path.endsWith(File.separator) ? path : path + File.separator) : "") + name);
+		
+		System.out.println("TESTTTTTTTTTTTTTTTTTTTTTTTT: " + path + name);
 		
 		UUID uid = UUID.fromString(this.file.getTag("UniqueId"));
 		

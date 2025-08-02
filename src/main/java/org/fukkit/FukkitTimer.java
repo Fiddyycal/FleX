@@ -17,12 +17,12 @@ public abstract class FukkitTimer extends FukkitRunnable {
         this.countdown = countdown;
         this.stopped = false;
         
-        this.runTimer(2L, 2L);
+        this.runTaskTimer(2L, 2L);
         
     }
     
     @Override
-    public void run() {
+    public void execute() {
     	
         this.elapsed = this.countdown ? this.elapsed - .1 : this.elapsed + .1;
         boolean unfinished = !this.isComplete();

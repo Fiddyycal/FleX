@@ -1,10 +1,10 @@
 package io.flex.commons.utils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 public class CollectionUtils {
@@ -26,7 +26,7 @@ public class CollectionUtils {
 	
 	public static Map<String, String> toMap(String s) {
 		
-		Map<String, String> map = new HashMap<String, String>();
+		Map<String, String> map = new LinkedHashMap<String, String>();
 		
 		if (s == null)
 			return map;
@@ -57,13 +57,13 @@ public class CollectionUtils {
 	public static Collection<String> toCollection(String s) {
 		
 		if (s == null || s.equals("[]"))
-			return new ArrayList<String>();
+			return new LinkedList<String>();
 		
 		if (s != null && s.length() > 2 && s.charAt(0) == '[' && s.charAt(s.length() - 1) == ']')
 			s = s.substring(0, s.length() - 1).substring(1);
 		
 		/** Arrays asList method is immutable, new ArrayList makes list mutable. */
-		return new ArrayList<String>(Arrays.asList(s != null ? s.split(", ") : new String[0]));
+		return new LinkedList<String>(Arrays.asList(s != null ? s.split(", ") : new String[0]));
 		
 	}
 	

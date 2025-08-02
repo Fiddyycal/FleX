@@ -13,7 +13,7 @@ public enum ServerVersion {
 	
 	v1_8_R3("1.8.8", "R0.3-SNAPSHOT", true, ProtocolVersion.v1_8),
 	
-	v1_21_3_R2("1.21.3", "R0.2", ProtocolVersion.LATEST);
+	v1_21_R2("1.21.8", "R0.2", ProtocolVersion.LATEST);
 	
 	public static final ServerVersion LATEST = ServerVersion.latest();
 	

@@ -1,10 +1,8 @@
 package org.fukkit.listeners;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -59,6 +57,7 @@ import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.FleXEventListener;
 import org.fukkit.event.hologram.FloatingItemInteractEvent;
 import org.fukkit.event.hologram.HologramInteractEvent;
+import org.fukkit.event.player.FleXPlayerDeathEvent;
 import org.fukkit.event.player.FleXPlayerDisguisedEvent;
 import org.fukkit.event.player.FleXPlayerLoginEvent;
 import org.fukkit.event.player.FleXPlayerMaskEvent;
@@ -69,7 +68,6 @@ import org.fukkit.hologram.Hologram;
 import org.fukkit.metadata.FleXFixedMetadataValue;
 import org.fukkit.reward.Rank;
 import org.fukkit.utils.BukkitUtils;
-import org.fukkit.utils.FormatUtils;
 import org.fukkit.world.FleXWorld;
 
 import io.flex.FleXMissingResourceException;
@@ -81,8 +79,6 @@ import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLRowWrapper;
 import io.flex.commons.utils.NumUtils;
 import io.netty.channel.ConnectTimeoutException;
-
-import net.md_5.fungee.event.FleXPlayerDeathEvent;
 import net.md_5.fungee.server.ServerConnectException;
 import net.md_5.fungee.server.ServerVersion;
 
@@ -133,8 +129,6 @@ public class PlayerListeners extends FleXEventListener {
 			
 	    }
 	    
-		Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(player));
-		
 		try {
 			
 			if (fp == null) {
@@ -535,7 +529,7 @@ public class PlayerListeners extends FleXEventListener {
 		
     	FleXPlayer fp = PlayerHelper.getPlayerSafe(entity.getUniqueId());
     	
-    	if (fp.getState() == PlayerState.SPECTATING && event.getCause() == DamageCause.PROJECTILE) {
+    	if (fp != null && fp.getState() == PlayerState.SPECTATING && event.getCause() == DamageCause.PROJECTILE) {
 			
 			Location loc = fp.getLocation().clone();
 			
@@ -899,17 +893,8 @@ public class PlayerListeners extends FleXEventListener {
 		if (event.getLoginResult() != Result.ALLOWED)
 			return;
 		
-		String message = "Disconnected";
-		
-		StringBuilder sb = new StringBuilder();
-		String error = ChatColor.RED + ServerConnectException.FALLBACK_ERROR + ": \n" + ServerConnectException.class.getCanonicalName() + ": ";
-		
-		Arrays.stream(new String[] { error + (reason != null ? reason : "no further information:") }).forEach(r -> sb.append(FormatUtils.format(r) + "\n"));
-		
-		message = sb.length() > 0 ? sb.toString() : "You have been kicked from the server.";
-		
 		event.setLoginResult(Result.KICK_OTHER);
-		event.setKickMessage(message);
+		event.setKickMessage(disconnectMessage(ServerConnectException.SERVER_ERROR + ": " + reason));
 		
 		FleXHumanEntity fp = Memory.PLAYER_CACHE.getFromCache(event.getUniqueId());
 		
@@ -920,20 +905,15 @@ public class PlayerListeners extends FleXEventListener {
 	
 	private static void disconnect(Player player, String reason) {
 		
-		if (player == null)
+		if (player == null || !player.isOnline())
 			return;
 		
-		String message = "Disconnected";
+		player.kickPlayer(disconnectMessage(reason));
 		
-		StringBuilder sb = new StringBuilder();
-		String error = ChatColor.RED + ServerConnectException.FALLBACK_ERROR + ": \n" + ServerConnectException.class.getCanonicalName() + ": ";
-		
-		Arrays.stream(new String[] { error + (reason != null ? reason : "no further information:") }).forEach(r -> sb.append(FormatUtils.format(r) + "\n"));
-		
-		message = sb.length() > 0 ? sb.toString() : "You have been kicked from the server.";
-		
-		player.kickPlayer(message);
-		
+	}
+	
+	private static String disconnectMessage(String reason) {
+		return ChatColor.RED + "FleXPlayer failed to login\n\n" + ChatColor.RED + reason;
 	}
 	
 }

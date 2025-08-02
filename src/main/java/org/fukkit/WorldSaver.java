@@ -16,11 +16,11 @@ public class WorldSaver extends FukkitRunnable {
 	private Map<FleXWorld, Long> worlds = new HashMap<FleXWorld, Long>();	
 	
 	public WorldSaver() {
-		this.runTimer(10L, /* TODO Make 10 Minutes after testing */ 1600L);
+		this.runTaskTimer(10L, /* TODO Make 10 Minutes after testing */ 1600L);
 	}
 
 	@Override
-	public void run() {
+	public void execute() {
 		
 		this.i++;
 		

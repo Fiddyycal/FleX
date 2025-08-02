@@ -30,20 +30,12 @@ public abstract class Clickable implements Cacheable, Metadatable {
 	
 	private List<FleXHumanEntity> viewers = new ArrayList<FleXHumanEntity>();
 	
-	private boolean delete;
-	
 	public Clickable(Inventory inventory, FleXHumanEntity... viewers) {
-		this(inventory, false, viewers);
-	}
-	
-	public Clickable(Inventory inventory, boolean deleteOnExit, FleXHumanEntity... viewers) {
 		
 		this.inventory = inventory;
 		
 		for (FleXHumanEntity viewer : viewers)
 			this.viewers.add(viewer);
-		
-		this.delete = deleteOnExit;
 		
 	}
 	
@@ -206,14 +198,6 @@ public abstract class Clickable implements Cacheable, Metadatable {
 	@Override
 	public boolean hasMetadata(String metadataKey) {
 		return this.metadata.containsKey(metadataKey);
-	}
-	
-	public void deleteOnExit(boolean delete) {
-		this.delete = delete;
-	}
-	
-	public boolean deleteOnExit() {
-		return this.delete;
 	}
 	
 }

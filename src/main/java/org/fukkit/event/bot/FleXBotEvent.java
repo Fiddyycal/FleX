@@ -1,8 +1,7 @@
 package org.fukkit.event.bot;
 
 import org.fukkit.entity.FleXBot;
-
-import net.md_5.fungee.event.FleXPlayerEvent;
+import org.fukkit.event.player.FleXPlayerEvent;
 
 public class FleXBotEvent extends FleXPlayerEvent {
 

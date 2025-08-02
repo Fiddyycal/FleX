@@ -31,6 +31,7 @@ import org.fukkit.entity.FleXLivingEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.PlayerFactory;
 import org.fukkit.event.EventFactory;
+import org.fukkit.event.FleXFinalizeEvent;
 import org.fukkit.handlers.BridgeHandler;
 import org.fukkit.handlers.ConnectionHandler;
 import org.fukkit.handlers.FlowLineEnforcementHandler;
@@ -52,7 +53,6 @@ import io.flex.commons.console.Console;
 import io.flex.commons.file.DataFile;
 import io.flex.commons.utils.NumUtils;
 import io.flex.commons.utils.StringUtils;
-import net.md_5.fungee.event.FleXFinalizeEvent;
 import net.md_5.fungee.server.ServerVersion;
 
 public final class Fukkit extends JavaPlugin {

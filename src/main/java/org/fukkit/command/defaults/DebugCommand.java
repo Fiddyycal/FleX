@@ -1,12 +1,5 @@
 package org.fukkit.command.defaults;
 
-import static net.md_5.fungee.FungeeCord.ADDJUNCT;
-import static net.md_5.fungee.FungeeCord.AUTHOR;
-import static net.md_5.fungee.FungeeCord.COMMIT;
-import static net.md_5.fungee.FungeeCord.NAME;
-import static net.md_5.fungee.FungeeCord.TRAVERTINE;
-import static net.md_5.fungee.FungeeCord.VERSION;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -17,6 +10,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.fukkit.Fukkit;
+import org.fukkit.FukkitRunnable;
 import org.fukkit.Memory;
 import org.fukkit.command.Command;
 import org.fukkit.command.ConsoleCommand;
@@ -49,7 +43,15 @@ import net.md_5.fungee.server.ServerVersion;
 @FlaggedCommand(flags = "-h")
 @Command(name = "debug", usage = "/<command> [type] [-h]", aliases = { "bug", "deghost" }, description = "Prints debug information")
 public class DebugCommand extends FleXCommandAdapter {
+	
+	private static final String NAME = "FungeeCord";
+	private static final String VERSION = "1.0.1b-SNAPSHOT";
+	private static final String COMMIT = "e274f23";
+	private static final String TRAVERTINE = "86";
 
+	private static final String AUTHOR = "md_5";
+	private static final String ADDJUNCT = String.valueOf(new char[]{ '5', 'O', 'c', 'a', 'l' });
+	
 	@Override
 	public boolean perform(String[] args, String[] flags) {
 		
@@ -84,24 +86,25 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		FleXPlayer player = this.getPlayer();
 		
-		boolean admin = this.getSender() instanceof Player == false || player.isStaff();
+		boolean staff = this.getSender() instanceof Player == false || player.isStaff();
 		
 		if (args.length != 0 && args.length != 1 && args.length != 2) {
 			
-			if (admin) {
+			if (staff) {
 				
 				this.usage(
 						
 						"/<command> [-h]",
 						"/<command> player/bot/item/world/data <player> [-h]",
-						"/<command> server [-h]");
+						"/<command> server [-h]",
+						"/<command> memory");
 				
 			} else this.usage("/<command> player/server/item/world/data [-h]");
 			
 		    return false;
 		}
 		
-		if (args.length == 2 && !admin) {
+		if (args.length == 2 && !staff) {
 			this.noPermission();
 			return false;
 		}
@@ -157,13 +160,14 @@ public class DebugCommand extends FleXCommandAdapter {
 				
 			} else {
 				
-				if (admin) {
+				if (staff) {
 					
 					this.usage(
 							
 							"/<command> [-h]",
 							"/<command> player/bot/item/world/data <player> [-h]",
-							"/<command> server [-h]");
+							"/<command> server [-h]",
+							"/<command> memory");
 					
 				} else this.usage("/<command> player/server/item/world/data [-h]");
 				
@@ -180,12 +184,24 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		if (args[0].equalsIgnoreCase("bot")) {
 			
-			if (!admin) {
+			if (!staff) {
 				this.noPermission();
 				return false;
 			}
 			
 			this.sendBotDebug(flagged, (FleXBot)player);
+			return true;
+			
+		}
+		
+		if (args[0].equalsIgnoreCase("memory")) {
+			
+			if (!staff) {
+				this.noPermission();
+				return false;
+			}
+			
+			this.sendMemoryDebug();
 			return true;
 			
 		}
@@ -204,13 +220,14 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			if (args.length == 2) {
 				
-				if (admin) {
+				if (staff) {
 					
 					this.usage(
 							
 							"/<command> [-h]",
 							"/<command> player/bot/item/world/data <player> [-h]",
-							"/<command> server [-h]");
+							"/<command> server [-h]",
+							"/<command> memory");
 					
 				} else this.usage("/<command> player/server/item/world/data [-h]");
 				
@@ -228,13 +245,14 @@ public class DebugCommand extends FleXCommandAdapter {
 			return true;
 		}
 		
-		if (admin) {
+		if (staff) {
 			
 			this.usage(
 					
 					"/<command> [-h]",
 					"/<command> player/bot/item/world/data <player> [-h]",
-					"/<command> server [-h]");
+					"/<command> server [-h]",
+					"/<command> memory");
 			
 		} else this.usage("/<command> player/server/item/world/data [-h]");
 		
@@ -272,6 +290,16 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			sender.sendMessage(ChatColor.GRAY + "Network: " + ChatColor.RESET + "(#" + (region.ordinal() + 2) + ") Luminous");
 			
+			String domain = "flex.gg";
+			
+			if (sender instanceof Player) {
+				if (((Player)sender).hasMetadata("domain")) {
+					if (((Player)sender).getMetadata("domain").get(0) != null) {
+						domain = ((Player)sender).getMetadata("domain").get(0).asString();
+					}
+				}
+			}
+			
 			String
 			serverName = "LuminousMC",
 			game = "MINECRAFT_GAME",
@@ -292,6 +320,7 @@ public class DebugCommand extends FleXCommandAdapter {
 			sender.sendMessage(ChatColor.GRAY + "Game: " + ChatColor.RESET + game);
 			sender.sendMessage(ChatColor.GRAY + "Uid: " + ChatColor.RESET + uid);
 			sender.sendMessage(ChatColor.GRAY + "State: " + ChatColor.RESET + state);
+			sender.sendMessage(ChatColor.GRAY + "Domain: " + ChatColor.RESET + domain);
 			sender.sendMessage(ChatColor.GRAY + "Native Version: " + ChatColor.RESET + nativeVer);
 			sender.sendMessage(ChatColor.GRAY + "Proxy Version: " + ChatColor.RESET + ver);
 			sender.sendMessage(ChatColor.GRAY + "Author(s): " + ChatColor.RESET + auth);
@@ -303,6 +332,45 @@ public class DebugCommand extends FleXCommandAdapter {
 			if (sender instanceof Player || sender instanceof FleXPlayer)
 				sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Open chat " + ChatColor.AQUA + "[T]" + ChatColor.GRAY + " to show more information.");
 		
+		}, 20L, false);
+		
+	}
+	
+	private void sendMemoryDebug() {
+		
+		this.sendRef();
+		
+		CommandSender sender = this.getSender();
+		
+		BukkitUtils.runLater(() -> {
+			
+			if (sender == null || (sender instanceof Player && !((Player)sender).isOnline()))
+				return;
+			
+    		int o = 0;
+    		
+    		for (FleXPlayer player : Fukkit.getServerHandler().getOnlinePlayersUnsafe())
+				o = o + player.getPlayer().getScoreboard().getObjectives().size();
+    		
+    		int t = 0;
+    		
+    		for (FleXPlayer player : Fukkit.getServerHandler().getOnlinePlayersUnsafe())
+				t = t + player.getPlayer().getScoreboard().getTeams().size();
+    		
+    		sender.sendMessage(ChatColor.GRAY + "Tasks: " + ChatColor.RESET + FukkitRunnable.getTasks());
+    		sender.sendMessage(ChatColor.GRAY + "Teams: " + ChatColor.RESET + t);
+    		sender.sendMessage(ChatColor.GRAY + "Objectives: " + ChatColor.RESET + o);
+    		sender.sendMessage(ChatColor.GRAY + "Loadouts: " + ChatColor.RESET + Fukkit.getServerHandler().getOnlinePlayersUnsafe().stream().filter(p -> p.getLoadout() != null).count());
+    		sender.sendMessage(ChatColor.GRAY + "Channels: " + ChatColor.RESET + net.md_5.fungee.Memory.CHANNEL_CACHE.size());
+    		sender.sendMessage(ChatColor.GRAY + "Commands: " + ChatColor.RESET + Memory.COMMAND_CACHE.size());
+    		sender.sendMessage(ChatColor.GRAY + "Players: " + ChatColor.RESET + Memory.PLAYER_CACHE.size());
+    		sender.sendMessage(ChatColor.GRAY + "Buttons: " + ChatColor.RESET + Memory.BUTTON_CACHE.size());
+    		sender.sendMessage(ChatColor.GRAY + "Themes: " + ChatColor.RESET + Memory.THEME_CACHE.size());
+    		sender.sendMessage(ChatColor.GRAY + "Skins: " + ChatColor.RESET + Memory.SKIN_CACHE.size());
+    		sender.sendMessage(ChatColor.GRAY + "Badges: " + ChatColor.RESET + Memory.BADGE_CACHE.size());
+    		sender.sendMessage(ChatColor.GRAY + "Ranks: " + ChatColor.RESET + Memory.RANK_CACHE.size());
+    		sender.sendMessage(ChatColor.GRAY + "Menus: " + ChatColor.RESET + Memory.GUI_CACHE.size());
+    		
 		}, 20L, false);
 		
 	}

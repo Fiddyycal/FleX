@@ -96,8 +96,6 @@ public class Rank extends FleXEventListener implements Cacheable {
 		if (present && !entry.getValue().contains(this.name))
 			display = display + this.name;
 		
-		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " + display);
-		
 		return theme.format(present && display.contains(" ") ? display.substring(0, display.lastIndexOf(' ')) : display);
 		
 	}

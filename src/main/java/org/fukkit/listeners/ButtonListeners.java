@@ -68,8 +68,7 @@ public class ButtonListeners extends FleXEventListener {
 			
 			gui.setOpen(false);
 			
-			if (gui.deleteOnExit())
-				Memory.GUI_CACHE.remove(gui);
+			Memory.GUI_CACHE.remove(gui);
 			
 		}
 	}

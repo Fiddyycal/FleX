@@ -5,7 +5,6 @@ import org.fukkit.Memory;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.reward.Badge;
 import org.fukkit.theme.Theme;
-import org.fukkit.utils.VersionUtils;
 
 import io.flex.commons.utils.ArrayUtils;
 
@@ -82,13 +81,6 @@ public class BadgeSubCommand extends AbstractAdminSubCommand {
 				}
 			
 				history.getBadges().onBadgeReceive(badge, reas);
-			
-				if (this.command.getPlayer() == fp || (player != fp && fp.isOnline())) {
-				
-					fp.getPlayer().playSound(fp.getLocation(), VersionUtils.sound("LEVEL_UP", "ENTITY_PLAYER_LEVELUP"), 1F, 0.1F);
-					fp.sendMessage(theme.format("<engine><success>You have been given the badge <spc>" + badge.getName() + "<pp>. (<sc>" + reas + "<pp>)"));
-				
-				}
 				
 			} else {
 
@@ -100,12 +92,6 @@ public class BadgeSubCommand extends AbstractAdminSubCommand {
 				}
 			
 				history.getBadges().onBadgeRemove(badge, reas);
-			
-				if (this.command.getPlayer() == fp || (player != fp && fp.isOnline())) {
-				
-					fp.sendMessage(theme.format("<engine><failure>The badge <spc>" + badge.getName() + "<reset> <failure>has been taken from you<pp>. (<sc>" + reas + "<pp>)"));
-				
-				}
 				
 			}
 			

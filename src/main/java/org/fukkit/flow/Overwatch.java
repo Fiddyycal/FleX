@@ -1,6 +1,5 @@
 package org.fukkit.flow;
 
-import java.io.File;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.HashMap;
 import java.util.Set;
@@ -30,7 +29,7 @@ public class Overwatch extends Recording {
 	
 	public Overwatch(Report report, @Nullable FleXPlayer... record) throws FileAlreadyExistsException {
 		
-		super(FlowLineEnforcementHandler.flowPath() + report.getPlayer().getUniqueId().toString() + File.separator, 
+		super(FlowLineEnforcementHandler.flowPath() + report.getPlayer().getUniqueId().toString(), 
 				"flow",
 				report.getPlayer().getPlayer().getWorld(), 
 				400/*20 seconds*/,

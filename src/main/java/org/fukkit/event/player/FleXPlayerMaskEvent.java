@@ -6,8 +6,6 @@ import org.fukkit.reward.Rank;
 
 import io.flex.commons.Nullable;
 
-import net.md_5.fungee.event.FleXHumanEntityEvent;
-
 public class FleXPlayerMaskEvent extends FleXHumanEntityEvent implements Cancellable {
 	
 	private boolean cancel = false;

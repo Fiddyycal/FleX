@@ -1,10 +1,10 @@
-package net.md_5.fungee.event;
+package org.fukkit.event;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.fukkit.entity.FleXHumanEntity;
 
-public class FleXHumanEntityEvent extends Event {
+public class FleXFinalizeEvent extends Event {
 
 	protected FleXHumanEntity human;
 	
@@ -18,17 +18,9 @@ public class FleXHumanEntityEvent extends Event {
 	public static HandlerList getHandlerList() {       
 		return handlers;   
 	}
-	
-	public FleXHumanEntityEvent(final FleXHumanEntity human, boolean async) {
-		
-		super(async);
-		
-		this.human = human;
-		
-	}
-	
-	public FleXHumanEntity getPlayer() {
-		return this.human;
+
+	public FleXFinalizeEvent() {
+		super();
 	}
 
 }

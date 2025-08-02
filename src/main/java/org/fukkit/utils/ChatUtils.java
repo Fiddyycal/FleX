@@ -7,6 +7,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.event.player.FleXPlayerAsyncChatEvent;
+import org.fukkit.event.player.FleXPlayerAsyncChatReceiveEvent;
+import org.fukkit.event.player.FleXPlayerMentionEvent;
 import org.fukkit.json.ChatJsonDisplayBuffer;
 import org.fukkit.json.ChatJsonInteractableBuffer;
 import org.fukkit.json.JsonBuffer;
@@ -18,9 +21,6 @@ import org.fukkit.theme.ThemeMessage;
 import io.flex.commons.Nullable;
 import io.flex.commons.file.Language;
 import io.flex.commons.file.Variable;
-import net.md_5.fungee.event.FleXPlayerAsyncChatEvent;
-import net.md_5.fungee.event.FleXPlayerAsyncChatReceiveEvent;
-import net.md_5.fungee.event.FleXPlayerMentionEvent;
 
 public class ChatUtils {
 

@@ -152,12 +152,10 @@ public class FormatUtils {
 		if (s == null)
 			return null;
 		
-		s = s.replace("&g", ChatColor.COLOR_CHAR + "g");
-		s = s.replace("&h", ChatColor.COLOR_CHAR + "h");
 		s = s.replace("&l", ChatColor.COLOR_CHAR + "l");
 		
 		while (s.contains(ChatColor.COLOR_CHAR + "h"))
-			s = s.replaceFirst(ChatColor.COLOR_CHAR + "h", RAINBOW[NumUtils.getRng().getInt(0, RAINBOW.length - 1)].toString());
+			s = s.replaceFirst("&h", RAINBOW[NumUtils.getRng().getInt(0, RAINBOW.length - 1)].toString());
 		
 		return ChatColor.translateAlternateColorCodes('&', rainbow(s));
 		
@@ -165,7 +163,7 @@ public class FormatUtils {
 	
 	public static String rainbow(String check) {
 	
-		String checking = ChatColor.COLOR_CHAR + "g";
+		String checking = "&g";
 		
 		if (!check.contains(checking))
 			return check;

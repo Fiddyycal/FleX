@@ -16,24 +16,16 @@ public class Menu extends Clickable {
 	private boolean open = false;
 	
 	public Menu(String title, int rows, @Nullable FleXHumanEntity... viewers) {
-		this(title, rows, false, viewers);
-	}
-	
-	public Menu(String title, InventoryType inventoryType, @Nullable FleXHumanEntity... viewers) {
-		this(title, inventoryType, false, viewers);
-	}
-	
-	public Menu(String title, int rows, boolean deleteOnExit, @Nullable FleXHumanEntity... viewers) {
 		
-		super(Fukkit.getInstance().getServer().createInventory(null, rows * 9, FormatUtils.format(title.length() > 32 ? StringUtils.shorten(title, 0, 31) + "-" : title)), deleteOnExit, viewers);
+		super(Fukkit.getInstance().getServer().createInventory(null, rows * 9, FormatUtils.format(title.length() > 32 ? StringUtils.shorten(title, 0, 31) + "-" : title)), viewers);
 		
 		this.setup(title);
 		
 	}
 	
-	public Menu(String title, InventoryType inventoryType, boolean deleteOnExit, @Nullable FleXHumanEntity... viewers) {
+	public Menu(String title, InventoryType inventoryType, @Nullable FleXHumanEntity... viewers) {
 		
-		super(Fukkit.getInstance().getServer().createInventory(null, inventoryType, FormatUtils.format(title)), deleteOnExit, viewers);
+		super(Fukkit.getInstance().getServer().createInventory(null, inventoryType, FormatUtils.format(title)), viewers);
 		
 		this.setup(title);
 		

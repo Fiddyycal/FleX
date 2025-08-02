@@ -3,8 +3,6 @@ package org.fukkit.event.player;
 import org.bukkit.event.Cancellable;
 import org.fukkit.entity.FleXPlayer;
 
-import net.md_5.fungee.event.FleXPlayerEvent;
-
 @Deprecated
 public class FleXPlayerUpdateEvent extends FleXPlayerEvent implements Cancellable {
 	

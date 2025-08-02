@@ -28,12 +28,14 @@ import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.FleXEventListener;
+import org.fukkit.event.FleXFinalizeEvent;
 import org.fukkit.event.consequence.FleXBanEvent;
 import org.fukkit.event.consequence.FleXConvictEvent;
 import org.fukkit.event.consequence.FleXKickEvent;
 import org.fukkit.event.consequence.FleXMuteEvent;
 import org.fukkit.event.consequence.FleXPreConsequenceEvent;
 import org.fukkit.event.consequence.FleXReportEvent;
+import org.fukkit.event.player.FleXPlayerAsyncChatEvent;
 import org.fukkit.event.player.PlayerChangeStateEvent;
 import org.fukkit.flow.Overwatch;
 import org.fukkit.handlers.FlowLineEnforcementHandler;
@@ -46,9 +48,6 @@ import io.flex.commons.cache.cell.BiCell;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.FileUtils;
 import io.flex.commons.utils.NumUtils;
-
-import net.md_5.fungee.event.FleXFinalizeEvent;
-import net.md_5.fungee.event.FleXPlayerAsyncChatEvent;
 
 public class ConvictionListeners extends FleXEventListener {
 	
@@ -383,7 +382,7 @@ public class ConvictionListeners extends FleXEventListener {
 								
 								System.out.println("Starting recording............................ 1");
 								
-								FleXPlayer[] record = player.getWorld().getOnlinePlayers().stream().filter(p -> p.getState() == PlayerState.INGAME).toArray(i -> new FleXPlayer[i]);
+								FleXPlayer[] record = player.getWorld().getOnlinePlayers().stream().filter(p -> p.getState() == PlayerState.INGAME).toArray(FleXPlayer[]::new);
 								
 								Fukkit.getFlowLineEnforcementHandler().setRecording(player, true);
 								
