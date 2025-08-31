@@ -2,6 +2,8 @@ package io.flex.commons.sql;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -205,14 +207,8 @@ public class SQLRowWrapper implements Cacheable {
 	}
 	
 	public <V> void set(String column, @Nullable V value) {
-		
-		if (value != null)
-			this.entries.put(column, value);
-		
-		else this.entries.remove(column);
-		
+		this.entries.put(column, value); // This even adds as null if value is null, then is removed from entries if update is called.
 		this.updated = false;
-		
 	}
 	
 	public int update() throws SQLException {
@@ -263,14 +259,25 @@ public class SQLRowWrapper implements Cacheable {
 		    
 		    int index = 1;
 	        
-	        for (Entry<String, Object> entry : this.entries.entrySet()) {
-	        	
-	            if (entry.getKey().equals(this.identifier))
-	            	continue;
-	            
-	            statement.setObject(index++, entry.getValue());
-	            
-	        }
+		    List<String> remove = new ArrayList<String>();
+
+		    for (Entry<String, Object> entry : this.entries.entrySet()) {
+		    	
+		    	if (entry.getKey().equals(this.identifier))
+		    		continue;
+		    	
+		    	Object obj = entry.getValue();
+		    	
+		    	statement.setObject(index++, obj);
+		    	
+		    	if (obj == null)
+		    		remove.add(entry.getKey());
+		    	
+		    }
+
+		    // Avoid concurrent modification exception
+		    for (String key : remove)
+		    	this.entries.remove(key);
 	        
 	        statement.setObject(index, this.entries.get(this.identifier));
 	        

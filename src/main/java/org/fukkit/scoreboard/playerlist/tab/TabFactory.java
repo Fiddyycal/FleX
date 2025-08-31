@@ -5,12 +5,14 @@ import org.fukkit.entity.FleXPlayer;
 
 public interface TabFactory {
 	
-	public void setInTab(FleXPlayer player, int index, Player entity);
+	public void add(FleXPlayer player, int index, Player entity);
 	
-	public void removeFromTab(FleXPlayer player, Player... entities);
+	public void add(FleXPlayer player, Player... entities);
+	
+	public void remove(FleXPlayer player, Player... entities);
+	
+	public void remove(FleXPlayer player, int index, Player entity);
 	
 	public void update(FleXPlayer player, Player... entities);
-	
-	public void clear(FleXPlayer player);
 
 }

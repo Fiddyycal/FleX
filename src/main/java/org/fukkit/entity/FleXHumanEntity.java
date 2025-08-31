@@ -1,5 +1,6 @@
 package org.fukkit.entity;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import org.fukkit.PlayerState;
 import org.fukkit.clickable.Loadout;
@@ -9,8 +10,8 @@ import org.fukkit.reward.Rank;
 
 import io.flex.commons.Nullable;
 
-public interface FleXHumanEntity extends FleXLivingEntity {
-
+public interface FleXHumanEntity extends FleXLivingEntity, CommandSender {
+	
 	public long getPlayTime();
 	
 	public long getLastSeen();
@@ -66,6 +67,8 @@ public interface FleXHumanEntity extends FleXLivingEntity {
 	public void setBoots(ItemStack item);
 	
 	public void setItem(int slot, ItemStack item);
+	
+	public void sendMessage(String message);
 	
 	public void sendMessage(String... message);
 	

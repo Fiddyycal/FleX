@@ -133,7 +133,7 @@ public abstract class DataServer extends Thread {
     		return;
 
 	    while (true) {
-	        try {
+	    	try {
 	        	
 	            Socket client = this.server.accept();
 	            

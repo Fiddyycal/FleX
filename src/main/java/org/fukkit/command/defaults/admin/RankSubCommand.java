@@ -1,5 +1,6 @@
 package org.fukkit.command.defaults.admin;
 
+import org.bukkit.command.CommandSender;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
 import org.fukkit.entity.FleXPlayer;
@@ -17,14 +18,15 @@ public class RankSubCommand extends AbstractAdminSubCommand {
 	}
 
 	@Override
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length < 2) {
-			this.command.usage("/<command> setrank/giverank/rank/r <player> <rank> [reason]");
+			this.command.usage(sender, "/<command> setrank/giverank/rank/r <player> <rank> [reason]");
 			return false;
 		}
 		
-		FleXPlayer fp = this.command.getPlayer();
+		FleXPlayer player = sender instanceof FleXPlayer ? (FleXPlayer) sender : null;
+		FleXPlayer fp = player;
 		
 		String name = args[0];
 		Rank rank = null;
@@ -44,19 +46,19 @@ public class RankSubCommand extends AbstractAdminSubCommand {
 		rank = Memory.RANK_CACHE.get(args[1]);
 		
 		if (fp == null) {
-			this.command.playerNotFound(name);
+			this.command.playerNotFound(sender, name);
 			return false;
 		}
 
 		if (rank == null) {
 			
-
-			if (this.command.getPlayer() != null)
-				this.command.getPlayer().sendMessage(ThemeMessage.RANK_FAILURE_NOT_FOUND.format(fp.getTheme(), fp.getLanguage(), new Variable<String>("%rank%", args[1])));
+			if (player != null)
+				player.sendMessage(ThemeMessage.RANK_FAILURE_NOT_FOUND.format(player.getTheme(), player.getLanguage(), new Variable<String>("%rank%", args[1])));
 			
-			else this.command.getSender().sendMessage(ThemeMessage.RANK_FAILURE_NOT_FOUND.format(Memory.THEME_CACHE.stream().findFirst().get(), Language.ENGLISH, new Variable<String>("%rank%", args[1])));
+			else sender.sendMessage(ThemeMessage.RANK_FAILURE_NOT_FOUND.format(Memory.THEME_CACHE.getDefaultTheme(), Language.ENGLISH, new Variable<String>("%rank%", args[1])));
 			
 			return false;
+			
 		}
 		
 		if (fp.getRank() == rank) {
@@ -68,19 +70,17 @@ public class RankSubCommand extends AbstractAdminSubCommand {
 				new Variable<String>("%rank%", rank.getName())
 				
 			};
-			
-			if (this.command.getPlayer() != null) {
+
+			if (player != null) {
 				
-				this.command.getPlayer().sendMessage(this.command.getPlayer() != fp ?
+				player.sendMessage(player != fp ?
 						
 						ThemeMessage.RANK_FAILURE_OTHER.format(fp.getTheme(), fp.getLanguage(), variables) :
 						ThemeMessage.RANK_FAILURE.format(fp.getTheme(), fp.getLanguage(), variables)
 						
 				);
 				
-			} else 
-				
-				this.command.getPlayer().sendMessage(ThemeMessage.RANK_FAILURE_OTHER.format(Memory.THEME_CACHE.stream().findFirst().get(), Language.ENGLISH, variables));
+			} else sender.sendMessage(ThemeMessage.RANK_FAILURE_OTHER.format(Memory.THEME_CACHE.getDefaultTheme(), Language.ENGLISH, variables));
 			
 			return false;
 			
@@ -99,17 +99,17 @@ public class RankSubCommand extends AbstractAdminSubCommand {
 			
 		};
 		
-		if (this.command.getPlayer() == null)
-			this.command.getSender().sendMessage(ThemeMessage.RANK_SUCCESS_OTHER.format(Memory.THEME_CACHE.stream().findFirst().get(), Language.ENGLISH, variables));
+		if (player == null)
+			sender.sendMessage(ThemeMessage.RANK_SUCCESS_OTHER.format(Memory.THEME_CACHE.getDefaultTheme(), Language.ENGLISH, variables));
 			
 		else {
 			
-			if (this.command.getPlayer() != fp)
-				this.command.getPlayer().sendMessage(ThemeMessage.RANK_SUCCESS_OTHER.format(this.command.getPlayer().getTheme(), this.command.getPlayer().getLanguage(), variables));
+			if (player != fp)
+				player.sendMessage(ThemeMessage.RANK_SUCCESS_OTHER.format(player.getTheme(), player.getLanguage(), variables));
 			
 		}
 		
-		if (this.command.getPlayer() == fp || (this.command.getPlayer() != fp && fp.isOnline()))
+		if (player == fp || (player != fp && fp.isOnline()))
 			fp.sendMessage(ThemeMessage.RANK_SUCCESS.format(fp.getTheme(), fp.getLanguage(), variables));
 		
 		return true;

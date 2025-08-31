@@ -2,14 +2,14 @@ package org.fukkit.event.command;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.fukkit.command.FleXCommand;
+import org.fukkit.command.FleXCommandAdapter;
 
 public class FleXCommandEvent extends Event {
 
-	protected FleXCommand command;
+	protected FleXCommandAdapter command;
 	private static HandlerList handlers = new HandlerList();
 	
-	public FleXCommandEvent(FleXCommand command, boolean async) {
+	public FleXCommandEvent(FleXCommandAdapter command, boolean async) {
 		super(async);
 		this.command = command;
 	}
@@ -18,7 +18,7 @@ public class FleXCommandEvent extends Event {
 		return handlers;
 	}
 	
-	public FleXCommand getCommand() {
+	public FleXCommandAdapter getCommand() {
 		return this.command;
 	}
 	

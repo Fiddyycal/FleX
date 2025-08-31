@@ -96,7 +96,10 @@ public class Rank extends FleXEventListener implements Cacheable {
 		if (present && !entry.getValue().contains(this.name))
 			display = display + this.name;
 		
-		return theme.format(present && display.contains(" ") ? display.substring(0, display.lastIndexOf(' ')) : display);
+		if (present)
+			return theme.format(present && display.contains(" ") ? display.substring(0, display.lastIndexOf(' ')) : display);
+		
+		return display;
 		
 	}
 	
@@ -177,6 +180,10 @@ public class Rank extends FleXEventListener implements Cacheable {
 	@Override
 	public String toString() {
 		return this.name;
+	}
+	
+	public String of(Theme theme, String s) {
+		return theme.format(this.getDisplay(theme, false) + s);
 	}
 	
 }

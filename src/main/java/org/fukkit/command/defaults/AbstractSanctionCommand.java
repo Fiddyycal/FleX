@@ -1,5 +1,6 @@
 package org.fukkit.command.defaults;
 
+import org.bukkit.command.CommandSender;
 import org.fukkit.Fukkit;
 import org.fukkit.clickable.Menu;
 import org.fukkit.command.FleXCommandAdapter;
@@ -15,45 +16,45 @@ import io.flex.commons.utils.StringUtils;
 public abstract class AbstractSanctionCommand extends FleXCommandAdapter {
 
 	@Override
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		boolean report = StringUtils.equalsIgnoreCaseAny(this.command, "report", "flexreport", "hacking", "hacker", "cheating", "cheater");
 		
-		if (!this.getPlayer().hasPermission("flex.command.punish") && !report) {
-			this.noPermission();
+		if (!((FleXPlayer)sender).hasPermission("flex.command.punish") && !report) {
+			this.noPermission(sender);
 			return false;
 		}
 		
 		if (args.length != 1) {
-			this.usage();
+			this.usage(sender);
 			return false;
 		}
 		
 		FleXPlayer fp = Fukkit.getPlayer(args[0]);
 		
 		if (fp == null) {
-			this.playerNotFound(args[0]);
+			this.playerNotFound(sender, args[0]);
 			return false;
 		}
 		
 		if ((StringUtils.equalsIgnoreCaseAny(this.command, "kick", "flexkick") || report) && !fp.isOnline()) {
-			this.playerNotOnline(fp);
+			this.playerNotOnline(sender, fp);
 			return false;
 		}
 		
-		if (this.getPlayer() == fp) {
-			this.getPlayer().sendMessage((report ? ThemeMessage.REPORT_FAILURE_SELF : ThemeMessage.PUNISHMENT_FAILURE_SELF).format(this.getPlayer().getTheme(), this.getPlayer().getLanguage(), new Variable<String>("%punishment%", this.command)));
+		if (((FleXPlayer)sender) == fp) {
+			((FleXPlayer)sender).sendMessage((report ? ThemeMessage.REPORT_FAILURE_SELF : ThemeMessage.PUNISHMENT_FAILURE_SELF).format(((FleXPlayer)sender).getTheme(), ((FleXPlayer)sender).getLanguage(), new Variable<String>("%punishment%", this.command)));
 			return false;
 		}
 		
-		if (this.getPlayer().getRank().isStaff() && this.getPlayer().getRank().getWeight() < fp.getRank().getWeight()) {
+		if (((FleXPlayer)sender).getRank().isStaff() && ((FleXPlayer)sender).getRank().getWeight() < fp.getRank().getWeight()) {
 			
 			if (report) {
-				this.getPlayer().sendMessage(ThemeMessage.REPORT_FAILURE_DENIED.format(this.getPlayer().getTheme(), this.getPlayer().getLanguage()));
+				((FleXPlayer)sender).sendMessage(ThemeMessage.REPORT_FAILURE_DENIED.format(((FleXPlayer)sender).getTheme(), ((FleXPlayer)sender).getLanguage()));
 				return false;
 			}
 			
-			this.getPlayer().sendMessage(ThemeMessage.PUNISHMENT_FAILURE_DENIED.format(this.getPlayer().getTheme(), this.getPlayer().getLanguage(), new Variable<String>("%punishment%", this.command)));
+			((FleXPlayer)sender).sendMessage(ThemeMessage.PUNISHMENT_FAILURE_DENIED.format(((FleXPlayer)sender).getTheme(), ((FleXPlayer)sender).getLanguage(), new Variable<String>("%punishment%", this.command)));
 			return false;
 			
 		}
@@ -61,13 +62,13 @@ public abstract class AbstractSanctionCommand extends FleXCommandAdapter {
 		boolean ip = ArrayUtils.contains(flags, "-i");
 		boolean silent = ArrayUtils.contains(flags, "-s");
 		
-		Menu sanction = this.getMenu(fp, ip, silent);
+		Menu sanction = this.getMenu((FleXPlayer)sender, fp, ip, silent);
 		
-		this.getPlayer().openMenu(sanction, false);
+		((FleXPlayer)sender).openMenu(sanction, false);
 		return true;
 		
 	}
 	
-	protected abstract Menu getMenu(FleXPlayer other, boolean ip, boolean silent);
+	protected abstract Menu getMenu(FleXPlayer player, FleXPlayer other, boolean ip, boolean silent);
 	
 }

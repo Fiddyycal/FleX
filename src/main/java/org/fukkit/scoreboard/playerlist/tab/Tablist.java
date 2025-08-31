@@ -259,6 +259,8 @@ public class Tablist implements FleXScoreboard {
 		
 		this.entries.stream().forEach(e -> {
 			
+			Fukkit.getTabFactory().remove(Fukkit.getPlayer(this.uuid), e.getPlayer());
+			
 			Team team = e.getTeam();
 			
 			if (team != null) {
@@ -310,7 +312,7 @@ public class Tablist implements FleXScoreboard {
 			
 		}
 		
-		Fukkit.getTabFactory().setInTab(Fukkit.getPlayer(this.uuid), index, entry.getPlayer());
+		Fukkit.getTabFactory().add(Fukkit.getPlayer(this.uuid), entry.getPlayer());
 		
 	}
 	

@@ -394,8 +394,15 @@ public class PlayerListeners extends FleXEventListener {
 		
     	if (!tp)
     		return;
+		
+    	boolean spawn = (boolean) fw.getSetting(WorldSetting.VOID_TELEPORT_SPAWN);
+		
+    	Location loc = spawn ? fw.getSpawnLocation() : WorldSetting.LAST_KNOWN.get(player.getUniqueId());
     	
-    	Location loc = fw.getSpawnLocation();
+    	if (loc == null) {
+    		// Last known not available.
+    		loc = fw.getSpawnLocation();
+    	}
     	
     	if (loc == null)
     		return;

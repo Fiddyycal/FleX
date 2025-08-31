@@ -227,7 +227,7 @@ public class Theme extends YamlConfig implements Cacheable {
 		if (s == null)
 			return s;
 		
-		String format = FormatUtils.format(s.replace("\\s", Theme.reset + " "));
+		String format = s.replace("\\s", Theme.reset + " ");
 		
 		for (Entry<BiCell<String, String>, String> tag : this.getTags().entrySet())
 			if (format.contains(tag.getKey().b())) format = format.replace(tag.getKey().b(), tag.getValue() != null ? tag.getValue() : "");
@@ -235,7 +235,7 @@ public class Theme extends YamlConfig implements Cacheable {
 		for (Emoji emoji : Emoji.values())
 			format = format.replace("[" + emoji.name() + "]", emoji.toString());
 		
-		return format;
+		return FormatUtils.format(format);
 		
 	}
 

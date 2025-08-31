@@ -109,7 +109,7 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 			
 		}
 		
-		player.openMenu(new SanctionGui(player, this.other, this.convictionType, ip, silent), false);
+		player.openMenu(new SanctionGui(player.getTheme(), this.other, this.convictionType, ip, silent), false);
 		return true;
 		
 	}

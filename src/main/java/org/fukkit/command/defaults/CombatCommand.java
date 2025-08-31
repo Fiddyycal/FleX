@@ -1,11 +1,13 @@
 package org.fukkit.command.defaults;
 
+import org.bukkit.command.CommandSender;
 import org.fukkit.combat.gui.CombatGui;
 import org.fukkit.command.Command;
 import org.fukkit.command.FlaggedCommand;
 import org.fukkit.command.FleXCommandAdapter;
 import org.fukkit.command.GlobalCommand;
 import org.fukkit.command.RestrictCommand;
+import org.fukkit.entity.FleXPlayer;
 
 @GlobalCommand
 @FlaggedCommand(flags = { "-r" })
@@ -14,14 +16,14 @@ import org.fukkit.command.RestrictCommand;
 public class CombatCommand extends FleXCommandAdapter {
 	
 	@Override
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length != 0) {
-			this.usage();
+			this.usage(sender);
 			return false;
 		}
 		
-		this.getPlayer().openMenu(new CombatGui(this.getPlayer().getTheme()), true);
+		((FleXPlayer)sender).openMenu(new CombatGui(((FleXPlayer)sender).getTheme()), true);
 		return true;
 		
 	}

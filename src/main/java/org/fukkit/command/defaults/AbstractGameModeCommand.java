@@ -1,6 +1,7 @@
 package org.fukkit.command.defaults;
 
 import org.bukkit.GameMode;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.fukkit.Fukkit;
 import org.fukkit.command.FleXCommandAdapter;
@@ -20,23 +21,23 @@ import io.flex.commons.utils.StringUtils;
 @RestrictCommand(permission = "flex.command.gamemode", disallow = {})
 public abstract class AbstractGameModeCommand extends FleXCommandAdapter {
 
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 
-        Theme theme = this.getPlayer().getTheme();
-        Language lang = this.getPlayer().getLanguage();
+        Theme theme = ((FleXPlayer)sender).getTheme();
+        Language lang = ((FleXPlayer)sender).getLanguage();
         String mode = StringUtils.capitalize(this.getGameMode().toString().toLowerCase());
 		
-		Player pl = this.getPlayer().getPlayer();
+		Player pl = ((FleXPlayer)sender).getPlayer();
 
         if (args.length == 0) {
         	
             if (pl.getGameMode() == this.getGameMode()) {
-                this.getPlayer().sendMessage(ThemeMessage.GAMEMODE_FAILURE.format(theme, lang, new Variable<String>("%gamemode%", mode)));
+                ((FleXPlayer)sender).sendMessage(ThemeMessage.GAMEMODE_FAILURE.format(theme, lang, new Variable<String>("%gamemode%", mode)));
                 return false;
             }
 
             pl.setGameMode(this.getGameMode());
-            this.getPlayer().sendMessage(ThemeMessage.GAMEMODE_SUCCESS.format(theme, lang, new Variable<String>("%gamemode%", mode)));
+            ((FleXPlayer)sender).sendMessage(ThemeMessage.GAMEMODE_SUCCESS.format(theme, lang, new Variable<String>("%gamemode%", mode)));
             return true;
             
         } else if (args.length == 1) {
@@ -45,12 +46,12 @@ public abstract class AbstractGameModeCommand extends FleXCommandAdapter {
 			FleXPlayer fp = Fukkit.getPlayer(name);
 			
 			if (fp == null) {
-				this.playerNotFound(name);
+				this.playerNotFound(sender, name);
 				return false;
 			}
 			
 			if (!fp.isOnline() || fp.isDisguised()) {
-				this.playerNotOnline(fp);
+				this.playerNotOnline(sender, fp);
 				return false;
 			}
             
@@ -58,7 +59,7 @@ public abstract class AbstractGameModeCommand extends FleXCommandAdapter {
 			
 			if (pl.getGameMode() == this.getGameMode()) {
             	
-                this.getPlayer().sendMessage(ThemeMessage.GAMEMODE_FAILURE_OTHER.format(theme, lang, variables));
+                ((FleXPlayer)sender).sendMessage(ThemeMessage.GAMEMODE_FAILURE_OTHER.format(theme, lang, variables));
                 return false;
                 
             }
@@ -66,14 +67,14 @@ public abstract class AbstractGameModeCommand extends FleXCommandAdapter {
 			pl.setGameMode(this.getGameMode());
             fp.sendMessage(ThemeMessage.GAMEMODE_SUCCESS.format(fp.getTheme(), variables));
             
-            if (this.getPlayer() != fp)
-                this.getPlayer().sendMessage(ThemeMessage.GAMEMODE_SUCCESS_OTHER.format(theme, lang, variables));
+            if (((FleXPlayer)sender) != fp)
+                ((FleXPlayer)sender).sendMessage(ThemeMessage.GAMEMODE_SUCCESS_OTHER.format(theme, lang, variables));
             
             return true;
             
         } else {
 
-            this.usage();
+            this.usage(sender);
             return false;
             
         }

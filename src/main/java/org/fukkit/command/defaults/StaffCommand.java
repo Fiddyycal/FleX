@@ -1,6 +1,7 @@
 package org.fukkit.command.defaults;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.fukkit.Fukkit;
 import org.fukkit.command.Command;
 import org.fukkit.command.FleXCommandAdapter;
@@ -14,10 +15,10 @@ import org.fukkit.entity.FleXPlayer;
 public class StaffCommand extends FleXCommandAdapter {
 
 	@Override
-    public boolean perform(String[] args, String[] flags) {
+    public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length < 1) {
-			this.usage();
+			this.usage(sender);
         	return false;
 		}
 		
@@ -34,7 +35,7 @@ public class StaffCommand extends FleXCommandAdapter {
 				return;
 			
 			if (fp.hasPermission("flex.command.staff"))
-				fp.sendMessage(fp.getTheme().format("<pp>[<spc>Staff\\s<sc>" + fp.getDisplayName(this.getPlayer().getTheme()) + "<pp>]\\s<lore>" + arguments.toString()));
+				fp.sendMessage(fp.getTheme().format("<pp>[<spc>Staff\\s<sc>" + fp.getDisplayName(((FleXPlayer)sender).getTheme()) + "<pp>]\\s<lore>" + arguments.toString()));
 			
 		});
 		

@@ -89,8 +89,11 @@ public class FleX {
 			Arrays.stream(output).forEach(op -> System.err.println("[" + prefix + "] " + op));
 		}
 		
-		public static <T> void print(T output) {
-			System.out.println(output);
+		@SafeVarargs
+		public static <T> void print(T... output) {
+			Arrays.stream(output).forEach(op -> {
+				System.out.println(op);
+			});
 		}
 
 		@SafeVarargs

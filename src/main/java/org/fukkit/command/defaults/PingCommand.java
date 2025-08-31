@@ -1,5 +1,6 @@
 package org.fukkit.command.defaults;
 
+import org.bukkit.command.CommandSender;
 import org.fukkit.api.helper.PlayerHelper;
 import org.fukkit.command.Command;
 import org.fukkit.command.FleXCommandAdapter;
@@ -15,31 +16,31 @@ import io.flex.commons.file.Variable;
 public class PingCommand extends FleXCommandAdapter {
 
 	@SuppressWarnings("deprecation")
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length != 0 && args.length != 1) {
-			this.usage();
+			this.usage(sender);
 			return false;
 		}
 		
-		FleXPlayer fp = args.length == 1 ? PlayerHelper.getPlayer(args[0]) : this.getPlayer();
+		FleXPlayer fp = args.length == 1 ? PlayerHelper.getPlayer(args[0]) : ((FleXPlayer)sender);
 		int ping = fp != null ? fp.getPing() : -1;
 		
-		Theme theme = this.getPlayer().getTheme();
-		Language lang = this.getPlayer().getLanguage();
+		Theme theme = ((FleXPlayer)sender).getTheme();
+		Language lang = ((FleXPlayer)sender).getLanguage();
 		
 		if (fp == null) {
-			this.playerNotFound(args[0]);
+			this.playerNotFound(sender, args[0]);
 			return false;
 		}
 		
 		if (!fp.isOnline()) {
-			this.playerNotOnline(fp);
+			this.playerNotOnline(sender, fp);
 			return false;
 		}
 		
-		if (fp.getServer() != this.getPlayer().getServer()) {
-			this.playerNotAccessible(fp);
+		if (fp.getServer() != ((FleXPlayer)sender).getServer()) {
+			this.playerNotAccessible(sender, fp);
     		return false;
 		}
 
@@ -53,8 +54,8 @@ public class PingCommand extends FleXCommandAdapter {
 				
 		};
 		
-		this.getPlayer().sendMessage(this.getPlayer() != fp ? ThemeMessage.PING_SHOW_OTHER.format(theme, lang, variables) : ThemeMessage.PING_SHOW.format(theme, lang, variables));
-		this.getPlayer().sendMessage(this.getPlayer() != fp ? ThemeMessage.PING_CONNECTION_OTHER.format(theme, lang, variables) : ThemeMessage.PING_CONNECTION.format(theme, lang, variables));
+		((FleXPlayer)sender).sendMessage(((FleXPlayer)sender) != fp ? ThemeMessage.PING_SHOW_OTHER.format(theme, lang, variables) : ThemeMessage.PING_SHOW.format(theme, lang, variables));
+		((FleXPlayer)sender).sendMessage(((FleXPlayer)sender) != fp ? ThemeMessage.PING_CONNECTION_OTHER.format(theme, lang, variables) : ThemeMessage.PING_CONNECTION.format(theme, lang, variables));
 		return true;
 		
 	}

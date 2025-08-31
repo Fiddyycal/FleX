@@ -1,5 +1,7 @@
 package org.fukkit.command.defaults.admin;
 
+import org.bukkit.command.CommandSender;
+
 import io.flex.commons.utils.ArrayUtils;
 
 public class DebugSubCommand extends AbstractAdminSubCommand {
@@ -9,10 +11,10 @@ public class DebugSubCommand extends AbstractAdminSubCommand {
 	}
 
 	@Override
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length != 1) {
-			this.command.usage("/<command> database/configuration <name> [-l, -r, -c]");
+			this.command.usage(sender, "/<command> database/configuration <name> [-l, -r, -c]");
 			return false;
 		}
 		
@@ -26,21 +28,21 @@ public class DebugSubCommand extends AbstractAdminSubCommand {
 		if (local) {
 			
 			if (rows) {
-				this.command.getPlayer().sendMessage("...");
+				sender.sendMessage("...");
 			}
 			
 			if (columns) {
-				this.command.getPlayer().sendMessage("...");
+				sender.sendMessage("...");
 			}
 			
 		} else {
 			
 			if (rows) {
-				this.command.getPlayer().sendMessage("...");
+				sender.sendMessage("...");
 			}
 			
 			if (columns) {
-				this.command.getPlayer().sendMessage("...");
+				sender.sendMessage("...");
 			}
 			
 		}

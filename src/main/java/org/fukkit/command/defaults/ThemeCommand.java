@@ -2,6 +2,7 @@ package org.fukkit.command.defaults;
 
 import java.util.Arrays;
 
+import org.bukkit.command.CommandSender;
 import org.fukkit.Memory;
 import org.fukkit.command.Command;
 import org.fukkit.command.FleXCommandAdapter;
@@ -17,16 +18,16 @@ import io.flex.commons.file.Variable;
 @Command(name = "theme", usage = "/<command> [theme]")
 public class ThemeCommand extends FleXCommandAdapter {
 	
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 
 		if (args.length != 0 && args.length != 1) {
-			this.usage();
+			this.usage(sender);
 			return false;
 		}
 		
 		if (args.length > 0) {
 			
-			FleXPlayer player = this.getPlayer();
+			FleXPlayer player = ((FleXPlayer)sender);
 			
 			Theme theme = Memory.THEME_CACHE.get(args[0]);
 			
@@ -50,7 +51,7 @@ public class ThemeCommand extends FleXCommandAdapter {
 			
 		}
 		
-		this.getPlayer().openMenu(new ThemeGui(this.getPlayer()), false);
+		((FleXPlayer)sender).openMenu(new ThemeGui(((FleXPlayer)sender)), false);
 		return true;
 		
 	}

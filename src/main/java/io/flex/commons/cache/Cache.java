@@ -2,7 +2,6 @@ package io.flex.commons.cache;
 
 import java.io.Serializable;
 import java.util.Collection;
-
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
@@ -39,7 +38,7 @@ public interface Cache<E, U> extends Iterable<E>, Serializable {
 	int size();
 	
 	E[] toArray();
-
+	
 	<T> T[] toArray(T[] a);
 	
     default Spliterator<E> spliterator() {

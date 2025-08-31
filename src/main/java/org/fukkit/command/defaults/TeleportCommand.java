@@ -5,6 +5,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
+import org.bukkit.command.CommandSender;
 import org.fukkit.PlayerState;
 import org.fukkit.api.helper.PlayerHelper;
 import org.fukkit.command.Command;
@@ -23,33 +24,33 @@ import io.flex.commons.utils.ArrayUtils;
 @Command(name = "teleport", usage = "/<command> <player> [destination player]", aliases = "tp")
 public class TeleportCommand extends FleXCommandAdapter {
 
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 
 		if (args.length != 1 && args.length != 2) {
-			this.usage(this.getPlayer().hasPermission("flex.command.teleport.others") ? this.getUsage() : "/<command> <player>");
+			this.usage(sender, ((FleXPlayer)sender).hasPermission("flex.command.teleport.others") ? this.getUsage() : "/<command> <player>");
 			return false;
 		}
 		
-		FleXPlayer teleport = args.length == 2 ? PlayerHelper.getPlayer(args[0]) : this.getPlayer();
+		FleXPlayer teleport = args.length == 2 ? PlayerHelper.getPlayer(args[0]) : ((FleXPlayer)sender);
 		FleXPlayer fp = args.length == 2 ? PlayerHelper.getPlayer(args[1]) : PlayerHelper.getPlayer(args[0]);
 		
 		if (teleport == null) {
-			this.playerNotFound(args[0]);
+			this.playerNotFound(sender, args[0]);
 			return false;
 		}
 		
 		if (!teleport.isOnline()) {
-			this.playerNotOnline(teleport);
+			this.playerNotOnline(sender, teleport);
 			return false;
 		}
 		
 		if (fp == null) {
-			this.playerNotFound(args.length == 2 ? args[1] : args[0]);
+			this.playerNotFound(sender, args.length == 2 ? args[1] : args[0]);
 			return false;
 		}
 		
 		if (!fp.isOnline()) {
-			this.playerNotOnline(fp);
+			this.playerNotOnline(sender, fp);
 			return false;
 		}
 		

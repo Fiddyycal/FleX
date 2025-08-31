@@ -7,6 +7,10 @@ Spawn:
   yaw: 0.0
   pitch: 0.0
   
+  # Whether players are teleported to spawn every time they join.
+  # This takes a value of true or false with a default of true.
+  Join-Teleport: true
+  
   # How many blocks can players randomly spread out over?
   # This is disabled by default with a value of 1.
   Radius: 1
@@ -22,7 +26,7 @@ Spawn:
     Animals: false
     Monsters: false
     Testificates: false
-
+    
 Settings:
 
   # Auto-save world in seconds.
@@ -31,9 +35,13 @@ Settings:
   # This takes the value of a number with a default of -1, like a minigame world it will not save itself.
   Auto-save: -1
   
-  # Whether every join and falling into the void teleports the player to the spawn set above.
-  # This takes a value of true or false with a default of true.
-  Void-Teleport: true
+  # Whether falling into the void teleports the player instead of killing them.
+  # If this setting is true, the Spawn setting below determines if the telport is to spawn or the last known location.
+  # These take a value of true or false with a default of true for both settings.
+  Void-Teleport:
+  
+    Enabled: true
+    Spawn: true
   
   # Whether this world cycles weather or daylight.
   # These take a value of true or false with a default of false.

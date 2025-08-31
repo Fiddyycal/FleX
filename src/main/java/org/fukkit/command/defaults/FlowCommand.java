@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.bukkit.command.CommandSender;
 import org.fukkit.Fukkit;
 import org.fukkit.command.Command;
 import org.fukkit.command.FlaggedCommand;
@@ -12,6 +13,7 @@ import org.fukkit.command.FleXCommandAdapter;
 import org.fukkit.command.GlobalCommand;
 import org.fukkit.command.RestrictCommand;
 import org.fukkit.consequence.Report;
+import org.fukkit.entity.FleXPlayer;
 import org.fukkit.flow.Overwatch;
 import org.fukkit.json.JsonBuffer;
 import org.fukkit.json.JsonComponent;
@@ -35,10 +37,10 @@ import net.md_5.bungee.api.chat.ClickEvent.Action;
 public class FlowCommand extends FleXCommandAdapter {
 	
 	@SuppressWarnings("deprecation")
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 
 		if (args.length != 0 && args.length != 1) {
-			this.usage();
+			this.usage(sender);
 			return false;
 		}
 		
@@ -48,15 +50,15 @@ public class FlowCommand extends FleXCommandAdapter {
 		boolean random = ArrayUtils.contains(flags, "-r");
 		boolean clear = ArrayUtils.contains(flags, "-c");
 
-		Theme theme = this.getPlayer().getTheme();
-		Language lang = this.getPlayer().getLanguage();
+		Theme theme = ((FleXPlayer)sender).getTheme();
+		Language lang = ((FleXPlayer)sender).getLanguage();
 		
 		Set<Report> reports = new LinkedHashSet<Report>();
 		
 		if (args.length == 1) {
 			
 			if (!NumUtils.canParseAsInt(args[0])) {
-				this.invalid();
+				this.invalid(sender);
 				return false;
 			}
 			
@@ -67,15 +69,15 @@ public class FlowCommand extends FleXCommandAdapter {
 				
 				if (downloaded.isEmpty()) {
 					// TODO: REPORT_VIEW_FAILURE_NOT_FOUND
-					this.getPlayer().sendMessage(theme.format("<engine><failure>Report <sc>%id%<reset> <failure>doesn't exist<pp>.").replace("%id%", args[0]));
+					((FleXPlayer)sender).sendMessage(theme.format("<engine><failure>Report <sc>%id%<reset> <failure>doesn't exist<pp>.").replace("%id%", args[0]));
 					return false;
 				}
 				
 				Report report = downloaded.stream().findFirst().orElse(null);
 				
-				if (report.isPardoned() && !this.getPlayer().hasPermission("flex.command.flow.archive")) {
+				if (report.isPardoned() && !((FleXPlayer)sender).hasPermission("flex.command.flow.archive")) {
 					// TODO: REPORT_VIEW_FAILURE_ARCHIVED, REPORT_VIEW_FAILURE_ARCHIVED
-					this.getPlayer().sendMessage(theme.format(flow ? "<flow><pc>You cannot view archived recording <sc>%id%<pp>." : "<engine><pc>You cannot view archived report <sc>%id%<pp>.").replace("%id%", args[0]));
+					((FleXPlayer)sender).sendMessage(theme.format(flow ? "<flow><pc>You cannot view archived recording <sc>%id%<pp>." : "<engine><pc>You cannot view archived report <sc>%id%<pp>.").replace("%id%", args[0]));
 					return false;
 				}
 				
@@ -84,25 +86,25 @@ public class FlowCommand extends FleXCommandAdapter {
 					if (flow) {
 
 						// TODO: REPORT_VIEW_LOADING
-						this.getPlayer().sendMessage(theme.format("<flow><pc>Evidence loading<pp>,\\s<pc>please wait<pp>..."));
+						((FleXPlayer)sender).sendMessage(theme.format("<flow><pc>Evidence loading<pp>,\\s<pc>please wait<pp>..."));
 						
 						try {
 							
-							new Stage(Overwatch.download(report), true, this.getPlayer());
+							new Stage(Overwatch.download(report), true, ((FleXPlayer)sender));
 							return true;
 							
 						} catch (Exception e) {
 							
 							e.printStackTrace();
 							
-							this.getPlayer().sendMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
+							((FleXPlayer)sender).sendMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
 							return false;
 							
 						}
 						
 					} else {
 						// TODO: FLOW_REPORT_FAILURE_FLAG
-						this.getPlayer().sendMessage(theme.format("<engine><failure>FloW is not enabled on this server<pp>.<reset> <failure>Cannot use flag %flag%<pp>.").replace("%flag%", "-v"));
+						((FleXPlayer)sender).sendMessage(theme.format("<engine><failure>FloW is not enabled on this server<pp>.<reset> <failure>Cannot use flag %flag%<pp>.").replace("%flag%", "-v"));
 						return false;
 					}
 					
@@ -110,20 +112,20 @@ public class FlowCommand extends FleXCommandAdapter {
 				
 				if (clear) {
 					// TODO: REPORT_CLEARING
-					this.getPlayer().sendMessage(theme.format("<engine><pc>Clearing report<pp>,\\s<pc>please wait<pp>..."));
+					((FleXPlayer)sender).sendMessage(theme.format("<engine><pc>Clearing report<pp>,\\s<pc>please wait<pp>..."));
 					// TODO Put new end logic here
 					//BridgeHandler.end(report);
 					report.pardon();
 					// TODO: REPORT_CLEARED
-					this.getPlayer().sendMessage(theme.format("<engine><success>Report archived and cleared<pp>."));
+					((FleXPlayer)sender).sendMessage(theme.format("<engine><success>Report archived and cleared<pp>."));
 					return true;
 				}
 				
 				// TODO: Rename: REPORT_LOADING -> REPORT_VIEW_LOADING
-				this.getPlayer().sendMessage(ThemeMessage.REPORT_LOADING.format(theme, lang, ThemeUtils.getNameVariables(report.getPlayer(), theme)));
+				((FleXPlayer)sender).sendMessage(ThemeMessage.REPORT_LOADING.format(theme, lang, ThemeUtils.getNameVariables(report.getPlayer(), theme)));
 				
 				// TODO: REPORT_INFORMATION
-				this.getPlayer().sendMessage(new String[] { 
+				((FleXPlayer)sender).sendMessage(new String[] { 
 						
 						theme.format("<engine><pc>Report details for report <sc>#%id%<pp>:").replace("%id%", args[0]),
 						theme.format("<engine><reset>%display_reporter%<reset> <qc>reported <reset>%display%<pp>.").replace("%display%", report.getPlayer().getDisplayName(theme, true)).replace("%display_reporter%", report.getBy().getDisplayName(theme, true)),
@@ -136,11 +138,11 @@ public class FlowCommand extends FleXCommandAdapter {
 				if (report.getReason().getRequiredEvidence() != null && report.getReason().getRequiredEvidence().length > 0) {
 
 					// TODO: REPORT_INFORMATION_REQUIRED
-					this.getPlayer().sendMessage(theme.format("<engine><qc>Conviction evidence required<pp>:"));
+					((FleXPlayer)sender).sendMessage(theme.format("<engine><qc>Conviction evidence required<pp>:"));
 					
 					Arrays.asList(report.getReason().getRequiredEvidence()).forEach(e -> {
 						// TODO: REPORT_INFORMATION_EVIDENCE
-						this.getPlayer().sendMessage(theme.format("<engine><pp>*<reset> <lore>" + e));
+						((FleXPlayer)sender).sendMessage(theme.format("<engine><pp>*<reset> <lore>" + e));
 					});
 					
 				}
@@ -150,7 +152,7 @@ public class FlowCommand extends FleXCommandAdapter {
 			} catch (SQLException e) {
 
 				// TODO: REPORT_FAILURE_ERROR
-				this.getPlayer().sendMessage("[ThemeMessage=REPORT_FAILURE_ERROR]");
+				((FleXPlayer)sender).sendMessage("[ThemeMessage=REPORT_FAILURE_ERROR]");
 				
 			}
 			
@@ -168,7 +170,7 @@ public class FlowCommand extends FleXCommandAdapter {
 			
 			if (reports == null || reports.isEmpty()) {
 				// TODO: FLOW_NONE
-				this.getPlayer().sendMessage("[ThemeMessage=FLOW_NONE]");
+				((FleXPlayer)sender).sendMessage("[ThemeMessage=FLOW_NONE]");
 				return false;
 			}
 
@@ -176,7 +178,7 @@ public class FlowCommand extends FleXCommandAdapter {
 				
 			} catch (Exception e) {
 				
-				this.getPlayer().sendMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
+				((FleXPlayer)sender).sendMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
 				return false;
 				
 			}
@@ -185,7 +187,7 @@ public class FlowCommand extends FleXCommandAdapter {
 			
 		}
 		
-		this.getPlayer().sendMessage(flow ? ThemeMessage.FLOW_REPORTS_LOADING.format(theme, lang) : ThemeMessage.REPORTS_LOADING.format(theme, lang));
+		((FleXPlayer)sender).sendMessage(flow ? ThemeMessage.FLOW_REPORTS_LOADING.format(theme, lang) : ThemeMessage.REPORTS_LOADING.format(theme, lang));
 		
 		String[] reportView = flow ? ThemeMessage.FLOW_REPORTS_VIEW.format(theme, lang) : ThemeMessage.REPORTS_VIEW.format(theme, lang);
 		
@@ -198,7 +200,7 @@ public class FlowCommand extends FleXCommandAdapter {
 		if (reports == null || reports.isEmpty()) {
 
 			Arrays.stream((flow ? ThemeMessage.FLOW_REPORTS_NONE : ThemeMessage.REPORTS_NONE).format(lang, new Variable<Integer>("%amount%", reports.size()))).forEach(s -> {
-				this.getPlayer().sendMessage(theme.format(s));
+				((FleXPlayer)sender).sendMessage(theme.format(s));
 			});
 			
 			return false;
@@ -216,20 +218,20 @@ public class FlowCommand extends FleXCommandAdapter {
 				message = message.replace("%id%", String.valueOf(report.getReference()));
 				message = message.replace("%name%", report.getPlayer().getDisplayName());
 				message = message.replace("%player%", report.getPlayer().getName());
-				message = message.replace("%display%", report.getPlayer().getDisplayName(this.getPlayer().getTheme(), true));
+				message = message.replace("%display%", report.getPlayer().getDisplayName(((FleXPlayer)sender).getTheme(), true));
 				message = message.replace("%reason%", report.getReason().toString());
 				
-				buffer = buffer.append(new JsonComponent(message)).replace("%interactable_review%", new JsonComponent(this.getPlayer().getTheme().format("<clickable>Review"))
+				buffer = buffer.append(new JsonComponent(message)).replace("%interactable_review%", new JsonComponent(((FleXPlayer)sender).getTheme().format("<clickable>Review"))
 								
-								.onHover(this.getPlayer().getTheme().format("<interactable>Review evidence<pp>."))
+								.onHover(((FleXPlayer)sender).getTheme().format("<interactable>Review evidence<pp>."))
 								.onClick(Action.SUGGEST_COMMAND, "/flow " + report.getReference() + " -v"));
 				
-				buffer = buffer.replace("%interactable_clear%", new JsonComponent(this.getPlayer().getTheme().format("<clickable>Clear"))
+				buffer = buffer.replace("%interactable_clear%", new JsonComponent(((FleXPlayer)sender).getTheme().format("<clickable>Clear"))
 						
-						.onHover(this.getPlayer().getTheme().format("<interactable>Clear report<pp>."))
+						.onHover(((FleXPlayer)sender).getTheme().format("<interactable>Clear report<pp>."))
 						.onClick(Action.SUGGEST_COMMAND, "/flow " + report.getReference() + " -c"));
 				
-				this.getPlayer().sendJsonMessage(buffer);
+				((FleXPlayer)sender).sendJsonMessage(buffer);
 				
 			}
 		}

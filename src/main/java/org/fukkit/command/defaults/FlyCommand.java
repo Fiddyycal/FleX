@@ -1,10 +1,12 @@
 package org.fukkit.command.defaults;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.fukkit.Fukkit;
 import org.fukkit.PlayerState;
 import org.fukkit.command.Command;
 import org.fukkit.command.FleXCommandAdapter;
+import org.fukkit.command.GlobalCommand;
 import org.fukkit.command.RestrictCommand;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.theme.Theme;
@@ -13,37 +15,38 @@ import org.fukkit.theme.ThemeMessage;
 import io.flex.commons.file.Variable;
 import io.flex.commons.utils.StringUtils;
 
+@GlobalCommand
 @RestrictCommand(permission = "flex.command.fly", disallow = { PlayerState.INGAME_PVE_ONLY, PlayerState.INGAME, PlayerState.SPECTATING })
 @Command(name = "fly", usage = "/<command> [<player>] [enable/disable]", aliases = "flight")
 public class FlyCommand extends FleXCommandAdapter {
 	
 	@Override
-    public boolean perform(String[] args, String[] flags) {
+    public boolean perform(CommandSender sender, String[] args, String[] flags) {
 
 		if (args.length != 0 && args.length != 1 && args.length != 2) {
-			this.usage(this.getPlayer().hasPermission("flex.command.fly.others") ? this.getUsage() : "/<command> [enable/disable]");
+			this.usage(sender, ((FleXPlayer)sender).hasPermission("flex.command.fly.others") ? this.getUsage() : "/<command> [enable/disable]");
         	return false;
 		}
 		
-		FleXPlayer fp = args.length > 0 ? Fukkit.getPlayer(args[0]) : this.getPlayer();
+		FleXPlayer fp = args.length > 0 ? Fukkit.getPlayer(args[0]) : ((FleXPlayer)sender);
 		
 		if (fp == null) {
-			this.playerNotFound(args[0]);
+			this.playerNotFound(sender, args[0]);
 			return false;
 		}
 		
-		if (fp != this.getPlayer() && !this.getPlayer().hasPermission("flex.command.fly.others")) {
-        	this.noPermission();
+		if (fp != ((FleXPlayer)sender) && !((FleXPlayer)sender).hasPermission("flex.command.fly.others")) {
+        	this.noPermission(sender);
     		return false;
     	}
 		
 		if (!fp.isOnline()) {
-			this.playerNotOnline(fp);
+			this.playerNotOnline(sender, fp);
 			return false;
 		}
 		
 		boolean flight = fp != null && fp.isOnline() ? !fp.getPlayer().getAllowFlight() : false;
-		Theme theme = fp != null ? fp.getTheme() : this.getPlayer().getTheme();
+		Theme theme = fp != null ? fp.getTheme() : ((FleXPlayer)sender).getTheme();
 		
 		if (args.length > 1)
 		
@@ -54,7 +57,7 @@ public class FlyCommand extends FleXCommandAdapter {
 			    flight = true;
 		
 			else {
-				this.usage(this.getPlayer().hasPermission("flex.command.fly.others") ? this.getUsage() : "/<command> [enable/disable]");
+				this.usage(sender, ((FleXPlayer)sender).hasPermission("flex.command.fly.others") ? this.getUsage() : "/<command> [enable/disable]");
 	        	return false;
 			}
 		
@@ -62,8 +65,8 @@ public class FlyCommand extends FleXCommandAdapter {
 		
 		if (pl.getAllowFlight() == flight) {
 			
-			if (this.getPlayer() != fp)
-				this.getPlayer().sendMessage(ThemeMessage.FLIGHT_FAILURE_OTHER.format(this.getPlayer().getTheme(), this.getPlayer().getLanguage(),
+			if (((FleXPlayer)sender) != fp)
+				((FleXPlayer)sender).sendMessage(ThemeMessage.FLIGHT_FAILURE_OTHER.format(((FleXPlayer)sender).getTheme(), ((FleXPlayer)sender).getLanguage(),
 			        	
 				        new Variable<String>("%player%", fp.getName()),
 						new Variable<String>("%flight%", flight ? Theme.success + "enabled" : Theme.failure + "disabled")
@@ -72,7 +75,7 @@ public class FlyCommand extends FleXCommandAdapter {
 				
 			else fp.sendMessage(ThemeMessage.FLIGHT_FAILURE.format(theme, fp.getLanguage(),
 		        		
-			        	new Variable<String>("%player%", this.getPlayer().getName()),
+			        	new Variable<String>("%player%", ((FleXPlayer)sender).getName()),
 						new Variable<String>("%flight%", flight ? Theme.success + "enabled" : Theme.failure + "disabled")
 			        	
 			    ));
@@ -86,13 +89,13 @@ public class FlyCommand extends FleXCommandAdapter {
         
         fp.sendMessage(ThemeMessage.FLIGHT_SUCCESS.format(theme, fp.getLanguage(),
         		
-        		new Variable<String>("%player%", this.getPlayer().getName()),
+        		new Variable<String>("%player%", ((FleXPlayer)sender).getName()),
 				new Variable<String>("%flight%", flight ? Theme.success + "enabled" : Theme.failure + "disabled")
         		
         ));
         
-        if (this.getPlayer() != fp) {
-        	this.getPlayer().sendMessage(ThemeMessage.FLIGHT_SUCCESS_OTHER.format(this.getPlayer().getTheme(), this.getPlayer().getLanguage(),
+        if (((FleXPlayer)sender) != fp) {
+        	((FleXPlayer)sender).sendMessage(ThemeMessage.FLIGHT_SUCCESS_OTHER.format(((FleXPlayer)sender).getTheme(), ((FleXPlayer)sender).getLanguage(),
         			
 					new Variable<String>("%player%", fp.getName()),
 					new Variable<String>("%flight%", flight ? Theme.success + "enabled" : Theme.failure + "disabled")

@@ -26,6 +26,7 @@ import org.fukkit.utils.ThemeUtils;
 import com.google.common.collect.ImmutableList;
 
 import io.flex.FleX.Task;
+import io.flex.commons.cache.Cacheable;
 import io.flex.commons.file.Language;
 import io.flex.commons.file.Variable;
 import io.flex.commons.utils.ArrayUtils;
@@ -33,7 +34,7 @@ import io.flex.commons.utils.ClassUtils;
 import io.flex.commons.utils.NumUtils;
 import io.flex.commons.utils.StringUtils;
 
-public abstract class FleXCommandAdapter extends BukkitCommand implements FleXCommand {
+public abstract class FleXCommandAdapter extends BukkitCommand implements Cacheable {
 	
 	protected String command;
 	
@@ -42,10 +43,6 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements FleXCo
 	private long delay;
 	
 	private boolean unknown, console, global, tab;
-	
-	private CommandSender sender;
-	
-	private FleXPlayer fleXPlayer;
 	
 	protected FleXCommandAdapter() {
 		
@@ -154,6 +151,64 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements FleXCo
         
 	}
 	
+	public boolean canUse(CommandSender sender) {
+		
+		if (sender instanceof ConsoleCommandSender) {
+			
+			if (!this.console)
+				return false;
+			
+		} else if (sender instanceof Player == false && sender instanceof FleXPlayer == false)
+			return false;
+		
+		SoonCommand soonAnn = ClassUtils.getSuperAnnotation(this.getClass(), SoonCommand.class);
+		
+		if (soonAnn != null)
+			return false;
+		
+		FleXPlayer player = sender instanceof Player ? Fukkit.getPlayer(((Player)sender).getUniqueId()) : null;
+		
+		if (player != null) {
+			
+			RestrictCommand restrictAnn = ClassUtils.getSuperAnnotation(this.getClass(), RestrictCommand.class);
+			
+			if (restrictAnn != null) {
+				
+				if (restrictAnn.disallow() != null && restrictAnn.disallow().length > 0) {
+					
+					PlayerState state = player.getState();
+					
+					for (PlayerState disallow : restrictAnn.disallow()) {
+						
+						if (state == disallow)
+							return false;
+						
+					}
+					
+				}
+				
+				if (restrictAnn.permission() != null && !restrictAnn.permission().equalsIgnoreCase("")) {
+					
+					if (!player.hasPermission(restrictAnn.permission()))
+						return false;
+					
+				}
+				
+			}
+			
+		}
+		
+		if (!this.global) {
+			
+			// TODO check if command is able to be run on server/world, if it is not able to be run on world then run below
+			// return false;
+			
+		}
+		
+		return true;
+		
+	}
+	
 	public boolean execute(CommandSender sender, String command, String[] args) {
 		
 		String fukkit = Fukkit.getInstance().getName().toLowerCase() + ":";
@@ -166,30 +221,27 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements FleXCo
 		
 		String[] flags = new String[0];
 		
-		this.sender = sender;
-		
-		this.fleXPlayer = sender instanceof Player ? Fukkit.getPlayerExact((Player)sender) : null;
-		
-		boolean exists = this.global; // Add conditions here.
-		
-		if (!this.console && (!exists || !command.equals(this.command))) {
-			
-			if (this.global && !this.unknown)
-				return true;
-			
-			this.unknownCommand();
+		if (this.unknown) {
+			this.unknownCommand(sender);
 			return true;
+		}
+		
+		if (!this.global) {
+			
+			// TODO check if command is able to be run on server/world, if it is not able to be run on world then run below
+			// this.unknownCommand();
+			// return;
 			
 		}
-
+		
 		SoonCommand soonAnn = ClassUtils.getSuperAnnotation(this.getClass(), SoonCommand.class);
 		
 		if (soonAnn != null) {
 			
 			sender.sendMessage(soonAnn.todo() != null && !soonAnn.todo().equals("") ?
 					
-					ThemeMessage.ERROR_COMING_SOON.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(), new Variable<String>("%coming_soon%", soonAnn.todo())) :
-					ThemeMessage.COMMAND_DENIED_COMING_SOON.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(), new Variable<String>("%command%", this.getName()))
+					ThemeMessage.ERROR_COMING_SOON.format(Memory.THEME_CACHE.getDefaultTheme(), Language.ENGLISH, new Variable<String>("%coming_soon%", soonAnn.todo())) :
+					ThemeMessage.COMMAND_DENIED_COMING_SOON.format(Memory.THEME_CACHE.getDefaultTheme(), Language.ENGLISH, new Variable<String>("%command%", this.getName()))
 					
 			);
 			
@@ -208,7 +260,7 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements FleXCo
 						
 					} else {
 						
-						this.incompatible(arg);
+						this.incompatible(sender, arg);
 						return true;
 						
 					}
@@ -222,33 +274,36 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements FleXCo
 				sender.sendMessage(ThemeMessage.COMMAND_DENIED_STATE_CONSOLE.format(Memory.THEME_CACHE.stream().findFirst().get(), Language.ENGLISH, new Variable<String>("%command%", this.getName())));
 				return true;
 			} else {
-				this.perform(args, flags);
+				this.perform(sender, args, flags);
 				return true;
 			}
 		}
 		
-		Player player = (Player) sender;
+		if (sender instanceof Player == false && sender instanceof FleXPlayer == false)
+			return false;
 		
-		this.fleXPlayer = Fukkit.getPlayerExact(player);
+		Player player = sender instanceof Player ? (Player) sender : null;
+		FleXPlayer fp = sender instanceof FleXPlayer ? (FleXPlayer) sender : Fukkit.getPlayerExact(player);
 		
-		if (this.fleXPlayer == null)
-			throw new FleXPlayerNotFoundException("There was a problem loading your FleX player wrapper. You cannot use the FleXCommandAdapter until this is addressed.");
+		if (fp == null)
+			throw new FleXPlayerNotFoundException("There was a problem loading the FleX player wrapper. Cannot use the FleXCommandAdapter until this is addressed.");
 		
-		if (this.getPermission() != null && !this.fleXPlayer.hasPermission(this.getPermission())) {
-			this.noPermission();
+		if (this.getPermission() != null && !fp.hasPermission(this.getPermission())) {
+			this.noPermission(fp);
 			return true;
 		}
 		
 		RestrictCommand restrictAnn = ClassUtils.getSuperAnnotation(this.getClass(), RestrictCommand.class);
+		
 		if (restrictAnn != null && restrictAnn.disallow() != null && restrictAnn.disallow().length > 0) {
 			
-			PlayerState state = this.fleXPlayer.getState();
+			PlayerState state = fp.getState();
 			
 			for (PlayerState disallow : restrictAnn.disallow()) {
 				
 				if (state == disallow) {
 					
-					this.cantUse(disallow);
+					this.cantUse(fp, disallow);
 					return true;
 					
 				}
@@ -263,21 +318,21 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements FleXCo
 		long LastUsed = 0;
 		long cdmillis = this.delay * 1000;
 		
-		UUID uuid = this.fleXPlayer.getUniqueId();
+		UUID uuid = fp.getUniqueId();
 		
 		if (CooldownCommand.cooldowns_cache.containsKey(uuid))
 			LastUsed = CooldownCommand.cooldowns_cache.get(uuid);
 		
-		if (System.currentTimeMillis()-LastUsed>=cdmillis) {
+		if ((System.currentTimeMillis() - LastUsed) >= cdmillis) {
 			
-			FleXCommandPerformEvent event = new FleXCommandPerformEvent(this, player, args, flags, false);
+			FleXCommandPerformEvent event = new FleXCommandPerformEvent(this, fp.getPlayer(), args, flags, false);
 			
 			EventHelper.callEvent(event);
 			
 			if (event.isCancelled())
 				return true;
 			
-			event.setPerformed(this.perform(args, flags));
+			event.setPerformed(this.perform(fp, args, flags));
 			
 			if (!event.isPerformed())
 				return true;
@@ -289,103 +344,118 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements FleXCo
 		
 		} else {
 			
-			int timeLeft = (int) (this.delay-((System.currentTimeMillis()-LastUsed)/1000));
-			this.cantUse(timeLeft);
+			int timeLeft = (int) (this.delay - ((System.currentTimeMillis() - LastUsed) / 1000));
+			
+			this.cantUse(fp, timeLeft);
 			return true;
 			
 		}
 		
 	}
 	
-	@Override
 	public String[] getFlags() {
 		return this.flags;
 	}
 	
-	@Override
 	public String[] getUses() {
 		return this.usage;
 	}
-
-	@Override
+	
 	public long getDelay() {
 		return this.delay;
 	}
-
-	@Override
-	public FleXPlayer getPlayer() {
-		return this.fleXPlayer;
-	}
-
-	@Override
-	public CommandSender getSender() {
-		return this.sender;
+	
+	public void playerNotFound(CommandSender sender, String notFound) {
+		
+		FleXPlayer player = sender instanceof FleXPlayer ? (FleXPlayer)sender : null;
+		
+		if (player == null && sender instanceof FleXPlayer)
+			player = Fukkit.getPlayer(((Player)sender).getUniqueId());
+		
+		Theme theme = player != null ? player.getTheme() : Memory.THEME_CACHE.getDefaultTheme();
+		
+		Language lang = player != null ? player.getLanguage() : Language.ENGLISH;
+		
+		Variable<String> variable = new Variable<String>("%player%", notFound);
+		
+		sender.sendMessage(ThemeMessage.COMMAND_PLAYER_NOT_FOUND.format(theme, lang, variable));
+		
 	}
 	
-	@Override
-	public void playerNotFound(String name) {
+	public void playerNotOnline(CommandSender sender, FleXPlayer offline) {
 		
-		Variable<String> variable = new Variable<String>("%player%", name);
+		FleXPlayer player = sender instanceof FleXPlayer ? (FleXPlayer)sender : null;
 		
-		if (this.getSender() instanceof ConsoleCommandSender)
-			this.getSender().sendMessage(ThemeMessage.stripTags(ThemeMessage.COMMAND_PLAYER_NOT_FOUND.format(variable)));
-			
-		else this.fleXPlayer.sendMessage(ThemeMessage.COMMAND_PLAYER_NOT_FOUND.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(), variable));
+		if (player == null && sender instanceof FleXPlayer)
+			player = Fukkit.getPlayer(((Player)sender).getUniqueId());
 		
-	}
-
-	@Override
-	public void playerNotOnline(FleXPlayer player) {
+		Theme theme = player != null ? player.getTheme() : Memory.THEME_CACHE.getDefaultTheme();
+		Language lang = player != null ? player.getLanguage() : Language.ENGLISH;
 		
-		Theme theme = this.getSender() instanceof ConsoleCommandSender ? Memory.THEME_CACHE.stream().findFirst().get() : this.getPlayer().getTheme();
 		Variable<?>[] variable = ThemeUtils.getNameVariables(player, theme);
 		
-		if (this.getSender() instanceof ConsoleCommandSender)
-			this.getSender().sendMessage(ThemeMessage.stripTags(ThemeMessage.COMMAND_PLAYER_NOT_ONLINE.format(variable)));
-			
-		else this.fleXPlayer.sendMessage(ThemeMessage.COMMAND_PLAYER_NOT_ONLINE.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(), variable));
+		sender.sendMessage(ThemeMessage.COMMAND_PLAYER_NOT_ONLINE.format(theme, lang, variable));
 		
 	}
-
-	@Override
-	public void playerNotAccessible(FleXPlayer player) {
+	
+	public void playerNotAccessible(CommandSender sender, FleXPlayer inaccessible) {
 		
+		FleXPlayer player = sender instanceof FleXPlayer ? (FleXPlayer)sender : null;
+		
+		if (player == null && sender instanceof FleXPlayer)
+			player = Fukkit.getPlayer(((Player)sender).getUniqueId());
+		
+		Theme theme = player != null ? player.getTheme() : Memory.THEME_CACHE.getDefaultTheme();
+		
+		Language lang = player != null ? player.getLanguage() : Language.ENGLISH;
+		
+		Variable<?>[] variable = ThemeUtils.getNameVariables(player, theme);
+
 		// TODO: COMMAND_PLAYER_NOT_ACCESSIBLE ("is not in your server")
-		Theme theme = this.getSender() instanceof ConsoleCommandSender ? Memory.THEME_CACHE.stream().findFirst().get() : this.getPlayer().getTheme();
-		Variable<?>[] variable = ThemeUtils.getNameVariables(player, theme);
-		
-		if (this.getSender() instanceof ConsoleCommandSender)
-			this.getSender().sendMessage(ThemeMessage.stripTags(ThemeMessage.COMMAND_PLAYER_NOT_ONLINE.format(variable)));
-			
-		else this.fleXPlayer.sendMessage(ThemeMessage.COMMAND_PLAYER_NOT_ONLINE.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(), variable));
+		sender.sendMessage(ThemeMessage.COMMAND_PLAYER_NOT_ONLINE.format(theme, lang, variable));
 		
 	}
-
-	@Override
-	public void noPermission() {
+	
+	public void noPermission(CommandSender sender) {
+		
+		FleXPlayer player = sender instanceof FleXPlayer ? (FleXPlayer)sender : null;
+		
+		if (player == null && sender instanceof FleXPlayer)
+			player = Fukkit.getPlayer(((Player)sender).getUniqueId());
+		
+		Theme theme = player != null ? player.getTheme() : Memory.THEME_CACHE.getDefaultTheme();
+		
+		Language lang = player != null ? player.getLanguage() : Language.ENGLISH;
 		
 		Variable<String> variable = new Variable<String>("%command%", this.getName());
 		
-		if (this.getSender() instanceof ConsoleCommandSender)
-			this.getSender().sendMessage(ThemeMessage.stripTags(ThemeMessage.COMMAND_DENIED_PERMISSION.format(variable)));
-			
-		else this.fleXPlayer.sendMessage(ThemeMessage.COMMAND_DENIED_PERMISSION.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(), variable));
+		sender.sendMessage(ThemeMessage.COMMAND_DENIED_PERMISSION.format(theme, lang, variable));
 		
 	}
-
-	@Override
-	public void unknownCommand() {
-		this.getSender().sendMessage("Unknown command. Type \"/help\" for help.");
+	
+	public void unknownCommand(CommandSender sender) {
+		sender.sendMessage("Unknown command. Type \"/help\" for help.");
 	}
-
-	@Override
-	public void cantUse(double timeLeft) {
+	
+	public void cantUse(CommandSender sender, double timeLeft) {
+		
+		FleXPlayer player = sender instanceof FleXPlayer ? (FleXPlayer)sender : null;
+		
+		if (player == null && sender instanceof FleXPlayer)
+			player = Fukkit.getPlayer(((Player)sender).getUniqueId());
+		
+		Theme theme = player != null ? player.getTheme() : Memory.THEME_CACHE.getDefaultTheme();
+		
+		Language lang = player != null ? player.getLanguage() : Language.ENGLISH;
 		
 		boolean isMin = timeLeft > 60;
-		double time = isMin ? timeLeft / 60 : timeLeft;
-		if (isMin) time = NumUtils.roundToDecimal(time, 2);
 		
-		this.fleXPlayer.sendMessage(ThemeMessage.COMMAND_DENIED_COOLDOWN.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(),
+		double time = isMin ? timeLeft / 60 : timeLeft;
+		
+		if (isMin)
+			time = NumUtils.roundToDecimal(time, 2);
+		
+		sender.sendMessage(ThemeMessage.COMMAND_DENIED_COOLDOWN.format(theme, lang,
 				
 				isMin ? new Variable<Double>("%cooldown%", (double) time) :
 				
@@ -395,46 +465,106 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements FleXCo
 		))));
 		
 	}
-
-	@Override
-	public void cantUse(PlayerState state) {
+	
+	public void usage(CommandSender sender, String... usage) {
 		
-		String[] message = ThemeMessage.COMMAND_DENIED.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(),
+		FleXPlayer player = sender instanceof FleXPlayer ? (FleXPlayer)sender : null;
+		
+		if (player == null && sender instanceof FleXPlayer)
+			player = Fukkit.getPlayer(((Player)sender).getUniqueId());
+		
+		Theme theme = player != null ? player.getTheme() : Memory.THEME_CACHE.getDefaultTheme();
+		
+		Language lang = player != null ? player.getLanguage() : Language.ENGLISH;
+		
+		if (usage.length > 1) {
+			
+			String[] message = ThemeMessage.COMMAND_HELP_USAGE.format(theme, lang,
+					
+					new Variable<String>("%command%", this.getName()),
+					new Variable<String>("%description%", this.getDescription()),
+					new Variable<String>("%usage%", "\n" + StringUtils.join(usage, "\n")),
+					new Variable<String>("%permission%", this.getPermission() != null ? this.getPermission() : "n/a")
+					
+			);
+			
+			IntStream.range(0, message.length).forEach(i -> message[i] = message[i].replace("<command>", this.getName()));
+			
+			player.sendMessage(message);
+			
+		} else {
+			
+			String[] message = ThemeMessage.COMMAND_HELP_USAGE.format(theme, lang,
+					
+					new Variable<String>("%command%", this.getName()),
+					new Variable<String>("%description%", this.getDescription()),
+					new Variable<String>("%usage%", usage[0]),
+					new Variable<String>("%permission%", this.getPermission() != null ? this.getPermission() : "n/a")
+					
+			);
+			
+			IntStream.range(0, message.length).forEach(i -> message[i] = message[i].replace("<command>", this.getName()));
+			
+			player.sendMessage(message);
+			
+		}
+		
+	}
+	
+	public void cantUse(FleXPlayer player, PlayerState state) {
+		
+		Theme theme = player.getTheme();
+		
+		Language lang = player.getLanguage();
+		
+		String[] message = ThemeMessage.COMMAND_DENIED.format(player.getTheme(), player.getLanguage(),
 				new Variable<String>("%command%", this.getName()));
 		
 		switch (state) {
 		case INLOBBY:
-			message = ThemeMessage.COMMAND_DENIED_STATE_LOBBY.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(),
+			message = ThemeMessage.COMMAND_DENIED_STATE_LOBBY.format(theme, lang,
 					new Variable<String>("%command%", this.getName()));
 			break;
 		case INGAME_PVE_ONLY:
-			message = ThemeMessage.COMMAND_DENIED_STATE_INGAME.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(),
+			message = ThemeMessage.COMMAND_DENIED_STATE_INGAME.format(theme, lang,
 					new Variable<String>("%command%", this.getName()));
 			break;
 		case INGAME:
-			message = ThemeMessage.COMMAND_DENIED_STATE_INGAME.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(),
+			message = ThemeMessage.COMMAND_DENIED_STATE_INGAME.format(theme, lang,
 					new Variable<String>("%command%", this.getName()));
 			break;
 		case SPECTATING:
-			message = ThemeMessage.COMMAND_DENIED_STATE_SPECTATOR.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(),
+			message = ThemeMessage.COMMAND_DENIED_STATE_SPECTATOR.format(theme, lang,
 					new Variable<String>("%command%", this.getName()));
 			break;
 		default:
-			message = ThemeMessage.COMMAND_DENIED_STATE_HUB_ONLY.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(),
+			message = ThemeMessage.COMMAND_DENIED_STATE_HUB_ONLY.format(theme, lang,
 					new Variable<String>("%command%", this.getName()));
 			break;
 		}
 		
-		this.fleXPlayer.sendMessage(message);
+		player.sendMessage(message);
 		
 	}
 
-	@Override
-	public void usage(String... usage) {
+	public void usage(CommandSender sender) {
+		this.usage(sender, this.usage);
+	}
 
+	public void invalid(CommandSender sender, String... usage) {
+
+		FleXPlayer player = sender instanceof FleXPlayer ? (FleXPlayer)sender : null;
+		
+		if (player == null && sender instanceof FleXPlayer)
+			player = Fukkit.getPlayer(((Player)sender).getUniqueId());
+		
+		Theme theme = player != null ? player.getTheme() : Memory.THEME_CACHE.getDefaultTheme();
+		
+		Language lang = player != null ? player.getLanguage() : Language.ENGLISH;
+		
 		if (usage.length > 1) {
 
-			String[] message = ThemeMessage.COMMAND_HELP_USAGE.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(),
+			String[] message = ThemeMessage.COMMAND_HELP_INVALID.format(theme, lang,
 					
 					new Variable<String>("%command%", this.getName()),
 					new Variable<String>("%description%", this.getDescription()),
@@ -444,11 +574,12 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements FleXCo
 			);
 			
 			IntStream.range(0, message.length).forEach(i -> message[i] = message[i].replace("<command>", this.getName()));
-			this.fleXPlayer.sendMessage(message);
+			
+			sender.sendMessage(message);
 			
 		} else {
 			
-			String[] message = ThemeMessage.COMMAND_HELP_USAGE.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(),
+			String[] message = ThemeMessage.COMMAND_HELP_INVALID.format(theme, lang,
 					
 					new Variable<String>("%command%", this.getName()),
 					new Variable<String>("%description%", this.getDescription()),
@@ -458,76 +589,42 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements FleXCo
 			);
 			
 			IntStream.range(0, message.length).forEach(i -> message[i] = message[i].replace("<command>", this.getName()));
-			this.fleXPlayer.sendMessage(message);
 			
-		}
-		
-	}
-
-	@Override
-	public void usage() {
-		this.usage(this.usage);
-	}
-
-	@Override
-	public void invalid(String... usage) {
-
-		if (usage.length > 1) {
-
-			String[] message = ThemeMessage.COMMAND_HELP_INVALID.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(),
-					
-					new Variable<String>("%command%", this.getName()),
-					new Variable<String>("%description%", this.getDescription()),
-					new Variable<String>("%usage%", "\n" + StringUtils.join(usage, "\n")),
-					new Variable<String>("%permission%", this.getPermission() != null ? this.getPermission() : "n/a")
-					
-			);
-			
-			IntStream.range(0, message.length).forEach(i -> message[i] = message[i].replace("<command>", this.getName()));
-			this.fleXPlayer.sendMessage(message);
-			
-		} else {
-			
-			String[] message = ThemeMessage.COMMAND_HELP_INVALID.format(this.fleXPlayer.getTheme(), this.fleXPlayer.getLanguage(),
-					
-					new Variable<String>("%command%", this.getName()),
-					new Variable<String>("%description%", this.getDescription()),
-					new Variable<String>("%usage%", usage[0]),
-					new Variable<String>("%permission%", this.getPermission() != null ? this.getPermission() : "n/a")
-					
-			);
-			
-			IntStream.range(0, message.length).forEach(i -> message[i] = message[i].replace("<command>", this.getName()));
-			this.fleXPlayer.sendMessage(message);
+			sender.sendMessage(message);
 			
 		}
 		
 	}
 	
-	@Override
-	public void invalid() {
-		this.invalid(this.usage);
+	public void invalid(CommandSender sender) {
+		this.invalid(sender, this.usage);
 	}
 	
-	@Override
-	public void incompatible(String flag) {
+	public void incompatible(CommandSender sender, String flag) {
+
+		FleXPlayer player = sender instanceof FleXPlayer ? (FleXPlayer)sender : null;
 		
-		if (this.getSender() instanceof ConsoleCommandSender)
-			this.getSender().sendMessage("The flag " + flag + " is not compatible with this command.");
+		if (player == null && sender instanceof FleXPlayer)
+			player = Fukkit.getPlayer(((Player)sender).getUniqueId());
+		
+		Theme theme = player != null ? player.getTheme() : Memory.THEME_CACHE.getDefaultTheme();
+		
+		//Language lang = player != null ? player.getLanguage() : Language.ENGLISH;
+		
+		if (sender instanceof ConsoleCommandSender)
+			sender.sendMessage("The flag " + flag + " is not compatible with this command.");
 		
 		else {
 			// TODO Incompatible flag theme message.
-			this.fleXPlayer.sendMessage(this.fleXPlayer.getTheme().format("<engine><failure>The flag <sc>" + flag + "<failure> is not compatible with this command<pp>."));
+			sender.sendMessage(theme.format("<engine><failure>The flag <sc>" + flag + "<failure> is not compatible with this command<pp>."));
 		}
 		
 	}
 	
-	@Override
 	public void unregister() {
         Fukkit.getCommandFactory().unregister(this);
 	}
 	
-	@Override
     public List<String> tabComplete(CommandSender sender, String alias, String[] args) {
 
 		if (this.unknown || this.tab)
@@ -560,7 +657,6 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements FleXCo
         
     }
 	
-	@Override
 	public boolean isConsoleCommand() {
 		return this.console;
 	}
@@ -569,7 +665,6 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements FleXCo
 		return this.unknown;
 	}
 	
-	@Override
-	public abstract boolean perform(String[] args, String[] flags);
+	public abstract boolean perform(CommandSender sender, String[] args, String[] flags);
 
 }

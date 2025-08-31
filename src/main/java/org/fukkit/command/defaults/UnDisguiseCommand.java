@@ -1,5 +1,6 @@
 package org.fukkit.command.defaults;
 
+import org.bukkit.command.CommandSender;
 import org.fukkit.Fukkit;
 import org.fukkit.PlayerState;
 import org.fukkit.command.Command;
@@ -21,40 +22,40 @@ import io.flex.commons.file.Language;
 @Command(name = "undisguise", aliases = { "ud", "und", "undis" }, usage = "/<command> [player]")
 public class UnDisguiseCommand extends FleXCommandAdapter {
 	
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length != 0 && args.length != 1) {
-			this.usage();
+			this.usage(sender);
 			return false;
 		}
 		
-		if (args.length == 1 && !this.getPlayer().hasPermission("flex.command.disguise.other")) {
-			this.noPermission();
+		if (args.length == 1 && !((FleXPlayer)sender).hasPermission("flex.command.disguise.other")) {
+			this.noPermission(sender);
 			return false;
 		}
 		
-		Theme theme = this.getPlayer().getTheme();
-		Language lang = this.getPlayer().getLanguage();
-		FleXPlayer player = args.length == 0 ? this.getPlayer() : Fukkit.getPlayer(args[0]);
+		Theme theme = ((FleXPlayer)sender).getTheme();
+		Language lang = ((FleXPlayer)sender).getLanguage();
+		FleXPlayer player = args.length == 0 ? ((FleXPlayer)sender) : Fukkit.getPlayer(args[0]);
 		
 		if (player == null) {
-			this.playerNotFound(args[0]);
+			this.playerNotFound(sender, args[0]);
 			return false;
 		}
 		
 		if (!player.isOnline()) {
-			this.playerNotOnline(player);
+			this.playerNotOnline(sender, player);
 			return false;
 		}
 		
 		if (!player.isDisguised()) {
-			player.sendMessage((player != this.getPlayer() ? ThemeMessage.UNDISGUISE_FAILURE_OTHER : ThemeMessage.UNDISGUISE_FAILURE).format(theme, lang, ThemeUtils.getNameVariables(player, theme)));
+			player.sendMessage((player != ((FleXPlayer)sender) ? ThemeMessage.UNDISGUISE_FAILURE_OTHER : ThemeMessage.UNDISGUISE_FAILURE).format(theme, lang, ThemeUtils.getNameVariables(player, theme)));
 			return false;
 		}
 		
 		try {
 			
-			FleXPlayerDisguiseEvent load = new FleXPlayerDisguiseEvent(this.getPlayer(), null);
+			FleXPlayerDisguiseEvent load = new FleXPlayerDisguiseEvent(((FleXPlayer)sender), null);
 			
 			Fukkit.getEventFactory().call(load);
 			
@@ -65,19 +66,19 @@ public class UnDisguiseCommand extends FleXCommandAdapter {
 			
 		} catch (Exception e) {
 			
-			this.getPlayer().sendMessage(ThemeMessage.UNDISGUISE_FAILURE_ERROR.format(theme, lang, ThemeUtils.getNameVariables(player, theme)));
+			((FleXPlayer)sender).sendMessage(ThemeMessage.UNDISGUISE_FAILURE_ERROR.format(theme, lang, ThemeUtils.getNameVariables(player, theme)));
 			return false;
 			
 		}
 		
-		FleXPlayerDisguiseEvent load = new FleXPlayerDisguisedEvent(this.getPlayer(), null, Result.UNDISGUISE);
+		FleXPlayerDisguiseEvent load = new FleXPlayerDisguisedEvent(((FleXPlayer)sender), null, Result.UNDISGUISE);
 		
 		Fukkit.getEventFactory().call(load);
 		
-		player.sendMessage(ThemeMessage.UNDISGUISE_SUCCESS.format(theme, lang, ThemeUtils.getNameVariables(this.getPlayer(), theme)));
+		player.sendMessage(ThemeMessage.UNDISGUISE_SUCCESS.format(theme, lang, ThemeUtils.getNameVariables(((FleXPlayer)sender), theme)));
 		
-		if (this.getPlayer() != player)
-			this.getPlayer().sendMessage(ThemeMessage.UNDISGUISE_SUCCESS_OTHER.format(theme, lang, ThemeUtils.getNameVariables(player, theme)));
+		if (((FleXPlayer)sender) != player)
+			((FleXPlayer)sender).sendMessage(ThemeMessage.UNDISGUISE_SUCCESS_OTHER.format(theme, lang, ThemeUtils.getNameVariables(player, theme)));
 		
 		return true;
 		

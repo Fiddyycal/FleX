@@ -74,7 +74,7 @@ Message:
     Format:
     
       Default: '%display%<pp>: <reset>%message%'
-      Hover: '<pc>Rank<pp>: <sc>%rank%\n\n%badges%\n\n<lore>Click to open profile<pp>.'
+      Hover: '<pc>Rank<pp>: <sc>%rank%\n%badges%\n\n<lore>Click to open profile<pp>.'
       
       Staff:
       
@@ -103,7 +103,7 @@ Message:
       Usage: '<engine><failure>Usage: %usage%'
       Invalid: '<engine><failure>Invalid Usage: %usage%'
       Suggest: '<engine><failure>Use <sc>/help [#]<failure>for help<pp>.'
-      Not-Found: '<engine><failure>Help page <sc>%page% <failure>doesn''t exist<pp>.'
+      Not-Found: '<engine><failure>Help page <sv>%page% <failure>doesn''t exist<pp>.'
       Page:
         
         Title: '<engine><pc>Showing Help Page<pp>: <sc>%page%\n<engine><sc><> = REQUIRED <pp>| <sc>[] = OPTIONAL <pp>| <sc>/ = OR <pp>| <sc>-f = FLAGS'

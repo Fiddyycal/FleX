@@ -1,12 +1,15 @@
 package org.fukkit.json;
 
 import java.io.Serializable;
+import java.util.Map.Entry;
 
 import org.bukkit.Statistic;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
 import net.md_5.bungee.api.chat.ClickEvent.Action;
@@ -35,7 +38,7 @@ public class JsonComponent implements CharSequence, Serializable {
 
     public JsonComponent onHover(String hoverText) {
     	
-        JsonObject newJson = this.json.deepCopy();
+        JsonObject newJson = this.toJson();
         JsonObject hoverEvent = new JsonObject();
         
         hoverEvent.addProperty("action", "show_text");
@@ -74,7 +77,7 @@ public class JsonComponent implements CharSequence, Serializable {
 
     public JsonComponent onHover(Statistic statistic) {
     	
-        JsonObject newJson = this.json.deepCopy();
+        JsonObject newJson = this.toJson();
         JsonObject hoverEvent = new JsonObject();
         
         hoverEvent.addProperty("action", "show_achievement");
@@ -88,7 +91,7 @@ public class JsonComponent implements CharSequence, Serializable {
 
     public JsonComponent onClick(Action action, String value) {
     	
-        JsonObject newJson = this.json.deepCopy();
+        JsonObject newJson = this.toJson();
         JsonObject clickEvent = new JsonObject();
         
         clickEvent.addProperty("action", action.name().toLowerCase());
@@ -105,7 +108,7 @@ public class JsonComponent implements CharSequence, Serializable {
     }
     
     public JsonObject toJson() {
-        return this.json.deepCopy();
+    	return deepCopy((JsonElement)this.json).getAsJsonObject();
     }
 
     @Override
@@ -126,6 +129,37 @@ public class JsonComponent implements CharSequence, Serializable {
     @Override
     public String toString() {
         return this.json.toString();
+    }
+    
+    private static JsonElement deepCopy(JsonElement element) {
+    	
+        if (element == null || element.isJsonNull())
+            return JsonNull.INSTANCE;
+        
+        if (element.isJsonPrimitive())
+            return element;
+        
+        if (element.isJsonArray()) {
+            JsonArray copy = new JsonArray();
+            for (JsonElement item : element.getAsJsonArray()) {
+                copy.add(deepCopy(item));
+            }
+            return copy;
+        }
+
+        if (element.isJsonObject()) {
+        	
+            JsonObject copy = new JsonObject();
+            
+            for (Entry<String, JsonElement> entry : element.getAsJsonObject().entrySet())
+                copy.add(entry.getKey(), deepCopy(entry.getValue()));
+            
+            return copy;
+            
+        }
+        
+        throw new IllegalArgumentException("Unknown JsonElement type: " + element.getClass());
+        
     }
     
 }

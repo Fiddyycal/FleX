@@ -2,6 +2,7 @@ package org.fukkit.command.defaults;
 
 import java.util.Arrays;
 
+import org.bukkit.command.CommandSender;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
 import org.fukkit.command.Command;
@@ -20,15 +21,15 @@ import io.flex.commons.file.Variable;
 @Command(name = "mask", usage = "/<command> [rank]")
 public class MaskCommand extends FleXCommandAdapter {
 	
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 
 		if (args.length != 0 && args.length != 1) {
-			this.usage();
+			this.usage(sender);
 			return false;
 		}
 
-		FleXPlayer player = this.getPlayer();
-		Theme theme = this.getPlayer().getTheme();
+		FleXPlayer player = ((FleXPlayer)sender);
+		Theme theme = ((FleXPlayer)sender).getTheme();
 		Rank rank = player.getRank();
 		
 		if (args.length > 0) {
@@ -54,7 +55,7 @@ public class MaskCommand extends FleXCommandAdapter {
 			
 			if (mask == rank) {
 				
-				this.usage("/unmask");
+				this.usage(sender, "/unmask");
 				return false;
 				
 			}

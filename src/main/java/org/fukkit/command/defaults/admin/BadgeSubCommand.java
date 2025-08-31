@@ -1,5 +1,6 @@
 package org.fukkit.command.defaults.admin;
 
+import org.bukkit.command.CommandSender;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
 import org.fukkit.entity.FleXPlayer;
@@ -15,21 +16,21 @@ public class BadgeSubCommand extends AbstractAdminSubCommand {
 	}
 
 	@Override
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length < 3) {
-			this.command.usage("/<command> badge/b add/remove <player> <badge> [reason]");
+			this.command.usage(sender, "/<command> badge/b add/remove <player> <badge> [reason]");
 			return false;
 		}
 		
 		boolean add = args[0].equalsIgnoreCase("add");
 		
 		if (!add && !args[0].equalsIgnoreCase("remove")) {
-			this.command.usage("/<command> badge/b add/remove <player> <badge> [reason]");
+			this.command.usage(sender, "/<command> badge/b add/remove <player> <badge> [reason]");
 			return false;
 		}
 		
-		FleXPlayer player = this.command.getPlayer();
+		FleXPlayer player = (FleXPlayer) sender;
 		
 		Theme theme = player.getTheme();
 		String name = args[1];
@@ -49,18 +50,18 @@ public class BadgeSubCommand extends AbstractAdminSubCommand {
 		Badge badge = Memory.BADGE_CACHE.get(args[2]);
 		
 		if (fp == null) {
-			this.command.playerNotFound(name);
+			this.command.playerNotFound(sender, name);
 			return false;
 		}
 
 		if (badge == null) {
 			// TODO
-			this.command.getPlayer().sendMessage(theme.format("<engine><failure>That badge could not be found<pp>."));
+			player.sendMessage(theme.format("<engine><failure>That badge could not be found<pp>."));
 			return false;
 		}
 		
 		// TODO
-		this.command.getPlayer().sendMessage(theme.format("<engine><sc>" + (add ? "Adding badge to" : "Removing badge from") + " <reset> <spc>" + fp.getDisplayName(theme) + "<pp>..."));
+		player.sendMessage(theme.format("<engine><sc>" + (add ? "Adding badge to" : "Removing badge from") + "<reset> <spc>" + fp.getDisplayName(theme) + "<pp>..."));
 		
 		fp.getHistoryAsync(history -> {
 			

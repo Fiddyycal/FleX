@@ -2,6 +2,7 @@ package org.fukkit.command.defaults.admin;
 
 import java.util.Arrays;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.fukkit.Memory;
 import org.fukkit.command.Command;
@@ -35,22 +36,20 @@ public class AdminCommand extends FleXCommandAdapter {
 		sub_command_cache.add(new FreezeSubCommand(this));
 		sub_command_cache.add(new ShutdownSubCommand(this));
 		sub_command_cache.add(new BotSubCommand(this));
-		sub_command_cache.add(new TruncateSubCommand(this));
 		sub_command_cache.add(new BroadcastSubCommand(this));
 		sub_command_cache.add(new BlacklistAddSubCommand(this));
 		sub_command_cache.add(new DebugSubCommand(this));
 		
 	}
 	
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length == 0 || sub_command_cache.get(args[0]) == null) {
-			this.usage(
+			this.usage(sender,
 
 				"/<command> setrank/giverank/rank/r <player> <rank> [reason]",
 				"/<command> givebadge/badge/b <player> <badge> [reason]",
 				"/<command> database/configuration <name> [-r, -c, -l]",
-				"/<command> truncate/clear [-t, -m, -c, -d, -b, -f]",
 				"/<command> say/broadcast/bc <message> [-g]",
 				"/<command> blacklist/bl <player> [reason]",
 				"/<command> spawn/create/bot <name> [uuid]",
@@ -61,14 +60,14 @@ public class AdminCommand extends FleXCommandAdapter {
 			return false;
 		}
 		
-		if (this.getSender() instanceof ConsoleCommandSender && !args[0].equalsIgnoreCase("setrank") && !args[0].equalsIgnoreCase("giverank") && !args[0].equalsIgnoreCase("rank") && !args[0].equalsIgnoreCase("r")) {
+		if (sender instanceof ConsoleCommandSender && !args[0].equalsIgnoreCase("setrank") && !args[0].equalsIgnoreCase("giverank") && !args[0].equalsIgnoreCase("rank") && !args[0].equalsIgnoreCase("r")) {
 			
-			this.getSender().sendMessage(ThemeMessage.COMMAND_DENIED_STATE_CONSOLE.format(Memory.THEME_CACHE.stream().findFirst().get(), Language.ENGLISH, new Variable<String>("%command%", this.getName())));
+			sender.sendMessage(ThemeMessage.COMMAND_DENIED_STATE_CONSOLE.format(Memory.THEME_CACHE.stream().findFirst().get(), Language.ENGLISH, new Variable<String>("%command%", this.getName())));
 			return true;
 			
 		}
 		
-		return sub_command_cache.get(args[0]).test(args, flags);
+		return sub_command_cache.get(args[0]).test(sender, args, flags);
 		
 	}
 	

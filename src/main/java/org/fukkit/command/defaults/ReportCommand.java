@@ -12,8 +12,8 @@ import org.fukkit.entity.FleXPlayer;
 public class ReportCommand extends AbstractSanctionCommand {
 	
 	@Override
-	protected Menu getMenu(FleXPlayer other, boolean ip, boolean silent) {
-		return new SanctionGui(this.getPlayer(), other, PunishmentType.REPORT, false, false);
+	protected Menu getMenu(FleXPlayer player, FleXPlayer other, boolean ip, boolean silent) {
+		return new SanctionGui(player.getTheme(), other, PunishmentType.REPORT, false, false);
 	}
 	
 }

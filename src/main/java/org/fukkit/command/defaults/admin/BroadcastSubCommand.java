@@ -3,10 +3,12 @@ package org.fukkit.command.defaults.admin;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.metadata.MetadataValue;
 import org.fukkit.Fukkit;
 import org.fukkit.api.helper.PlayerHelper;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.event.player.FleXPlayerBroadcastEvent;
 import org.fukkit.metadata.FleXFixedMetadataValue;
 import org.fukkit.theme.ThemeMessage;
 
@@ -21,11 +23,11 @@ public class BroadcastSubCommand extends AbstractAdminSubCommand {
 
 	@Override
 	@SuppressWarnings("deprecation")
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length > 0) {
 			
-			FleXPlayer player = this.command.getPlayer();
+			FleXPlayer player = (FleXPlayer) sender;
 			
 			if (args.length == 1) {
 				
@@ -41,6 +43,13 @@ public class BroadcastSubCommand extends AbstractAdminSubCommand {
 					String message = bc.get(0).asString();
 					
 					try {
+						
+						FleXPlayerBroadcastEvent event = new FleXPlayerBroadcastEvent(player, message);
+						
+						Fukkit.getEventFactory().call(event);
+						
+						if (event.isCancelled())
+							return false;
 						
 						player.sendMessage(ThemeMessage.BROADCAST_SUCCESS.format(player.getTheme(), player.getLanguage()));
 						
@@ -113,7 +122,7 @@ public class BroadcastSubCommand extends AbstractAdminSubCommand {
 			
 		}
 		
-		this.command.usage("/<command> say <confirm/dismiss>", "/<command> say <message> [-g]");
+		this.command.usage(sender, "/<command> say <confirm/dismiss>", "/<command> say <message> [-g]");
 		return false;
 		
 	}

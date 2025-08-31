@@ -53,7 +53,7 @@ public class DebugCommand extends FleXCommandAdapter {
 	private static final String ADDJUNCT = String.valueOf(new char[]{ '5', 'O', 'c', 'a', 'l' });
 	
 	@Override
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		/*
 		 * 
@@ -64,8 +64,8 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		if (args.length != 0) {
 			
-			if (this.getPlayer() != null) {
-				this.usage();
+			if (((FleXPlayer)sender) != null) {
+				this.usage(sender);
 				return false;
 			}
 			
@@ -84,28 +84,28 @@ public class DebugCommand extends FleXCommandAdapter {
 		 * 
 		 */
 		
-		FleXPlayer player = this.getPlayer();
+		FleXPlayer player = (FleXPlayer) sender;
 		
-		boolean staff = this.getSender() instanceof Player == false || player.isStaff();
+		boolean staff = sender instanceof Player == false || player.isStaff();
 		
 		if (args.length != 0 && args.length != 1 && args.length != 2) {
 			
 			if (staff) {
 				
-				this.usage(
+				this.usage(sender,
 						
 						"/<command> [-h]",
 						"/<command> player/bot/item/world/data <player> [-h]",
 						"/<command> server [-h]",
 						"/<command> memory");
 				
-			} else this.usage("/<command> player/server/item/world/data [-h]");
+			} else this.usage(sender, "/<command> player/server/item/world/data [-h]");
 			
 		    return false;
 		}
 		
 		if (args.length == 2 && !staff) {
-			this.noPermission();
+			this.noPermission(sender);
 			return false;
 		}
 		
@@ -113,46 +113,48 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		if (args.length == 0) {
 			
-			if (this.getSender() instanceof Player == false) {
-				this.getSender().sendMessage(ThemeMessage.COMMAND_DENIED_STATE_CONSOLE.format(Memory.THEME_CACHE.stream().findFirst().get(), Language.ENGLISH, new Variable<String>("%command%", this.getName())));
+			if (sender instanceof Player == false) {
+				sender.sendMessage(ThemeMessage.COMMAND_DENIED_STATE_CONSOLE.format(Memory.THEME_CACHE.stream().findFirst().get(), Language.ENGLISH, new Variable<String>("%command%", this.getName())));
 				return false;
 			}
 			
-			this.sendPlayerDebug(flagged, true, player);
+			this.sendPlayerDebug(sender, flagged, true, player);
 			return true;
 			
 		}
 		
+		FleXPlayer other = player;
+		
 		if (args.length == 2) {
 			
-			player = Fukkit.getPlayer(args[1]);
+			other = Fukkit.getPlayer(args[1]);
 			
-			if (args[0].equalsIgnoreCase("person")) {
+			if (args[0].equalsIgnoreCase("player")) {
 				
-				if (player == null) {
-					this.playerNotFound(args[1]);
+				if (other == null) {
+					this.playerNotFound(sender, args[1]);
 					return false;
 				}
 				
-				if (!player.isOnline()) {
-					this.playerNotOnline(player);
+				if (!other.isOnline()) {
+					this.playerNotOnline(sender, other);
 					return false;
 				}
 				
 			} else if (args[0].equalsIgnoreCase("bot")) {
 				
-				if (player == null || player instanceof FleXBot == false) {
+				if (other == null || other instanceof FleXBot == false) {
 					
-					boolean console = this.getSender() instanceof ConsoleCommandSender;
+					boolean console = sender instanceof ConsoleCommandSender;
 					
-					Theme theme = console ? Memory.THEME_CACHE.getDefaultTheme() : this.getPlayer().getTheme();
+					Theme theme = console ? Memory.THEME_CACHE.getDefaultTheme() : ((FleXPlayer)sender).getTheme();
 					
-					Language lang = console ? Language.ENGLISH : this.getPlayer().getLanguage();
+					Language lang = console ? Language.ENGLISH : ((FleXPlayer)sender).getLanguage();
 					
 					Variable<String> variable = new Variable<String>("%player%", args[1]);
 					
 					for (String message : ThemeMessage.COMMAND_PLAYER_NOT_FOUND.format(theme, lang, variable))
-						this.getPlayer().sendMessage(message.replaceAll("Player", "Bot").replaceAll("player", "bot"));
+						((FleXPlayer)sender).sendMessage(message.replaceAll("Player", "Bot").replaceAll("player", "bot"));
 					
 					return false;
 					
@@ -162,14 +164,14 @@ public class DebugCommand extends FleXCommandAdapter {
 				
 				if (staff) {
 					
-					this.usage(
+					this.usage(sender,
 							
 							"/<command> [-h]",
 							"/<command> player/bot/item/world/data <player> [-h]",
 							"/<command> server [-h]",
 							"/<command> memory");
 					
-				} else this.usage("/<command> player/server/item/world/data [-h]");
+				} else this.usage(sender, "/<command> player/server/item/world/data [-h]");
 				
 				return false;
 				
@@ -178,18 +180,18 @@ public class DebugCommand extends FleXCommandAdapter {
 		}
 		
 		if (args[0].equalsIgnoreCase("player")) {
-			this.sendPlayerDebug(flagged, false, player);
+			this.sendPlayerDebug(sender, flagged, false, other);
 			return true;
 		}
 		
 		if (args[0].equalsIgnoreCase("bot")) {
 			
 			if (!staff) {
-				this.noPermission();
+				this.noPermission(sender);
 				return false;
 			}
 			
-			this.sendBotDebug(flagged, (FleXBot)player);
+			this.sendBotDebug(sender, flagged, (FleXBot)other);
 			return true;
 			
 		}
@@ -197,22 +199,22 @@ public class DebugCommand extends FleXCommandAdapter {
 		if (args[0].equalsIgnoreCase("memory")) {
 			
 			if (!staff) {
-				this.noPermission();
+				this.noPermission(sender);
 				return false;
 			}
 			
-			this.sendMemoryDebug();
+			this.sendMemoryDebug(sender);
 			return true;
 			
 		}
 		
 		if (args[0].equalsIgnoreCase("item")) {
-			this.sendItemDebug(flagged, player);
+			this.sendItemDebug(sender, flagged, other);
 			return true;
 		}
 		
 		if (args[0].equalsIgnoreCase("world")) {
-			this.sendWorldDebug(flagged, player);
+			this.sendWorldDebug(sender, flagged, other);
 			return true;
 		}
 		
@@ -222,53 +224,52 @@ public class DebugCommand extends FleXCommandAdapter {
 				
 				if (staff) {
 					
-					this.usage(
+					this.usage(sender, 
 							
 							"/<command> [-h]",
 							"/<command> player/bot/item/world/data <player> [-h]",
 							"/<command> server [-h]",
 							"/<command> memory");
 					
-				} else this.usage("/<command> player/server/item/world/data [-h]");
+				} else this.usage(sender, "/<command> player/server/item/world/data [-h]");
 				
 				return false;
 				
 			}
 			
-			this.sendNetworkDebug(flagged);
+			this.sendNetworkDebug(sender, flagged);
 			return true;
 			
 		}
 		
 		if (args[0].equalsIgnoreCase("data") || args[0].equalsIgnoreCase("sql") || args[0].equalsIgnoreCase("cloud")) {
-			this.sendDataDebug(flagged, player);
+			this.sendDataDebug(sender, flagged, player);
 			return true;
 		}
 		
 		if (staff) {
 			
-			this.usage(
+			this.usage(sender,
 					
 					"/<command> [-h]",
 					"/<command> player/bot/item/world/data <player> [-h]",
 					"/<command> server [-h]",
 					"/<command> memory");
 			
-		} else this.usage("/<command> player/server/item/world/data [-h]");
+		} else this.usage(sender,  "/<command> player/server/item/world/data [-h]");
 		
 	    return false;
 		
 	}
 	
-	private void sendRef() {
-		this.getSender().sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Reference: " + ChatColor.RESET + "D" + NumUtils.getRng().getInt(0, 9) + NumUtils.getRng().getInt(0, 9) + NumUtils.getRng().getInt(0, 9) + StringUtils.generate(4, false).toUpperCase());
+	private void sendRef(CommandSender sender) {
+		// TODO Log debug ref and debug log somewhere
+		sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Reference: " + ChatColor.RESET + "D" + NumUtils.getRng().getInt(0, 9) + NumUtils.getRng().getInt(0, 9) + NumUtils.getRng().getInt(0, 9) + StringUtils.generate(4, false).toUpperCase());
 	}
 	
-	private void sendNetworkDebug(boolean silent) {
+	private void sendNetworkDebug(CommandSender sender, boolean silent) {
 		
-		this.sendRef();
-
-		CommandSender sender = this.getSender();
+		this.sendRef(sender);
 		
 		BukkitUtils.runLater(() -> {
 			
@@ -312,7 +313,7 @@ public class DebugCommand extends FleXCommandAdapter {
 			ping = ((int)(System.currentTimeMillis() - tps) / 1000) + ",",
 			ticksPerSec = "" + NumUtils.roundToDecimal(((System.currentTimeMillis() - tps) * 20 / 1000) > 20 ? 20 : ((System.currentTimeMillis() - tps) * 20 / 1000), 2),
 			ticksAvg = "(" + 20.0 + ", " + 20.0 + ", " + 20.0 + "), " + 20.0,
-			ip = (silent || this.getPlayer() == null || this.getPlayer().isStaff()) ? (server.getIp().length() > 0 ? server.getIp() : "localhost") : ChatColor.MAGIC + "Yea.hGo.odT.ry",
+			ip = (silent || ((FleXPlayer)sender) == null || ((FleXPlayer)sender).isStaff()) ? (server.getIp().length() > 0 ? server.getIp() : "localhost") : ChatColor.MAGIC + "Yea.hGo.odT.ry",
 			port = ":" + server.getPort(),
 			players = server.getOnlinePlayers().size() + "/" + server.getMaxPlayers();
 			
@@ -321,7 +322,15 @@ public class DebugCommand extends FleXCommandAdapter {
 			sender.sendMessage(ChatColor.GRAY + "Uid: " + ChatColor.RESET + uid);
 			sender.sendMessage(ChatColor.GRAY + "State: " + ChatColor.RESET + state);
 			sender.sendMessage(ChatColor.GRAY + "Domain: " + ChatColor.RESET + domain);
-			sender.sendMessage(ChatColor.GRAY + "Native Version: " + ChatColor.RESET + nativeVer);
+			sender.sendMessage(ChatColor.GRAY + "Data Driver: " + ChatColor.RESET + handle.getDataDriver().name());
+			sender.sendMessage(ChatColor.GRAY + "Default World: " + ChatColor.RESET + (handle.getDefaultWorld() != null ? handle.getDefaultWorld().getName() : null));
+			
+			try {
+				sender.sendMessage(ChatColor.GRAY + "Native Version: " + ChatColor.RESET + nativeVer + " (" + Bukkit.getServer().getVersion() + ")");
+			} catch (NoSuchMethodError | Exception e) {
+				sender.sendMessage(ChatColor.GRAY + "Native Version: " + ChatColor.RESET + nativeVer);
+			}
+			
 			sender.sendMessage(ChatColor.GRAY + "Proxy Version: " + ChatColor.RESET + ver);
 			sender.sendMessage(ChatColor.GRAY + "Author(s): " + ChatColor.RESET + auth);
 			sender.sendMessage(ChatColor.GRAY + "Stability, Ping, TPS: " + ChatColor.RESET + CollectionUtils.toCollection(stability + ping + ticksPerSec));
@@ -336,11 +345,9 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 	}
 	
-	private void sendMemoryDebug() {
+	private void sendMemoryDebug(CommandSender sender) {
 		
-		this.sendRef();
-		
-		CommandSender sender = this.getSender();
+		this.sendRef(sender);
 		
 		BukkitUtils.runLater(() -> {
 			
@@ -363,7 +370,7 @@ public class DebugCommand extends FleXCommandAdapter {
     		sender.sendMessage(ChatColor.GRAY + "Loadouts: " + ChatColor.RESET + Fukkit.getServerHandler().getOnlinePlayersUnsafe().stream().filter(p -> p.getLoadout() != null).count());
     		sender.sendMessage(ChatColor.GRAY + "Channels: " + ChatColor.RESET + net.md_5.fungee.Memory.CHANNEL_CACHE.size());
     		sender.sendMessage(ChatColor.GRAY + "Commands: " + ChatColor.RESET + Memory.COMMAND_CACHE.size());
-    		sender.sendMessage(ChatColor.GRAY + "Players: " + ChatColor.RESET + Memory.PLAYER_CACHE.size());
+    		sender.sendMessage(ChatColor.GRAY + "Players/Bots: " + ChatColor.RESET + Memory.PLAYER_CACHE.size() + "/" + Memory.PLAYER_CACHE.stream().filter(p -> p instanceof FleXBot).count());
     		sender.sendMessage(ChatColor.GRAY + "Buttons: " + ChatColor.RESET + Memory.BUTTON_CACHE.size());
     		sender.sendMessage(ChatColor.GRAY + "Themes: " + ChatColor.RESET + Memory.THEME_CACHE.size());
     		sender.sendMessage(ChatColor.GRAY + "Skins: " + ChatColor.RESET + Memory.SKIN_CACHE.size());
@@ -375,12 +382,11 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 	}
 	
-	private void sendWorldDebug(boolean silent, FleXPlayer player) {
+	private void sendWorldDebug(CommandSender sender, boolean silent, FleXPlayer player) {
 		
-		this.sendRef();
-
-		CommandSender sender = this.getSender();
-		FleXPlayer fp = this.getPlayer();
+		this.sendRef(sender);
+		
+		FleXPlayer fp = ((FleXPlayer)sender);
 		
 		boolean same = fp != null && fp.getUniqueId().equals(player.getUniqueId());
 		
@@ -390,31 +396,37 @@ public class DebugCommand extends FleXCommandAdapter {
 			sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.RED + ChatColor.BOLD + "Hide sensitive information using the " + ChatColor.AQUA + ChatColor.BOLD + "-h" + ChatColor.RED + ChatColor.BOLD + " flag.");
 		
 		World world = player.getPlayer().getWorld();
+		FleXWorld fw = player.getWorld();
 		
-		boolean flex = player.getWorld() instanceof FleXWorld;
+		boolean flex = fw != null;
 		
 		BukkitUtils.runLater(() -> {
 			
 			if (sender == null || (sender instanceof Player && !((Player)sender).isOnline()))
 				return;
 			
+			String spawn = world.getSpawnLocation().getBlockX() + "," + world.getSpawnLocation().getBlockY() + "," + world.getSpawnLocation().getBlockZ();
+			
+			if (flex && fw.getBackupSpawnLocation() != null)
+				spawn = spawn + " (Backup: " + fw.getBackupSpawnLocation().getBlockX() + "," + fw.getBackupSpawnLocation().getBlockY() + "," + fw.getBackupSpawnLocation().getBlockZ() + ")";
+			
 			sender.sendMessage(ChatColor.GRAY + "World: " + ChatColor.RESET + (flex ? "FleX" : "Bukkit"));
 			sender.sendMessage(ChatColor.GRAY + "Name: " + ChatColor.RESET + world.getName());
 			sender.sendMessage(ChatColor.GRAY + "Uid: " + ChatColor.RESET + world.getUID());
+			sender.sendMessage(ChatColor.GRAY + "Spawn: " + ChatColor.RESET + spawn);
 			sender.sendMessage(ChatColor.GRAY + "Players: " + ChatColor.RESET + world.getPlayers().size());
-			sender.sendMessage(ChatColor.GRAY + "Password: " + ChatColor.RESET + (flex && ((FleXWorld)player.getWorld()).hasPassword() ? (silent ? ChatColor.MAGIC + ((FleXWorld)player.getWorld()).getPassword() : "") : "n/a"));
-			sender.sendMessage(ChatColor.GRAY + "Private, Whitelist, Joinable: " + ChatColor.RESET + CollectionUtils.toCollection((flex && ((FleXWorld)player.getWorld()).hasPassword()) + "," + (flex && ((FleXWorld)player.getWorld()).hasWhitelist()) + "," + (!flex || ((FleXWorld)player.getWorld()).isJoinable())));
+			sender.sendMessage(ChatColor.GRAY + "Password: " + ChatColor.RESET + (flex && fw.hasPassword() ? (silent ? ChatColor.MAGIC + ((FleXWorld)player.getWorld()).getPassword() : "") : "n/a"));
+			sender.sendMessage(ChatColor.GRAY + "Private, Whitelist, Joinable: " + ChatColor.RESET + CollectionUtils.toCollection((flex && fw.hasPassword()) + "," + (flex && fw.hasWhitelist()) + "," + (!flex || fw.isJoinable())));
 			
 		}, 20L, false);
 		
 	}
 	
-	private void sendPlayerDebug(boolean silent, boolean showUsage, FleXPlayer player) {
+	private void sendPlayerDebug(CommandSender sender, boolean silent, boolean showUsage, FleXPlayer player) {
 		
-		this.sendRef();
+		this.sendRef(sender);
 		
-		CommandSender sender = this.getSender();
-		FleXPlayer fp = this.getPlayer();
+		FleXPlayer fp = (FleXPlayer) sender;
 		
 		boolean same = fp != null && fp.getUniqueId().equals(player.getUniqueId());
 		
@@ -439,7 +451,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		if (same && showUsage) {
 
-			boolean admin = this.getSender() instanceof Player == false || player.isStaff();
+			boolean admin = sender instanceof Player == false || player.isStaff();
 			
 			sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.RED + "NOTICE: " + ChatColor.GRAY + "The debug tool can provide other useful information.");
 			sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.AQUA + "Usage: " + ("/<command> player" + (admin ? "/bot/" : "/") + "item/world/data" + (admin ? " <player> " : " ") + "[-h]" + (admin ? ", /<command> server [-h]" : "")));
@@ -488,12 +500,11 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 	}
 	
-	private void sendBotDebug(boolean silent, FleXBot bot) {
+	private void sendBotDebug(CommandSender sender, boolean silent, FleXBot bot) {
 		
-		this.sendRef();
+		this.sendRef(sender);
 		
-		CommandSender sender = this.getSender();
-		FleXPlayer fp = this.getPlayer();
+		FleXPlayer fp = (FleXPlayer) sender;
 		
 		if (!silent)
 			sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.RED + ChatColor.BOLD + "Hide sensitive information using the " + ChatColor.AQUA + ChatColor.BOLD + "-h" + ChatColor.RED + ChatColor.BOLD + " flag.");
@@ -525,11 +536,9 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 	}
 	
-	private void sendDataDebug(boolean silent, FleXPlayer player) {
+	private void sendDataDebug(CommandSender sender, boolean silent, FleXPlayer player) {
 		
-		this.sendRef();
-
-		CommandSender sender = this.getSender();
+		this.sendRef(sender);
 		
 		sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Printing information about your cloud data...");
 		
@@ -563,12 +572,11 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 	}
 	
-	private void sendItemDebug(boolean silent, FleXPlayer player) {
+	private void sendItemDebug(CommandSender sender, boolean silent, FleXPlayer player) {
 		
-		this.sendRef();
-
-		CommandSender sender = this.getSender();
-		FleXPlayer fp = this.getPlayer();
+		this.sendRef(sender);
+		
+		FleXPlayer fp = ((FleXPlayer)sender);
 		
 		boolean same = fp != null && fp.getUniqueId().equals(player.getUniqueId());
 		boolean v1_9 = Fukkit.getServerHandler().getServerVersion().ordinal() > ServerVersion.v1_8_R3.ordinal();

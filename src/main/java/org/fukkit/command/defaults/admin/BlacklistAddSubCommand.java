@@ -1,5 +1,7 @@
 package org.fukkit.command.defaults.admin;
 
+import org.bukkit.command.CommandSender;
+
 public class BlacklistAddSubCommand extends AbstractAdminSubCommand {
 	
 	public BlacklistAddSubCommand(AdminCommand command) {
@@ -7,10 +9,10 @@ public class BlacklistAddSubCommand extends AbstractAdminSubCommand {
 	}
 
 	@Override
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length != 2 && args.length != 3) {
-			this.command.usage("/<command> blacklist/bl <player> [reason]");
+			this.command.usage(sender, "/<command> blacklist/bl <player> [reason]");
 			return false;
 		}
 		

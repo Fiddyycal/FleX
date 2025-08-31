@@ -16,8 +16,8 @@ import org.fukkit.entity.FleXPlayer;
 public class MuteCommand extends AbstractSanctionCommand {
 	
 	@Override
-	protected Menu getMenu(FleXPlayer other, boolean ip, boolean silent) {
-		return new SanctionGui(this.getPlayer(), other, PunishmentType.MUTE, ip, silent);
+	protected Menu getMenu(FleXPlayer player, FleXPlayer other, boolean ip, boolean silent) {
+		return new SanctionGui(player.getTheme(), other, PunishmentType.MUTE, ip, silent);
 	}
 	
 }

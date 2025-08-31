@@ -1,5 +1,6 @@
 package org.fukkit.command.defaults.admin;
 
+import org.bukkit.command.CommandSender;
 import org.fukkit.entity.FleXPlayer;
 import io.flex.commons.utils.StringUtils;
 
@@ -10,19 +11,20 @@ public class BotSubCommand extends AbstractAdminSubCommand {
 	}
 
 	@Override
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if ((args.length != 1 && args.length != 2) || (!args[0].equalsIgnoreCase("create") && !args[0].equalsIgnoreCase("remove"))) {
-			this.command.usage("/<command> bot/flexbot <create/remove> <name> [uuid]");
+			this.command.usage(sender, "/<command> bot/flexbot <create/remove> <name> [uuid]");
 			return false;
 		}
+		
+		FleXPlayer fp = (FleXPlayer) sender;
 		
 		if (args[0].equalsIgnoreCase("remove")) {
-			this.command.getPlayer().sendMessage("Hope you didn't need this, it isn't finished yet... whoops. -5Ocal O_O");
+			fp.sendMessage("Hope you didn't need this, it isn't finished yet... whoops. -5Ocal O_O");
 			return false;
 		}
 		
-		FleXPlayer fp = this.command.getPlayer();
 		String name = StringUtils.shorten(args[1], 0, 16);
 		
 		//UUID uuid = UUID.randomUUID();

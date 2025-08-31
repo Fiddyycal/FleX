@@ -2,6 +2,7 @@ package org.fukkit.json;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
@@ -30,12 +31,21 @@ public class ChatJsonDisplayBuffer extends JsonBuffer {
 		List<String> badges = new LinkedList<String>();
 		
 		badges.add("<pc>Badge on display<pp>:<reset> <sc>" + (badge != null ? badge.getIcon() : "None"));
-		badges.add("");
 	    
 		try {
-			player.getHistory().getBadges().badgeSet().forEach(b -> {
-				badges.add("<reset>" + b.getDisplay(theme, true) + "<reset> <pp>&l" + Emoji.DOUBLE_RIGHT_POINTING_ARROW + "<reset> <lore>" + b.getDescription(theme));
-			});
+			
+			Set<Badge> all = player.getHistory().getBadges().badgeSet();
+			
+			if (!all.isEmpty()) {
+				
+				badges.add("");
+				
+				all.forEach(b -> {
+					badges.add("<reset>" + b.getDisplay(theme, true) + "<reset> <pp>&l" + Emoji.DOUBLE_RIGHT_POINTING_ARROW + "<reset> <lore>" + b.getDescription(theme));
+				});
+				
+			}
+			
 		} catch (FleXPlayerNotLoadedException e) {
 			badges.add("<failure>Badges failed to load<pp>.");
 		}
@@ -51,12 +61,10 @@ public class ChatJsonDisplayBuffer extends JsonBuffer {
 		
 		String[] format = ThemeMessage.CHAT_FORMAT_HOVER.format(theme, recipient.getLanguage(), variables);
 		
-		JsonComponent comp = new JsonComponent(player.getDisplayName(theme))
+		JsonComponent comp = new JsonComponent(theme.format(player.getDisplayName(theme)))
 		
-		.onHover(theme.format(StringUtils.join(format, "\n")))
-		.onClick(Action.RUN_COMMAND, "/stats " + player.getName());
-		
-		System.out.println(comp.toString());
+				.onHover(theme.format(StringUtils.join(format, "\n")))
+				.onClick(Action.RUN_COMMAND, "/stats " + player.getName());
 		
 		this.append(comp);
 		

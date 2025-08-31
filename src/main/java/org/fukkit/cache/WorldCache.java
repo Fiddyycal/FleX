@@ -10,8 +10,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -152,16 +150,15 @@ public class WorldCache extends LinkedCache<FleXWorld, UUID> {
 				if (Bukkit.getWorld(name) != null)
 					Bukkit.unloadWorld(name, true);
 				
-				Task.debug("Backup", "The world " +  name + " was removed from the backend.");
-				Task.debug("Backup", "Moving world " +  name + " to " + backups.getAbsolutePath() + ".");
+				Task.error("Backup", "The world " +  name + " does not exist in the flex worlds container.");
+				Task.print("Backup", "Moving world " +  name + " to " + backups.getAbsolutePath() + ".");
+				Task.print("Backup", "If this is an error please make sure the world is either loaded after flex or put into the flex worlds container so it can load into the engine logic properly.");
 				
-				SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
+				String timeStamp = NumUtils.asDateTime(System.currentTimeMillis());
 				
-				Date now = new Date(System.currentTimeMillis());
+				FileUtils.move(world, new File(backups, "[BEFORE_SERVER_START] " + timeStamp + " " + name), "session.lock", "uid.dat", "puid.dat");
 				
-				FileUtils.move(world, new File(backups, name + " (" + date.format(now) + ")"), "session.lock", "uid.dat", "puid.dat");
-				
-				if (backups.listFiles().length > 10) {
+				if (backups.listFiles().length > 5) {
 					
 					File unlucky = backups.listFiles()[0];
 					

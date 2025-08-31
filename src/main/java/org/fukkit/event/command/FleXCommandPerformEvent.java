@@ -2,7 +2,7 @@ package org.fukkit.event.command;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-import org.fukkit.command.FleXCommand;
+import org.fukkit.command.FleXCommandAdapter;
 
 public class FleXCommandPerformEvent extends FleXCommandEvent implements Cancellable {
 	
@@ -13,7 +13,7 @@ public class FleXCommandPerformEvent extends FleXCommandEvent implements Cancell
 	
 	private String[] args, flags;
 	
-	public FleXCommandPerformEvent(FleXCommand command, Player player, String[] args, String[] flags, boolean async) {
+	public FleXCommandPerformEvent(FleXCommandAdapter command, Player player, String[] args, String[] flags, boolean async) {
 		
 		super(command, async);
 		

@@ -152,15 +152,13 @@ public class FormatUtils {
 		if (s == null)
 			return null;
 		
-		s = s.replace("&l", ChatColor.COLOR_CHAR + "l");
-		
 		while (s.contains(ChatColor.COLOR_CHAR + "h"))
 			s = s.replaceFirst("&h", RAINBOW[NumUtils.getRng().getInt(0, RAINBOW.length - 1)].toString());
 		
 		return ChatColor.translateAlternateColorCodes('&', rainbow(s));
 		
 	}
-	
+	/*
 	public static String rainbow(String check) {
 	
 		String checking = "&g";
@@ -185,6 +183,37 @@ public class FormatUtils {
 		
 		return builder.toString();
 		
+	}*/
+	
+	public static String rainbow(String input) {
+		
+	    if (input == null || !input.contains("&g"))
+	    	return input;
+
+	    StringBuilder builder = new StringBuilder();
+	    
+	    String[] parts = input.split("(?=&g)");
+
+	    for (String part : parts) {
+	    	
+	        if (part.startsWith("&g")) {
+	        	
+	            boolean bold = part.startsWith("&gl") || part.startsWith("&g&l");
+	            
+	            // Remove just the &g or &gl marker
+	            String text = part
+	                .replaceFirst("&g" + ChatColor.COLOR_CHAR + "l", "")
+	                .replaceFirst("&g&l", "")
+	                .replaceFirst("&g", "");
+
+	            builder.append(getRainbowString(text, bold, true));
+	            
+	        } else builder.append(part);
+	        
+	    }
+	    
+	    return builder.toString();
+	    
 	}
 	
 }

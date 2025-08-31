@@ -21,9 +21,9 @@ public class SanctionGui extends Menu {
 	
 	private PunishmentType consequenceType;
 	
-	public SanctionGui(FleXPlayer player, FleXPlayer threatened, PunishmentType consequenceType, boolean ip, boolean silent) {
+	public SanctionGui(Theme theme, FleXPlayer threatened, PunishmentType consequenceType, boolean ip, boolean silent) {
 		
-		super(player.getTheme().format("<title>" + consequenceType.toString() + "<pp>: <sc>" + threatened.getName()), determineRows(consequenceType));
+		super(theme.format("<title>" + consequenceType.toString() + "<pp>: <sc>" + threatened.getName()), determineRows(consequenceType));
 		
 		this.consequenceType = consequenceType;
 		
@@ -32,8 +32,6 @@ public class SanctionGui extends Menu {
 		
 		if (silent)
 			this.setMetadata("punishment_silent", new FleXFixedMetadataValue(true));
-		
-		Theme theme = player.getTheme();
 		
 		for (Reason reason : Reason.values()) {
 			

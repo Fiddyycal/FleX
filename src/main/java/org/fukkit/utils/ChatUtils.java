@@ -6,6 +6,7 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.fukkit.Fukkit;
+import org.fukkit.PlayerState;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.player.FleXPlayerAsyncChatEvent;
 import org.fukkit.event.player.FleXPlayerAsyncChatReceiveEvent;
@@ -96,7 +97,7 @@ public class ChatUtils {
 									new Variable<String>("%name%", pl.getDisplayName() + ChatColor.RESET),
 									new Variable<String>("%player%", pl.getName() + ChatColor.RESET),
 									new Variable<String>("%display%", pl.getDisplayName(theme) + ChatColor.RESET),
-									new Variable<String>("%role%", rank.getDisplay(theme, false) + ChatColor.RESET),
+									new Variable<String>("%role%", (player.getState() == PlayerState.SPECTATING ? "%dead%" : "") + rank.getDisplay(theme, false) + ChatColor.RESET),
 									new Variable<String>("%rank%", rank.getDisplay(theme, true) + ChatColor.RESET))[0]);
 					
 				}
@@ -107,7 +108,7 @@ public class ChatUtils {
 				
 					new Variable<String>("%name%", player.getDisplayName()),
 					new Variable<String>("%player%", player.getName()),
-					new Variable<String>("%role%", rank.getDisplay(theme, false)),
+					new Variable<String>("%role%", (player.getState() == PlayerState.SPECTATING ? "%dead%" : "") + rank.getDisplay(theme, false) + ChatColor.RESET),
 					new Variable<String>("%rank%", rank.getDisplay(theme, true)),
 					new Variable<String>("%message%", message.replace("\\", "\\\\").replace("\"", "\\\""))
 					
@@ -131,6 +132,7 @@ public class ChatUtils {
 				
 				JsonBuffer buff = new JsonBuffer().append(new JsonComponent(m))
 						
+						.replace("%dead%", new JsonComponent(theme.format(theme.getName().equalsIgnoreCase("mcgamer") ? "&4SPEC&8|" : "<reset> <sp>&o(&4&oDead<sp>&o)<reset> ")))
 						.replace("%interactable%", new ChatJsonInteractableBuffer(player, p))
 						.replace("%display%", new ChatJsonDisplayBuffer(player, p));
 				

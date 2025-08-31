@@ -16,8 +16,8 @@ import org.fukkit.entity.FleXPlayer;
 public class BanCommand extends AbstractSanctionCommand {
 	
 	@Override
-	protected Menu getMenu(FleXPlayer other, boolean ip, boolean silent) {
-		return new SanctionGui(this.getPlayer(), other, PunishmentType.BAN, ip, silent);
+	protected Menu getMenu(FleXPlayer player, FleXPlayer other, boolean ip, boolean silent) {
+		return new SanctionGui(player.getTheme(), other, PunishmentType.BAN, ip, silent);
 	}
 	
 }

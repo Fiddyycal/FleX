@@ -10,8 +10,7 @@ public class Run {
 		Task.enableDebugMode(true);
 		Task.debug(null, FleX.FLEX);
 		
-		// XXX [Run simple tests here]
-		
+		// XXX [Run simple tests here];
 		
     }
 	

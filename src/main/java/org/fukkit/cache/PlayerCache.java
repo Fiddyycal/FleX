@@ -18,6 +18,7 @@ import org.fukkit.PlayerState;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.reward.Rank;
+
 import io.flex.FleX.Task;
 import io.flex.commons.cache.LinkedCache;
 import io.flex.commons.sql.SQLRowWrapper;
@@ -27,11 +28,11 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 	public static class PlayerCacheMeta {
 		
 		private String name;
-		private Rank rank;
+		private String rank;
 		
 		public PlayerCacheMeta(String name, Rank rank) {
 			this.name = name;
-			this.rank = rank;
+			this.rank = rank != null ? rank.getName() : null;
 		}
 		
 		public String getName() {
@@ -39,11 +40,11 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 		}
 		
 		public Rank getRank() {
-			return this.rank;
+			return Memory.RANK_CACHE.getOrDefault(this.rank, Memory.RANK_CACHE.getDefaultRank());
 		}
 		
 		public void setRank(Rank rank) {
-			this.rank = rank;
+			this.rank = rank != null ? rank.getName() : null;
 		}
 		
 	}
@@ -78,7 +79,6 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 	public boolean remove(FleXHumanEntity... args) {
 		for (FleXHumanEntity entity : args) this.removeIf(e -> entity.getUniqueId().equals(e.getUniqueId()));
 		return true;
-		
 	}
 	
 	/**
@@ -194,7 +194,7 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 					
 					Task.print("Players", "Caching " + rank + " \"" + row.getString("name") + "\" (" + row.getString("uuid").substring(0, 8) + "...) [" + (i++) + "/" + amount + "]");
 					
-					micro_cache.put(UUID.fromString(uuid), new PlayerCacheMeta(name, Memory.RANK_CACHE.getOrDefault(rank, Memory.RANK_CACHE.getDefaultRank())));
+					micro_cache.put(UUID.fromString(uuid), new PlayerCacheMeta(name, rank != null ? Memory.RANK_CACHE.getOrDefault(rank, Memory.RANK_CACHE.getDefaultRank()) : null));
 					
 				} catch (Exception e) {
 					e.printStackTrace();

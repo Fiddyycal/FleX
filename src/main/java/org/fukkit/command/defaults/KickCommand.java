@@ -14,8 +14,8 @@ import org.fukkit.entity.FleXPlayer;
 public class KickCommand extends AbstractSanctionCommand {
 	
 	@Override
-	protected Menu getMenu(FleXPlayer other, boolean ip, boolean silent) {
-		return new SanctionGui(this.getPlayer(), other, PunishmentType.KICK, false, silent);
+	protected Menu getMenu(FleXPlayer player, FleXPlayer other, boolean ip, boolean silent) {
+		return new SanctionGui(player.getTheme(), other, PunishmentType.KICK, false, silent);
 	}
 	
 }

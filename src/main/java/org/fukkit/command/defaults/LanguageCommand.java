@@ -2,6 +2,7 @@ package org.fukkit.command.defaults;
 
 import java.util.Arrays;
 
+import org.bukkit.command.CommandSender;
 import org.fukkit.command.Command;
 import org.fukkit.command.FleXCommandAdapter;
 import org.fukkit.command.GlobalCommand;
@@ -16,16 +17,16 @@ import io.flex.commons.file.Variable;
 @Command(name = "language", usage = "/<command> [language]", aliases = { "lang" })
 public class LanguageCommand extends FleXCommandAdapter {
 	
-	public boolean perform(String[] args, String[] flags) {
+	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 
 		if (args.length != 0 && args.length != 1) {
-			this.usage();
+			this.usage(sender);
 			return false;
 		}
 		
 		if (args.length > 0) {
 			
-			FleXPlayer player = this.getPlayer();
+			FleXPlayer player = ((FleXPlayer)sender);
 			
 			Language lang;
 			
@@ -60,7 +61,7 @@ public class LanguageCommand extends FleXCommandAdapter {
 			
 		}
 		
-		this.getPlayer().openMenu(new LanguageGui(this.getPlayer()), false);
+		((FleXPlayer)sender).openMenu(new LanguageGui(((FleXPlayer)sender)), false);
 		return true;
 		
 	}
