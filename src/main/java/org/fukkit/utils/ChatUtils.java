@@ -51,7 +51,6 @@ public class ChatUtils {
 		FleXPlayerAsyncChatEvent event = new FleXPlayerAsyncChatEvent(
 				
 				player,
-				rank,
 				message,
 				fromServer != null ? fromServer : Fukkit.getServerHandler().getName(),
 				recipients,
@@ -104,11 +103,18 @@ public class ChatUtils {
 				
 			}
 			
+			boolean mcgamer = theme.getName().equalsIgnoreCase("mcgamer");
+			
+			String mode = player.hasMetadata("mode.gamemaster") /*TODO mod mode*/ ? theme.format(mcgamer ? "&4GM&8|" : "<reset> <sp>&o(&4&oGamemaster<sp>&o)<reset> ") : "";
+			String dead = player.getState() == PlayerState.SPECTATING ? theme.format(mcgamer ? "&4SPEC&8|" : "<reset> <sp>&o(&4&oDead<sp>&o)<reset> ") : "";
+			
 			Variable<?>[] variables = new Variable<?>[] {
 				
 					new Variable<String>("%name%", player.getDisplayName()),
 					new Variable<String>("%player%", player.getName()),
-					new Variable<String>("%role%", (player.getState() == PlayerState.SPECTATING ? "%dead%" : "") + rank.getDisplay(theme, false) + ChatColor.RESET),
+					new Variable<String>("%role%", rank.getDisplay(theme, false) + ChatColor.RESET),
+					new Variable<String>("%dead%", dead),
+					new Variable<String>("%mode%", mode),
 					new Variable<String>("%rank%", rank.getDisplay(theme, true)),
 					new Variable<String>("%message%", message.replace("\\", "\\\\").replace("\"", "\\\""))
 					
@@ -132,9 +138,8 @@ public class ChatUtils {
 				
 				JsonBuffer buff = new JsonBuffer().append(new JsonComponent(m))
 						
-						.replace("%dead%", new JsonComponent(theme.format(theme.getName().equalsIgnoreCase("mcgamer") ? "&4SPEC&8|" : "<reset> <sp>&o(&4&oDead<sp>&o)<reset> ")))
 						.replace("%interactable%", new ChatJsonInteractableBuffer(player, p))
-						.replace("%display%", new ChatJsonDisplayBuffer(player, p));
+						.replace("%display%", new ChatJsonDisplayBuffer(player, p, event.getPrefix(), event.getSuffix()));
 				
 				p.sendJsonMessage(buff);
 				

@@ -7,10 +7,6 @@ Spawn:
   yaw: 0.0
   pitch: 0.0
   
-  # Whether players are teleported to spawn every time they join.
-  # This takes a value of true or false with a default of true.
-  Join-Teleport: true
-  
   # How many blocks can players randomly spread out over?
   # This is disabled by default with a value of 1.
   Radius: 1

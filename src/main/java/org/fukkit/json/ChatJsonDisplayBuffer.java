@@ -20,7 +20,7 @@ public class ChatJsonDisplayBuffer extends JsonBuffer {
 	
 	private static final long serialVersionUID = 6759819969891361278L;
 	
-	public ChatJsonDisplayBuffer(FleXPlayer player, FleXPlayer recipient) {
+	public ChatJsonDisplayBuffer(FleXPlayer player, FleXPlayer recipient, String prefix, String suffix) {
 		
 		Theme theme = recipient.getTheme();
 		
@@ -61,12 +61,18 @@ public class ChatJsonDisplayBuffer extends JsonBuffer {
 		
 		String[] format = ThemeMessage.CHAT_FORMAT_HOVER.format(theme, recipient.getLanguage(), variables);
 		
+		if (prefix != null)
+			this.append(new JsonComponent(theme.format(prefix)));
+		
 		JsonComponent comp = new JsonComponent(theme.format(player.getDisplayName(theme)))
 		
 				.onHover(theme.format(StringUtils.join(format, "\n")))
 				.onClick(Action.RUN_COMMAND, "/stats " + player.getName());
 		
 		this.append(comp);
+		
+		if (suffix != null)
+			this.append(new JsonComponent(theme.format(suffix)));
 		
 		if (badge != null) {
 			

@@ -136,16 +136,49 @@ public class PlayerListeners extends FleXEventListener {
 				return;
 			}
 			
+			if (fp.hasMetadata("flex.player"))
+				fp.removeMetadata("flex.player", Fukkit.getInstance());
+			
+			fp.setMetadata("flex.player", new FleXFixedMetadataValue(fp));
+			
 			FleXWorld world = Fukkit.getServerHandler().getDefaultWorld();
 			
 			if (world == null) {
 				
-				Task.error("World", "The default world could not be found.");
+				Task.error("World", "The default world cannot be found.");
 				
-				disconnect(player, null);
+				disconnect(player, "The default world cannot be found.");
 				return;
 				
 			}
+			
+			boolean joinTp = (boolean) Fukkit.getServerHandler().getSetting(NetworkSetting.JOIN_TELEPORT);
+			
+			Location loc = null;
+			
+			if (!joinTp) {
+				
+				PlayerData data = world.getPlayerData(fp);
+				
+				Location lastSeen = data != null ? data.getLastSeen() : null;
+				
+				if (lastSeen != null) {
+					
+					FleXWorld fw = Fukkit.getWorld(lastSeen.getWorld().getUID());
+					
+					if (fw != null && fw.isJoinable()) {
+						
+						world = fw;
+						loc = lastSeen;
+						
+					} else player.sendMessage(ChatColor.RED + "The world you are attempting to join is not accessible right now, joining default world.");
+					
+				}
+				
+			}
+			
+			if (loc == null)
+				loc = world.getSpawnLocation() != null ? world.getSpawnLocation() : world.getBackupSpawnLocation();
 			
 			if (!world.getState().isJoinable()) {
 				
@@ -157,14 +190,18 @@ public class PlayerListeners extends FleXEventListener {
 			}
 			
 			if (world.getSpawnLocation() == null && world.getBackupSpawnLocation() == null) {
+				
 				disconnect(player, ConnectTimeoutException.class.getName());
 				return;
+				
 			}
 			
-			if (fp.hasMetadata("flex.player"))
-				fp.removeMetadata("flex.player", Fukkit.getInstance());
-			
-			fp.setMetadata("flex.player", new FleXFixedMetadataValue(fp));
+			if (loc == null) {
+
+				disconnect(player, "Could not find a location to spawn you.");
+				return;
+				
+			}
 			
 			world.getOnlinePlayers().add(fp);
 			
@@ -174,42 +211,25 @@ public class PlayerListeners extends FleXEventListener {
 			
 			fp.onConnect(player);
 			
-			PlayerData data = world.getPlayerData(fp);
-			
-			Location loc = world.getSpawnLocation() != null ? world.getSpawnLocation() : world.getBackupSpawnLocation();
-			Location lastSeen = data != null ? data.getLastSeen() : null;
-			
-			boolean joinTp = (boolean) Fukkit.getServerHandler().getSetting(NetworkSetting.JOIN_TELEPORT);
-			
-			if (!joinTp && lastSeen != null && lastSeen.getWorld() != null)
-				loc = lastSeen;
-			
 			loc = loc.clone();
 			
-			try {
+			if (joinTp) {
 				
-				if (joinTp) {
-					
-					int radius = (int)world.getSetting(WorldSetting.SPAWN_RADIUS) - 1;
-					
-					if (radius < 0)
-						radius = 0;
-					
-					loc.setX(loc.getX() + NumUtils.getRng().getInt(-radius, radius));
-					loc.setZ(loc.getZ() + NumUtils.getRng().getInt(-radius, radius));
-					
-				}
+				int radius = (int)world.getSetting(WorldSetting.SPAWN_RADIUS) - 1;
 				
-				player.teleport(loc);
+				if (radius < 0)
+					radius = 0;
 				
-			} catch (Exception e) {
-				disconnect(player, PlayerJoinEvent.class.getName() + ": " + e.getMessage());
-				return;
+				loc.setX(loc.getX() + NumUtils.getRng().getInt(-radius, radius));
+				loc.setZ(loc.getZ() + NumUtils.getRng().getInt(-radius, radius));
+				
 			}
+			
+			player.teleport(loc);
 			
 		} catch (Exception e) {
 			
-			disconnect(player, "FleXPlayer failed to login.");
+			disconnect(player, "Player object failed to load properly.");
 			
 			Console.log("FleXPlayer", Severity.CRITICAL, e);
 	    	return;
@@ -238,7 +258,7 @@ public class PlayerListeners extends FleXEventListener {
 				}
 				
 			} catch (SQLException e) {
-				disconnect(player, "FleXPlayer failed to login: " + e.getMessage());
+				disconnect(player, e.getMessage());
 			}
 			
 		}, 60L, true);
@@ -824,33 +844,28 @@ public class PlayerListeners extends FleXEventListener {
 	
 	@EventHandler(priority = EventPriority.LOW)
 	public void event(PlayerRespawnEvent event) {
-		
-		FleXPlayer player = null;
-		FleXWorld world = null;
 
 		Player pl = event.getPlayer();
 		
-		try {
-			
-			if (pl.hasMetadata("disguising"))
-				return;
-			
-			player = Fukkit.getPlayerExact(pl);
-			world = Fukkit.getWorld(pl.getWorld().getUID());
-			
-			event.setRespawnLocation(world.getSpawnLocation() != null ? world.getSpawnLocation() : world.getBackupSpawnLocation());
-			
-		} catch (NullPointerException e) {
-			
-			String disconnect =
-					
-					player == null ? "FleXPlayer failed to load." :
-					world == null ? "World cannot be null." :
-					world.getSpawnLocation() == null && world.getBackupSpawnLocation() == null ? "Spawn cannot be null." : "no further information:";
-			
-			disconnect(pl, disconnect);
-			
+		if (pl.hasMetadata("disguising"))
+			return;
+		
+		FleXPlayer player = Fukkit.getPlayerExact(pl);
+		
+		if (player == null) {
+			disconnect(pl, "FleXPlayer failed to load.");
+			return;
 		}
+		
+		FleXWorld world = Fukkit.getWorld(pl.getWorld().getUID());
+		
+		if (world == null)
+			return;
+		
+		if (world.getSpawnLocation() == null && world.getBackupSpawnLocation() == null)
+			return;
+		
+		event.setRespawnLocation(world.getSpawnLocation() != null ? world.getSpawnLocation() : world.getBackupSpawnLocation());
 		
 	}
 	
@@ -920,7 +935,8 @@ public class PlayerListeners extends FleXEventListener {
 	}
 	
 	private static String disconnectMessage(String reason) {
-		return ChatColor.RED + "FleXPlayer failed to login\n\n" + ChatColor.RED + reason;
+		return ChatColor.RED + "FleXPlayer failed to login:\n\n" + ChatColor.RED + reason;
 	}
 	
 }
+			

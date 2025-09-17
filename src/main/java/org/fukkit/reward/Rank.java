@@ -148,9 +148,9 @@ public class Rank extends FleXEventListener implements Cacheable {
 			
 			if (perTheme) {
 				
-				if (rankYml.getConfig().getString("Ranks." + this.name) == null) {
-					rankYml.getConfig().set("Ranks." + this.name, def);
-					rankYml.save();
+				if (themeYml.getConfig().getString("Ranks." + this.name) == null) {
+					themeYml.getConfig().set("Ranks." + this.name, def);
+					themeYml.save();
 				}
 				
 			}

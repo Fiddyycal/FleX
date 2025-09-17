@@ -5,17 +5,16 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Cancellable;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.reward.Rank;
 
 public class FleXPlayerAsyncChatEvent extends FleXPlayerEvent implements Cancellable {
 	
-	private String message, server;
+	private String message, server, prefix, suffix;
 	
 	private Set<FleXPlayer> recipients, mentions;
 	
 	private boolean cancel = false;
 	
-	public FleXPlayerAsyncChatEvent(final FleXPlayer player, Rank display, String message, String originServer, Set<FleXPlayer> recipients, Set<FleXPlayer> mentioned) {
+	public FleXPlayerAsyncChatEvent(final FleXPlayer player, String message, String originServer, Set<FleXPlayer> recipients, Set<FleXPlayer> mentioned) {
 		
 		super(player, true);
 		
@@ -41,6 +40,14 @@ public class FleXPlayerAsyncChatEvent extends FleXPlayerEvent implements Cancell
 		return this.message;
 	}
 	
+	public String getPrefix() {
+		return this.prefix;
+	}
+	
+	public String getSuffix() {
+		return this.suffix;
+	}
+	
 	public Set<FleXPlayer> getRecipients() {
 		return this.recipients;
 	}
@@ -55,6 +62,14 @@ public class FleXPlayerAsyncChatEvent extends FleXPlayerEvent implements Cancell
 	
 	public void setMessage(String message) {
 		this.message = message;
+	}
+
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
+	}
+	
+	public void setSuffix(String suffix) {
+		this.suffix = suffix;
 	}
 
 }

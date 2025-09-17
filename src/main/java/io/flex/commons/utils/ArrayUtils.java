@@ -47,8 +47,8 @@ public class ArrayUtils {
 		if (array == null)
 			throw new NullPointerException("array must not be null");
 		
-		if (add == null)
-			throw new NullPointerException("add must not be null");
+		if (add == null || add.length == 0)
+			return array;
 		
 		if (type == null) {
 			
@@ -78,11 +78,8 @@ public class ArrayUtils {
 		if (array == null)
 			throw new NullPointerException("array must not be null");
 		
-		if (remove == null)
-			throw new NullPointerException("remove must not be null");
-		
-		if (remove.length == 0)
-			throw new NullPointerException("remove must not be empty");
+		if (remove == null || remove.length == 0)
+			return array;
 		
 		if (type == null) {
 			

@@ -13,7 +13,6 @@ public enum WorldSetting {
 	
 	SPAWN_RADIUS("Spawn.Radius", 1),
 	SPAWN_PROTECTION("Spawn.Protection", 10),
-	SPAWN_TELEPORT("Spawn.Join-Teleport", true),
 	
 	SPAWN_CREATURE_ANIMALS("Spawn.Creatures.Animals", false),
 	SPAWN_CREATURE_MONSTERS("Spawn.Creatures.Monsters", false),
