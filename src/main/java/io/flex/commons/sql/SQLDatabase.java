@@ -5,8 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.SQLSyntaxErrorException;
+import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -17,6 +18,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import io.flex.FleX;
 import io.flex.FleX.Task;
@@ -131,8 +134,8 @@ public class SQLDatabase implements Serializable {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public SQLRowWrapper getRow(String table, SQLCondition<?> condition) throws SQLException {
-		return this.getRows(table, condition).stream().findFirst().orElse(null);
+	public SQLRowWrapper getRow(String table, @Nullable SQLCondition<?>... conditions) throws SQLException {
+		return this.getRows(table, conditions).stream().findFirst().orElse(null);
 	}
 	
 	/**
@@ -140,16 +143,9 @@ public class SQLDatabase implements Serializable {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public Set<SQLRowWrapper> getRows(String table) throws SQLException {
-		return this.getRows(table, null);
-	}
-	
-	/**
-	 * Connection safe, but may still throw SQLException.
-	 * Will attempt to open a connection, utilize it, then close the connection.
-	 * @throws SQLException
-	 */
-	public Set<SQLRowWrapper> getRows(String table, @Nullable SQLCondition<?> condition) throws SQLException {
+	public Set<SQLRowWrapper> getRows(String table, @Nullable SQLCondition<?>... conditions) throws SQLException {
+
+		StringBuilder query = new StringBuilder("SELECT * FROM " + table);
 		
 		Set<SQLRowWrapper> rows = new HashSet<SQLRowWrapper>();
 		
@@ -159,23 +155,26 @@ public class SQLDatabase implements Serializable {
 		
 		try {
 			
-			String query = "SELECT * FROM " + table;
-
-			if (condition != null)
-			    query += " WHERE " + IDENTIFIER_QUOTE + condition.key() + IDENTIFIER_QUOTE + " = ?";
+			List<Object> params = new ArrayList<>();
 			
-			statement = connection.getDriverConnection().prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			
-			if (condition != null) {
-				
-				Object obj = simplify(condition.value());
-				
-				if (obj instanceof String)
-					statement.setString(1, (String)obj);
-				
-				else statement.setObject(1, obj);
-				
+			if (conditions != null && conditions.length > 0) {
+			    for (SQLCondition<?> condition : conditions) {
+			    	
+			        if (condition != null) {
+			        	
+			            query.append(query.toString().contains(" WHERE ") ? " AND " : " WHERE ");
+			            query.append(IDENTIFIER_QUOTE).append(condition.key()).append(IDENTIFIER_QUOTE).append(" = ?");
+			            
+			            params.add(simplify(condition.value()));
+			            
+			        }
+			    }
 			}
+			
+			statement = connection.getDriverConnection().prepareStatement(query.toString(), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			
+			for (int i = 0; i < params.size(); i++)
+				bind(statement, i+1, params.get(i));
 			
 		    ResultSet result = statement.executeQuery();
 			
@@ -206,7 +205,8 @@ public class SQLDatabase implements Serializable {
 			}
 			
 		} catch (SQLException e) {
-	    	
+			
+			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to execute row retrieval query: " + query.toString() + ": " + e.getMessage());
 	    	Console.log("SQL", Severity.ERROR, e);
 	        throw e;
 	        
@@ -570,7 +570,7 @@ public class SQLDatabase implements Serializable {
 			
 		} catch (SQLException e) {
 			
-			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to execute: " + query);
+			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to execute query: " + query + ": " + e.getMessage());
 	    	Console.log("SQL", Severity.ERROR, e);
 			return false;
 			
@@ -592,10 +592,11 @@ public class SQLDatabase implements Serializable {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 *  
 	 * @param query Structured Query Language to parse to database.
+	 * @param objects Objects to parse to the prepared statement.
 	 * @return Number of affected rows.
 	 * @throws SQLException
 	 */
-	public int update(String query) throws SQLException {
+	public int update(String query, Object... objects) throws SQLException {
 		
 	    SQLConnection connection = this.open();
 		
@@ -610,6 +611,17 @@ public class SQLDatabase implements Serializable {
 			
 			statement = connection.getDriverConnection().prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			
+			if (objects != null && objects.length > 0) {
+				for (int i = 0; i < objects.length; i++) {
+					
+					Object object = objects[i];
+					int index = i + 1;
+					
+					bind(statement, index, object);
+					
+				}
+			}
+			
 			int affected = statement.executeUpdate();
 			
 			for (SQLConnectionListener listener : listeners)
@@ -619,15 +631,9 @@ public class SQLDatabase implements Serializable {
 			
 			return affected;
 			
-		} catch (SQLSyntaxErrorException e) {
-			
-			Task.error("SQL (" + Severity.NOTICE.name() + ")", "Failed to update: " + e.getMessage());
-	    	Console.log("SQL", Severity.NOTICE, e);
-			return -1;
-			
 		} catch (SQLException e) {
 			
-			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to update: " + query);
+			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to execute update query: " + query + ": " + e.getMessage());
 	    	Console.log("SQL", Severity.ERROR, e);
 			return -1;
 			
@@ -642,6 +648,110 @@ public class SQLDatabase implements Serializable {
 	    	connection.release();
 				
 		}
+		
+	}
+
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 *  
+	 * @param query Structured Query Language to parse to database.
+	 * @param objects Objects to parse to the prepared statement.
+	 * @return Number of affected rows.
+	 * @throws SQLException
+	 */
+	public Set<SQLRowWrapper> result(String query, Object... objects) throws SQLException {
+
+		Set<SQLRowWrapper> rows = new HashSet<SQLRowWrapper>();
+		
+	    SQLConnection connection = this.open();
+	    
+		PreparedStatement statement = null;
+		
+		try {
+			
+			if (this.driver == SQLDriverType.SQLITE)
+				query = query.replace(IDENTIFIER_QUOTE, "");
+			
+			Task.debug("SQL", "Attempting RESULT -> base; " + query);
+			
+			statement = connection.getDriverConnection().prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			
+			if (objects != null && objects.length > 0) {
+				for (int i = 0; i < objects.length; i++) {
+					
+					Object object = objects[i];
+					int index = i + 1;
+					
+					bind(statement, index, object);
+					
+				}
+			}
+			
+			String table = null;
+			String primary = null;
+			
+        	try (ResultSet result = statement.executeQuery()) {
+        		
+        		for (SQLConnectionListener listener : listeners)
+    				listener.onResult(query, result);
+    			
+    			Task.debug("SQL", "RESULT successful.");
+    			
+    			Pattern pattern = Pattern.compile("(?i)\\bFROM\\b\\s+([a-zA-Z0-9_]+)");
+    	        Matcher matcher = pattern.matcher(query);
+    	        
+    	        if (matcher.find())
+    	            table = matcher.group(1);
+    			
+    	        if (table != null) {
+    	        	try (ResultSet rs = connection.getDriverConnection().getMetaData().getPrimaryKeys(null, null, table)) {
+    		            if (rs.next())
+    		            	primary = rs.getString("COLUMN_NAME");
+    		        }
+    	        }
+    	        
+    			ResultSetMetaData meta = result.getMetaData();
+    	        
+    			while(result.next()) {
+    				
+    				Map<String, Object> entries = new HashMap<String, Object>();
+    				
+    				for (int i = 1; i <= meta.getColumnCount(); i++) {
+    					
+    					String column = meta.getColumnName(i);
+    			        Object value = result.getObject(i);
+    			        
+    			        entries.put(column, value);
+    			        
+    			    }
+    		        
+    				rows.add(new SQLRowWrapper(this, table, primary, entries));
+    				
+    			}
+        		
+        	}
+        	
+			return rows;
+			
+		} catch (SQLException e) {
+			
+			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to execute result query: " + query + ": " + e.getMessage());
+	    	Console.log("SQL", Severity.ERROR, e);
+			return Collections.emptySet();
+			
+		} finally {
+	    	
+	    	if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException ignore) {}
+			}
+	    	
+	    	connection.release();
+				
+		}
+		
 	}
 	
 	public boolean hasConnection() {
@@ -818,6 +928,33 @@ public class SQLDatabase implements Serializable {
 	@Override
 	public String toString() {
 		return this.getHost() + "/" + this.database;
+	}
+	
+	private static void bind(PreparedStatement statement, int index, Object object) throws SQLException {
+		
+		if (object == null)
+		    statement.setNull(index, Types.VARCHAR);
+		
+		else if (object instanceof String)
+		    statement.setString(index, (String)object);
+		
+		else if (object instanceof Integer)
+		    statement.setInt(index, (Integer)object);
+		
+		else if (object instanceof Long)
+		    statement.setLong(index, (Long)object);
+		
+		else if (object instanceof Boolean)
+		    statement.setBoolean(index, (Boolean)object);
+		
+		else if (object instanceof Double)
+		    statement.setDouble(index, (Double)object);
+		
+		else if (object instanceof UUID)
+		    statement.setString(index, object.toString());
+		
+		else throw new UnsupportedOperationException("The type " + object.getClass() + " is not supported.");
+		
 	}
 	
 	private static Object simplify(Object value) {

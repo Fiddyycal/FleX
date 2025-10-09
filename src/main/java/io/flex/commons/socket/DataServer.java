@@ -189,7 +189,7 @@ public abstract class DataServer extends Thread {
 
 	        if (cmd == DataCommand.SEND_DATA || cmd == DataCommand.PUBLISH_DATA) {
 	        	
-	            String value = in.readLine();
+	            String value = in.readLine().replace("\\n", "\n");
 	            
 	            if (cmd == DataCommand.PUBLISH_DATA) {
 		        	
@@ -346,7 +346,7 @@ public abstract class DataServer extends Thread {
         	
             out.println(DataCommand.SEND_DATA.name());
             out.println(data.getKey());
-            out.println(data.getValue());
+            out.println(data.getValue().replace("\n", "\\n"));
             
             debug("Socket: " + port, "Sending data: " + DataCommand.SEND_DATA + "::" + data.getKey() + "::" + data.getValue());
             

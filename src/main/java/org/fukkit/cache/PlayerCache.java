@@ -18,6 +18,7 @@ import org.fukkit.PlayerState;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.reward.Rank;
+import org.fukkit.utils.BukkitUtils;
 
 import io.flex.FleX.Task;
 import io.flex.commons.cache.LinkedCache;
@@ -91,7 +92,15 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 	}
 	
 	public void getAsync(UUID uuid, Consumer<FleXHumanEntity> callback) {
-		// TODO Make get async method in PlayerController
+		BukkitUtils.asyncThread(() -> {
+			callback.accept(Fukkit.getPlayerFactory().createFukkitSafe(uuid, null));
+		});
+	}
+	
+	public void getAsync(String name, Consumer<FleXHumanEntity> callback) {
+		BukkitUtils.asyncThread(() -> {
+			callback.accept(Fukkit.getPlayerFactory().createFukkitSafe(null, name));
+		});
 	}
 	
 	public FleXHumanEntity getFromCache(UUID uuid) {

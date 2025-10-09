@@ -258,7 +258,7 @@ public class PlayerListeners extends FleXEventListener {
 				}
 				
 			} catch (SQLException e) {
-				disconnect(player, e.getMessage());
+				BukkitUtils.mainThread(() -> disconnect(player, e.getMessage()));
 			}
 			
 		}, 60L, true);

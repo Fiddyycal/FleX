@@ -435,6 +435,10 @@ public final class Fukkit extends JavaPlugin {
 	public static void getPlayerAsync(UUID uuid, Consumer<FleXHumanEntity> callback) {
 		Memory.PLAYER_CACHE.getAsync(uuid, callback);
 	}
+
+	public static void getPlayerAsync(String name, Consumer<FleXHumanEntity> callback) {
+		Memory.PLAYER_CACHE.getAsync(name, callback);
+	}
 	
 	public static Collection<? extends FleXPlayer> getOnlinePlayers() {
 		return serverHandler.getOnlinePlayersUnsafe();
