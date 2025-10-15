@@ -10,21 +10,14 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.messaging.Messenger;
 import org.fukkit.Fukkit;
-import org.fukkit.FukkitRunnable;
-import org.fukkit.entity.FleXBot;
+import org.fukkit.cache.PlayerCache;
+import org.fukkit.cache.PlayerCache.PlayerCacheMeta;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.FleXEventListener;
 import org.fukkit.event.channel.ChannelMessageReceivedEvent;
 import org.fukkit.event.channel.ChannelMessageSendEvent;
-import org.fukkit.event.player.FleXPlayerLoadEvent;
-import org.fukkit.event.player.FleXPlayerUpdateEvent;
-import org.fukkit.theme.Theme;
 import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.ChatUtils;
 
@@ -38,154 +31,6 @@ import net.md_5.fungee.Memory;
 import net.md_5.fungee.ProtocolVersion;
 
 public class FukkitChannelHandler extends FleXEventListener implements ChannelHandler {
-
-	private static final Map<UUID, Map<String, String>> CACHE = new HashMap<UUID, Map<String, String>>();
-	
-	@EventHandler(priority = EventPriority.LOW)
-	public void event(FleXPlayerLoadEvent event) {
-		
-		if (event.isOffline())
-			return;
-		
-		FleXPlayer player = event.getPlayer();
-		
-		if (player instanceof FleXBot)
-			return;
-		
-		new FukkitRunnable() {
-			
-			private int attempt = 0;
-			
-			@Override
-			public void execute() {
-
-				this.attempt++;
-				
-				if (!player.isOnline()) {
-					
-					this.cancel();
-					return;
-					
-				}
-				
-				if (this.attempt == 5) {
-					
-					Theme theme = player.getTheme() != null ? player.getTheme() : org.fukkit.Memory.THEME_CACHE.getDefaultTheme();
-					
-					BukkitUtils.mainThread(() -> {
-						
-						if (player.isOnline())
-							player.kick(theme.format("<failure>Failed to load version: Player updater time out, please login again..."));
-						
-					});
-					
-					this.cancel();
-					return;
-					
-				}
-				
-				UUID uid = event.getPlayer().getUniqueId();
-				
-				Map<String, String> entries = CACHE.get(uid);
-				
-				FleXPlayer player = event.getPlayer();
-				
-				if (entries == null || entries.isEmpty()) {
-					
-					System.err.println(player.getName() + "'s FleXPlayer loaded but the connection could not be resolved, retrying... (" + this.attempt + ")");
-					return;
-					
-				}
-				
-				if (entries.containsKey("Version")) {
-
-					String ver = entries.get("Version");
-					
-					if (ClassUtils.canParseAsInteger(ver)) {
-						
-						ProtocolVersion version = ProtocolVersion.fromProtocol(Integer.parseInt(ver));
-						
-						if (version == null)
-							return;
-						
-						player.setVersion(version);
-						
-					}
-					
-				} else {
-					
-					System.err.println(player.getName() + "'s FleXPlayer loaded but the client version could not be found, retrying... (" + this.attempt + ")");
-					return;
-					
-				}
-				
-				if (entries.containsKey("Domain")) {
-					
-					String dom = entries.get("Domain");
-					
-					BukkitUtils.mainThread(() -> {
-						
-						if (player.isOnline())
-							player.setMetadata("domain", new FixedMetadataValue(Fukkit.getInstance(), dom));
-						
-						Fukkit.getEventFactory().call(new FleXPlayerUpdateEvent(player));
-						
-					});
-					
-				} else {
-					
-					System.err.println(player.getName() + "'s FleXPlayer loaded but the client version could not be found, retrying... (" + this.attempt + ")");
-					return;
-					
-				}
-				
-				String target = entries.get("Server_Target");
-				String from = entries.get("Server_From");
-				
-				boolean change = entries.containsKey("Server_Change");
-				
-				String connection = "-x-";
-				
-				if (change && target != null && from != null)
-					connection = from = " -> " + target;
-				
-				if (target != null)
-					connection = " -> " + target;
-				
-				if (from != null)
-					connection = from + " -x";
-				
-				String con = connection;
-				
-				player.getHistoryAsync(history -> history.getConnections().add(con), null);
-				
-				CACHE.remove(uid);
-				
-				this.cancel();
-				
-			}
-			
-		}.runTaskTimerAsynchronously(0L, 20L);
-		
-	}
-	
-	@EventHandler(priority = EventPriority.LOW)
-	public void event(PlayerLoginEvent event) {
-		
-		Map<String, String> entries = CACHE.get(event.getPlayer().getUniqueId());
-		
-		if (entries == null || entries.isEmpty())
-			return;
-		
-		if (entries.containsKey("Domain")) {
-			
-			String dom = entries.get("Domain");
-			
-			event.getPlayer().setMetadata("domain", new FixedMetadataValue(Fukkit.getInstance(), dom));
-			
-		}
-		
-	}
 	
 	public FukkitChannelHandler() {
 		
@@ -194,35 +39,45 @@ public class FukkitChannelHandler extends FleXEventListener implements ChannelHa
 			@Override
 			public void onReceive(Map<String, String> entries) {
 				
+				if (entries == null || entries.isEmpty())
+					return;
+				
 				if (entries.containsKey("UUID")) {
 					
 					UUID uid = UUID.fromString(entries.get("UUID"));
 					
-					Map<String, String> cached = CACHE.get(uid);
+					PlayerCacheMeta meta = PlayerCache.getCachedAttributes(uid);
 					
-					if (cached != null)
-						cached.forEach((k, v) -> {
-							entries.put(k, v);
-						});
-					
-					CACHE.put(uid, entries);
-					
-					/**
-					 * Timeout...
-					 */
-					new FukkitRunnable() {
+					if (entries.containsKey("Version")) {
 						
-						private String time = entries.get("Time");
+						String ver = entries.get("Version");
 						
-						@Override
-						public void execute() {
+						if (ClassUtils.canParseAsInteger(ver)) {
 							
-							if (CACHE.containsKey(uid) && CACHE.get(uid).get("Time").equals(this.time))
-								CACHE.remove(uid);
+							ProtocolVersion version = ProtocolVersion.fromProtocol(Integer.parseInt(ver));
+							
+							if (version == null)
+								return;
+							
+							meta.setVersion(version);
 							
 						}
 						
-					}.runTaskLaterAsynchronously(1200L);
+					}
+					
+					if (entries.containsKey("Domain")) {
+						
+						String domain = entries.get("Domain");
+						
+						meta.setDomain(domain);
+						
+					}
+					
+					// If player happens to be loaded already.
+					FleXPlayer player = Fukkit.getCachedPlayer(uid);
+					
+					if (player != null)
+						player.update();
 					
 				}
 				

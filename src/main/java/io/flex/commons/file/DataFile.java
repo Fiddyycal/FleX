@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import io.flex.FleX.Task;
@@ -44,6 +45,9 @@ public class DataFile<T extends Serializable> extends File implements Serializab
 		
 		this(path, name);
 		
+		if (this.isZip())
+			return;
+		
 		if (this.fresh || overwrite)
 			this.write(write);
 		
@@ -53,9 +57,12 @@ public class DataFile<T extends Serializable> extends File implements Serializab
 		
 		super(fileAbsolutePath(path, name));
 		
-		boolean exists = new File(path, name).exists();
+		boolean exists = (name != null ? new File(path, name) : new File(path)).exists();
 		
 		FileUtils.getFile(path, name, this.fresh = !exists);
+		
+		if (this.isZip())
+			return;
 		
 		if (!this.fresh && exists) {
 			try {
@@ -63,6 +70,14 @@ public class DataFile<T extends Serializable> extends File implements Serializab
 			} catch (IOException | ClassNotFoundException e) {}
 		}
 		
+	}
+	
+	private DataFile(File file) {
+		
+	    super(file.getAbsolutePath());
+	    
+	    this.fresh = false;
+	    
 	}
 	
 	private static String fileAbsolutePath(String path, String name) {
@@ -126,18 +141,29 @@ public class DataFile<T extends Serializable> extends File implements Serializab
 	
 	private void update() throws ClassNotFoundException, IOException {
 		
-		FileInputStream fileIn = new FileInputStream(this);
-		ObjectInputStream objectIn = new ObjectInputStream(fileIn);
-		
-		Object obj = objectIn.readObject();
-		
-		if (obj instanceof Map)
-			this.write = (HashMap<String, Serializable>) obj;
-		
-		else this.write.put(unique_identifier, (T) obj);
-        
-		objectIn.close();
-        fileIn.close();
+		try (
+		        FileInputStream fileIn = new FileInputStream(this);
+		        ObjectInputStream objectIn = new ObjectInputStream(fileIn)
+		    ) {
+			
+			Object obj = objectIn.readObject();
+			
+			if (obj instanceof Map)
+				this.write = (HashMap<String, Serializable>) obj;
+			
+		    else {
+		    	
+		    	Task.error("Cabinet", "Unexpected root object type: " + obj.getClass().getName() + " in file (" + this.getAbsolutePath() + "). Resetting to new Map.");
+		    	Task.error("Cabinet", "This file may have lost crucial tags, please review.");
+		        
+		    	Console.log("Cabinet", Severity.WARNING, new Throwable("Corrupt file may have lost crucial tags, please review: " + this.getAbsolutePath()));
+		    	
+		        this.write = new HashMap<String, Serializable>();
+		        this.write.put(unique_identifier, (T) obj);
+		        
+		    }
+			
+		}
         
 	}
 	
@@ -199,6 +225,70 @@ public class DataFile<T extends Serializable> extends File implements Serializab
         return zipped;
         
     }
+	
+	public DataFile<T> unzip() {
+		
+	    File destDir = new File(this.getParentFile(), this.getName().replaceFirst("[.][^.]+$", ""));
+	    
+	    if (!destDir.exists())
+	    	destDir.mkdirs();
+
+	    File extractedFile = null;
+
+	    try (
+	    		
+	    	FileInputStream fis = new FileInputStream(this);
+	        ZipInputStream zis = new ZipInputStream(fis)) {
+	    	
+	        ZipEntry entry;
+	        
+	        while ((entry = zis.getNextEntry()) != null) {
+	        	
+	            File newFile = new File(destDir, entry.getName());
+	            
+	            if (entry.isDirectory())
+	            	newFile.mkdirs();
+	            
+	            else {
+	            	
+	                newFile.getParentFile().mkdirs();
+	                
+	                try (FileOutputStream fos = new FileOutputStream(newFile)) {
+	                	
+	                    byte[] buffer = new byte[1024];
+	                    int len;
+	                    
+	                    while ((len = zis.read(buffer)) > 0)
+	                    	fos.write(buffer, 0, len);
+	                    
+	                }
+	                
+	                if (extractedFile == null)
+	                	extractedFile = newFile;
+	                
+	            }
+	            
+	            zis.closeEntry();
+	            
+	        }
+	        
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	    
+	    if (extractedFile == null)
+	        throw new IllegalStateException("Zip did not contain any files");
+	    
+	    DataFile<T> df = new DataFile<T>(extractedFile);
+	    
+	    try {
+			df.update();
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
+	    
+	    return df;
+	}
 
     private void zipFile(File fileToZip, String parentPath, ZipOutputStream zipOut) throws IOException {
     	
@@ -250,6 +340,10 @@ public class DataFile<T extends Serializable> extends File implements Serializab
 	
 	public Map<String, Serializable> asTags() {
 		return this.write.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase(unique_identifier)).collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+	}
+	
+	public boolean isZip() {
+		return this.getName() != null ? this.getName().endsWith(".zip") : (this.getAbsolutePath() != null ? this.getAbsolutePath().endsWith(".zip") : false);
 	}
 	
 }

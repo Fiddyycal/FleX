@@ -44,10 +44,20 @@ public class UpdaterListeners implements Listener {
 		Map<String, String> entries = new HashMap<String, String>();
 		
 		entries.put("UUID", player.getUniqueId().toString());
+		entries.put("Name", player.getName());
 		entries.put("Time", String.valueOf(System.currentTimeMillis()));
 		entries.put("Version", String.valueOf(player.getPendingConnection().getVersion()));
 		entries.put("Domain", player.getPendingConnection().getVirtualHost().getHostName());
 		entries.put("Server_Target", server.getName());
+
+		System.out.println("=========================================================");
+		System.out.println("[Player Updater] Sending ProxiedFleXPlayer information...");
+		
+		entries.forEach((k, v) -> {
+			System.out.println("[Player Updater] " + k + ": " + v);
+		});
+
+		System.out.println("=========================================================");
 		
 		Memory.CHANNEL_CACHE.get("PlayerUpdater").send(entries, server.getName());
 		

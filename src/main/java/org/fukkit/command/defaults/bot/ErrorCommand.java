@@ -1,7 +1,6 @@
 package org.fukkit.command.defaults.bot;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.fukkit.command.Command;
 import org.fukkit.command.ConsoleCommand;
 import org.fukkit.command.FleXCommandAdapter;
@@ -11,6 +10,7 @@ import org.fukkit.theme.Theme;
 import org.fukkit.utils.FormatUtils;
 
 import io.flex.FleX.Task;
+
 import io.flex.commons.cache.cell.BiCell;
 import io.flex.commons.console.Console;
 import io.flex.commons.file.Variable;
@@ -30,7 +30,7 @@ public class ErrorCommand extends FleXCommandAdapter {
 		}
 		
 		BiCell<Throwable, String> log = Console.ERROR_LOG.isEmpty() ? null : Console.ERROR_LOG.get(0);
-		Theme theme = sender instanceof Player ? ((FleXPlayer)sender).getTheme() : null;
+		Theme theme = sender instanceof FleXPlayer ? ((FleXPlayer)sender).getTheme() : null;
 		
 		String messageFormat = "<pp>[<spc>From\\s<sc>" + FormatUtils.format("&8[&fBot&8]&r &fFleX") + "<pp>]\\s<lore>";
 		
@@ -46,7 +46,7 @@ public class ErrorCommand extends FleXCommandAdapter {
 		
 		if (log == null) {
 			
-			if (sender instanceof Player) {
+			if (sender instanceof FleXPlayer) {
 
 				((FleXPlayer)sender).sendMessage(theme.format(messageFormat + "What? No errors were found..."));
 				((FleXPlayer)sender).sendMessage(theme.format(messageFormat + "It seems the engine is having a good day for once."));
@@ -62,7 +62,7 @@ public class ErrorCommand extends FleXCommandAdapter {
 		
 		if (args.length == 0) {
 			
-			if (sender instanceof Player) {
+			if (sender instanceof FleXPlayer) {
 
 				((FleXPlayer)sender).sendMessage(theme.format(messageFormat + "Printing latest stacktrace to console..."));
 				((FleXPlayer)sender).sendMessage(theme.format(messageFormat + log.a().getMessage()));
@@ -78,7 +78,7 @@ public class ErrorCommand extends FleXCommandAdapter {
 		
 		if (!NumUtils.canParseAsInt(args[0])) {
 			
-			if (sender instanceof Player) {
+			if (sender instanceof FleXPlayer) {
 
 				((FleXPlayer)sender).sendMessage(theme.format(messageFormat + "I can only search for error logs using the log-specific index number."));
 				((FleXPlayer)sender).sendMessage(theme.format(messageFormat + "Please note, index numbers cannot be higher than " + Integer.MAX_VALUE + "."));
@@ -94,7 +94,7 @@ public class ErrorCommand extends FleXCommandAdapter {
 		
 		if (Console.ERROR_LOG.size() < Integer.parseInt(args[0])) {
 
-			if (sender instanceof Player) {
+			if (sender instanceof FleXPlayer) {
 
 				((FleXPlayer)sender).sendMessage(theme.format(messageFormat + "That error log doesn't appear to exist."));
 				((FleXPlayer)sender).sendMessage(theme.format(messageFormat + (Console.ERROR_LOG.isEmpty() ? "It seems the engine is having a good day for once." : "Are you sure you entered the correct number?")));
@@ -110,7 +110,7 @@ public class ErrorCommand extends FleXCommandAdapter {
 		
 		log = Console.ERROR_LOG.get(Integer.parseInt(args[0])-1);
 		
-		if (sender instanceof Player) {
+		if (sender instanceof FleXPlayer) {
 
 			((FleXPlayer)sender).sendMessage(theme.format(messageFormat + "Printing logged stacktrace to console..."));
 			((FleXPlayer)sender).sendMessage(theme.format(messageFormat + log.a().getMessage()));

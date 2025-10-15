@@ -73,6 +73,8 @@ public class BadgeCache extends LinkedCache<Badge, String> {
 		this.add(new Badge('☂', "FAB", "Fab", Tier.TIER_ONE, "Awarded for being fabulous")); // Alyssa
 		this.add(new Badge('✿', "DOLLY", "ImNotYourDolly", Tier.TIER_ONE, "Awarded for repeated attendance to the MCGamer reunion"));
 		this.add(new Badge('★', "HELPER", "Helper", Tier.TIER_TWO, "Awarded for helping out with the MCGamer Reunion"));
+		this.add(new Badge('➲', "IMPORTED", "Imported", Tier.TIER_TWO, "Achieved by having survival games statistics imported from the MCGamer databases"));
+		this.add(new Badge('❂', "VICTOR", "Victor", Tier.TIER_TWO, "Awarded for being one of the top 50 players in the MCGamer databases, a true capital darling"));
 		
 		this.add(new Badge('㊌', "TRANSLATOR", "Translator", Tier.TIER_TWO, "Awarded for translating for the network"));
 		this.add(new Badge('⚠', "GLITCHED", "Glitched", Tier.TIER_TWO, "Awarded for contributing to development by reporting a bug or glitch"));

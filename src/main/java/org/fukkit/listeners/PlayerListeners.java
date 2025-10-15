@@ -120,11 +120,11 @@ public class PlayerListeners extends FleXEventListener {
 		
 	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.getFromCache(player.getUniqueId());
 	    
-	    FleXPlayerPreLoginEvent loginEvent = Fukkit.getEventFactory().call(new FleXPlayerPreLoginEvent(fp));
+	    FleXPlayerPreLoginEvent preLoginEvent = Fukkit.getEventFactory().call(new FleXPlayerPreLoginEvent(fp));
 		
-	    if (loginEvent.isCancelled()) {
+	    if (preLoginEvent.isCancelled()) {
 	    	
-			disconnect(player, loginEvent.getKickMessage());
+			disconnect(player, preLoginEvent.getKickMessage());
 			return;
 			
 	    }
@@ -207,9 +207,11 @@ public class PlayerListeners extends FleXEventListener {
 			
 			fp.clean(Fukkit.getServerHandler().getSetting(NetworkSetting.CLEAN_TYPE));
 			
-			Fukkit.getEventFactory().call(new FleXPlayerLoginEvent(fp));
-			
 			fp.onConnect(player);
+			
+			FleXPlayerLoginEvent loginEvent = new FleXPlayerLoginEvent(fp);
+			
+			Fukkit.getEventFactory().call(loginEvent);
 			
 			loc = loc.clone();
 			
@@ -222,6 +224,15 @@ public class PlayerListeners extends FleXEventListener {
 				
 				loc.setX(loc.getX() + NumUtils.getRng().getInt(-radius, radius));
 				loc.setZ(loc.getZ() + NumUtils.getRng().getInt(-radius, radius));
+				
+			}
+			
+			loc = loginEvent.getSpawnLocation() != null ? loginEvent.getSpawnLocation() : loc;
+			
+			if (loc == null) {
+				
+				disconnect(player, "Spawn location cannot be null.");
+				return;
 				
 			}
 			

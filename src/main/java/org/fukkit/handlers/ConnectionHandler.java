@@ -86,6 +86,7 @@ public class ConnectionHandler {
 			user_columns.put("uuid", SQLDataType.VARCHAR);
 			user_columns.put("name", SQLDataType.VARCHAR);
 			user_columns.put("version", SQLDataType.INT);
+			user_columns.put("domain", SQLDataType.VARCHAR);
 			user_columns.put("currency", SQLDataType.BIGINT);
 			user_columns.put("play_time", SQLDataType.BIGINT);
 			user_columns.put("last_seen", SQLDataType.BIGINT);
@@ -115,10 +116,17 @@ public class ConnectionHandler {
 			
 			LinkedHashMap<String, SQLDataType> flow_columns = new LinkedHashMap<String, SQLDataType>();
 			
-			flow_columns.put("name", SQLDataType.BOOLEAN);
-			flow_columns.put("data", SQLDataType.BOOLEAN);
+			flow_columns.put("context", SQLDataType.VARCHAR);
+			flow_columns.put("state", SQLDataType.VARCHAR);
+			flow_columns.put("last_updated", SQLDataType.BIGINT);
+			flow_columns.put("world_path", SQLDataType.VARCHAR);
+			flow_columns.put("data", SQLDataType.BLOB);
 			
 			this.database.createTable("flex_overwatch", flow_columns);
+			
+			try {
+				this.database.execute("ALTER TABLE flex_overwatch MODIFY COLUMN data LONGBLOB");
+			} catch (Exception ignore) {}
 			
 			this.createHistoryTable(BadgeHistory.TABLE_NAME);
 			this.createHistoryTable(ChatCommandHistory.TABLE_NAME);

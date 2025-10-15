@@ -86,7 +86,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		FleXPlayer player = (FleXPlayer) sender;
 		
-		boolean staff = sender instanceof Player == false || player.isStaff();
+		boolean staff = sender instanceof ConsoleCommandSender || player.isStaff();
 		
 		if (args.length != 0 && args.length != 1 && args.length != 2) {
 			
@@ -113,7 +113,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		if (args.length == 0) {
 			
-			if (sender instanceof Player == false) {
+			if (sender instanceof FleXPlayer == false) {
 				sender.sendMessage(ThemeMessage.COMMAND_DENIED_STATE_CONSOLE.format(Memory.THEME_CACHE.stream().findFirst().get(), Language.ENGLISH, new Variable<String>("%command%", this.getName())));
 				return false;
 			}
@@ -273,7 +273,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		BukkitUtils.runLater(() -> {
 			
-			if (sender == null || (sender instanceof Player && !((Player)sender).isOnline()))
+			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
 				return;
 
 			sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Printing information about the network...");
@@ -293,10 +293,10 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			String domain = "flex.gg";
 			
-			if (sender instanceof Player) {
-				if (((Player)sender).hasMetadata("domain")) {
-					if (((Player)sender).getMetadata("domain").get(0) != null) {
-						domain = ((Player)sender).getMetadata("domain").get(0).asString();
+			if (sender instanceof FleXPlayer) {
+				if (((FleXPlayer)sender).hasMetadata("domain")) {
+					if (((FleXPlayer)sender).getMetadata("domain").get(0) != null) {
+						domain = ((FleXPlayer)sender).getMetadata("domain").get(0).asString();
 					}
 				}
 			}
@@ -338,7 +338,7 @@ public class DebugCommand extends FleXCommandAdapter {
 			sender.sendMessage(ChatColor.GRAY + "Server IP: " + ChatColor.RESET + ip + port);
 			sender.sendMessage(ChatColor.GRAY + "Players: " + ChatColor.RESET + players);
 			
-			if (sender instanceof Player || sender instanceof FleXPlayer)
+			if (sender instanceof FleXPlayer)
 				sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Open chat " + ChatColor.AQUA + "[T]" + ChatColor.GRAY + " to show more information.");
 		
 		}, 20L, false);
@@ -351,7 +351,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		BukkitUtils.runLater(() -> {
 			
-			if (sender == null || (sender instanceof Player && !((Player)sender).isOnline()))
+			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
 				return;
 			
     		int o = 0;
@@ -402,7 +402,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		BukkitUtils.runLater(() -> {
 			
-			if (sender == null || (sender instanceof Player && !((Player)sender).isOnline()))
+			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
 				return;
 			
 			String spawn = world.getSpawnLocation().getBlockX() + "," + world.getSpawnLocation().getBlockY() + "," + world.getSpawnLocation().getBlockZ();
@@ -451,7 +451,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		if (same && showUsage) {
 
-			boolean admin = sender instanceof Player == false || player.isStaff();
+			boolean admin = sender instanceof FleXPlayer == false || player.isStaff();
 			
 			sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.RED + "NOTICE: " + ChatColor.GRAY + "The debug tool can provide other useful information.");
 			sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.AQUA + "Usage: " + ("/<command> player" + (admin ? "/bot/" : "/") + "item/world/data" + (admin ? " <player> " : " ") + "[-h]" + (admin ? ", /<command> server [-h]" : "")));
@@ -465,7 +465,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		BukkitUtils.runLater(() -> {
 			
-			if (sender == null || (sender instanceof Player && !((Player)sender).isOnline()))
+			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
 				return;
 			
 			int id = player.getEntity() != null && player.getEntity().isValid() ? player.getEntity().getEntityId() : -1;
@@ -493,7 +493,7 @@ public class DebugCommand extends FleXCommandAdapter {
 			sender.sendMessage(ChatColor.GRAY + "IP: " + ChatColor.RESET + (silent ? ChatColor.MAGIC : "") + ip);
 			sender.sendMessage(ChatColor.GRAY + "Sidebar, Disguised, Airborne: " + ChatColor.RESET + CollectionUtils.toCollection((player.getSidebar() != null) + "," + player.isDisguised() + "," + !player.isOnGround()));
 
-			if (sender instanceof Player || sender instanceof FleXPlayer)
+			if (sender instanceof FleXPlayer)
 				sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Open chat " + ChatColor.AQUA + "[T]" + ChatColor.GRAY + " to show more information.");
 			
 		}, 20L, false);
@@ -513,7 +513,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		BukkitUtils.runLater(() -> {
 			
-			if (sender == null || (sender instanceof Player && !((Player)sender).isOnline()))
+			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
 				return;
 			
 			int id = bot.getEntity() != null && bot.getEntity().isValid() ? bot.getEntity().getEntityId() : -1;
@@ -529,7 +529,7 @@ public class DebugCommand extends FleXCommandAdapter {
 			sender.sendMessage(ChatColor.GRAY + "Skin: " + ChatColor.RESET + bot.getSkin().getValue().substring(0, 6));
 			sender.sendMessage(ChatColor.GRAY + "Airborne: " + ChatColor.RESET + !bot.isOnGround());
 
-			if (sender instanceof Player || sender instanceof FleXPlayer)
+			if (sender instanceof FleXPlayer || sender instanceof FleXPlayer)
 				sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Open chat " + ChatColor.AQUA + "[T]" + ChatColor.GRAY + " to show more information.");
 			
 		}, 20L, false);
@@ -556,7 +556,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		BukkitUtils.runLater(() -> {
 			
-			if (sender == null || (sender instanceof Player && !((Player)sender).isOnline()))
+			if (sender == null || (sender instanceof FleXPlayer && !((Player)sender).isOnline()))
 				return;
 			
 			/**
@@ -565,7 +565,7 @@ public class DebugCommand extends FleXCommandAdapter {
 			sender.sendMessage(ChatColor.GRAY + "Uploaded: " + ChatColor.RESET + "Yes");
 			sender.sendMessage(ChatColor.RED + "This task is " + ChatColor.DARK_RED + ChatColor.STRIKETHROUGH + "depricated" + ChatColor.RED + ".");
 
-			if (sender instanceof Player || sender instanceof FleXPlayer)
+			if (sender instanceof FleXPlayer || sender instanceof FleXPlayer)
 				sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Open chat " + ChatColor.AQUA + "[T]" + ChatColor.GRAY + " to show more information.");
 			
 		}, 20L, false);
@@ -594,7 +594,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		BukkitUtils.runLater(() -> {
 
-			if (sender == null || (sender instanceof Player && !((Player)sender).isOnline()))
+			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
 				return;
 			
 			if (v1_9)
@@ -619,7 +619,7 @@ public class DebugCommand extends FleXCommandAdapter {
 				
 			}
 
-			if (sender instanceof Player || sender instanceof FleXPlayer)
+			if (sender instanceof FleXPlayer)
 				sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Open chat " + ChatColor.AQUA + "[T]" + ChatColor.GRAY + " to show more information.");
 			
 		}, 20L, false);

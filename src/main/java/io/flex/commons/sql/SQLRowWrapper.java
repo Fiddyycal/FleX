@@ -1,5 +1,6 @@
 package io.flex.commons.sql;
 
+import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -18,8 +19,19 @@ public class SQLRowWrapper implements Cacheable {
 	private SQLDatabase database;
 	
     private Map<String, Object> entries;
+	
+	private SQLCondition<?>[] conditions;
     
     private boolean updated = true;
+	
+	public SQLRowWrapper(@Nullable SQLDatabase database, String table, Map<String, Object> entries, SQLCondition<?>... conditions) throws SQLException {
+		
+		this(database, table, null, entries);
+		
+		if (conditions != null && conditions.length > 0)
+			this.conditions = conditions;
+		
+	}
 	
 	public SQLRowWrapper(@Nullable SQLDatabase database, String table, Map<String, Object> entries) throws SQLException {
 		this(database, table, null, entries);
@@ -205,6 +217,32 @@ public class SQLRowWrapper implements Cacheable {
 			return obj != null ? obj.toString() : def;
 		}
 	}
+
+	// File
+	public Blob getBlob(String key) {
+		return this.getBlob(key, null);
+	}
+	
+	public Blob getBlob(String key, @Nullable Blob def) {
+		try {
+			return (Blob) this.entries.getOrDefault(key, def);
+		} catch (ClassCastException e) {
+			return def;
+		}
+	}
+
+	// File
+	public byte[] getByteArray(String key) {
+		return this.getByteArray(key, null);
+	}
+	
+	public byte[] getByteArray(String key, @Nullable byte[] def) {
+		try {
+			return (byte[]) this.entries.getOrDefault(key, def);
+		} catch (ClassCastException e) {
+			return def;
+		}
+	}
 	
 	public <V> void set(String column, @Nullable V value) {
 		this.entries.put(column, value); // This even adds as null if value is null, then is removed from entries if update is called.
@@ -217,90 +255,114 @@ public class SQLRowWrapper implements Cacheable {
 	
 	public int update(boolean force) throws SQLException {
 
-		// Local entry.
-		if (this.database == null)
-			return 0;
-		
-		int affected = 0;
-		
-		if (!force && this.updated)
-			return affected;
-		
-	    if (this.identifier == null)
-	        throw new SQLException("Cannot update row without a unique identifier. Use SQLRowWrapper#setIdentifier(String column) or specify in the constructor.");
-	    
+	    // Local entry.
+	    if (this.database == null)
+	        return 0;
+
+	    int affected = 0;
+
+	    if (!force && this.updated)
+	        return affected;
+
+	    if ((this.identifier == null || this.entries.get(this.identifier) == null) && (this.conditions == null || this.conditions.length == 0))
+	        throw new SQLException("Cannot update row without a unique identifier or condition. Use SQLRowWrapper#setIdentifier(String column) or specify conditions in the constructor.");
+
 	    StringBuilder builder = new StringBuilder("UPDATE " + this.table + " SET ");
-	    
+
 	    int count = 0;
-	    
+
 	    for (String key : this.entries.keySet()) {
-	    	
+
 	        if (key.equals(this.identifier))
-	        	continue;
-	        
+	            continue;
+
 	        if (count++ > 0)
-	        	builder.append(", ");
-	        
-	        builder.append(key).append("=?");
-	        
+	            builder.append(", ");
+
+	        builder.append(SQLDataType.IDENTIFIER_QUOTE + key + SQLDataType.IDENTIFIER_QUOTE).append("=?");
+
 	    }
 	    
-	    builder.append(" WHERE " + this.identifier + "=?");
+	    List<SQLCondition<?>> conditions = new ArrayList<SQLCondition<?>>();
 	    
+	    if (this.conditions != null && this.conditions.length > 0) {
+	    	
+	    	for (SQLCondition<?> cond : this.conditions)
+		    	conditions.add(cond);
+	    	
+	    } else conditions.add(SQLCondition.where(this.identifier).is(this.entries.get(this.identifier)));
+
+	    builder.append(" WHERE ");
+	    
+	    for (int i = 0; i < conditions.size(); i++) {
+	    	
+	        SQLCondition<?> cond = conditions.get(i);
+	        
+	        if (i > 0)
+	            builder.append(" AND ");
+	        
+	        builder.append(SQLDataType.IDENTIFIER_QUOTE + cond.key() + SQLDataType.IDENTIFIER_QUOTE).append(" = ?");
+	        
+	    }
+
 	    String query = builder.toString();
-	    
+
 	    SQLConnection connection = this.database.open();
-	    
+
 	    PreparedStatement statement = null;
 	    
+	    if (query.contains("until") && query.contains("by") && query.contains("ip"))
+	    	System.out.println(query);
+	    
 	    try {
-			
-	    	statement = connection.getDriverConnection().prepareStatement(query);
-		    
-		    int index = 1;
-	        
-		    List<String> remove = new ArrayList<String>();
+	    	
+	        statement = connection.getDriverConnection().prepareStatement(query);
 
-		    for (Entry<String, Object> entry : this.entries.entrySet()) {
-		    	
-		    	if (entry.getKey().equals(this.identifier))
-		    		continue;
-		    	
-		    	Object obj = entry.getValue();
-		    	
-		    	statement.setObject(index++, obj);
-		    	
-		    	if (obj == null)
-		    		remove.add(entry.getKey());
-		    	
-		    }
+	        int index = 1;
 
-		    // Avoid concurrent modification exception
-		    for (String key : remove)
-		    	this.entries.remove(key);
+	        List<String> remove = new ArrayList<String>();
+
+	        for (Entry<String, Object> entry : this.entries.entrySet()) {
+
+	            if (entry.getKey().equals(this.identifier))
+	                continue;
+
+	            Object obj = entry.getValue();
+
+	            statement.setObject(index++, obj);
+
+	            if (obj == null)
+	                remove.add(entry.getKey());
+
+	        }
 	        
-	        statement.setObject(index, this.entries.get(this.identifier));
+	        for (String key : remove)
+	            this.entries.remove(key);
+	        
+	        for (SQLCondition<?> cond : conditions)
+	            statement.setObject(index++, cond.value());
 	        
 	        affected += statement.executeUpdate();
 	        
 	        this.updated = true;
-	    	
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-	    	
-	    	if (statement != null) {
-				try {
-					statement.close();
-				} catch (SQLException ignore) {}
-			}
-	    	
-			connection.release();
-				
-		}
-	    
+
+	    } catch (SQLException e) {
+	        throw e;
+	    } finally {
+
+	        if (statement != null) {
+	            try {
+	                statement.close();
+	            } catch (SQLException ignore) {
+	            }
+	        }
+
+	        connection.release();
+
+	    }
+
 	    return affected;
-		
+
 	}
 	
 }

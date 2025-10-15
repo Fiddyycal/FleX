@@ -10,6 +10,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
@@ -33,6 +34,7 @@ import org.fukkit.world.WorldFactory;
 
 import io.flex.FleX.Task;
 import io.flex.commons.sql.SQLDriverType;
+
 import net.md_5.fungee.ProtocolVersion;
 import net.md_5.fungee.server.ServerRegion;
 import net.md_5.fungee.server.ServerVersion;
@@ -173,7 +175,22 @@ public class ServerHandler {
 	}
 	
 	public Collection<? extends FleXPlayer> getOnlinePlayersUnsafe() {
-		return Bukkit.getOnlinePlayers().stream().map(p -> Fukkit.getPlayerExact(p)).collect(Collectors.toSet());
+		
+		Collection<FleXPlayer> players = new HashSet<FleXPlayer>();
+		
+		for (World world : Bukkit.getWorlds()) {
+			world.getEntities().forEach(e -> {
+				
+				FleXPlayer fp = Fukkit.getPlayer(e.getUniqueId());
+				
+				if (fp != null)
+					players.add(fp);
+				
+			});
+		}
+		
+		return players;
+		
 	}
 	
 	@Deprecated

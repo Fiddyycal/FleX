@@ -14,9 +14,11 @@ public interface PlayerFactory {
 	
 	public FleXPlayer createFukkitSafe(UUID uuid, String name, @Nullable PlayerState state);
 	
-	public FleXBot createFukkitFake(String name);
+	public FleXPlayer createFukkitFake(String name);
 	
-	public FleXBot createFukkitFake(String name, @Nullable FleXSkin skin);
+	public FleXBot createFukkitBot(String name);
+	
+	public FleXBot createFukkitBot(String name, @Nullable FleXSkin skin);
 	
 	public Player createBukkitFake(String name, FleXSkin skin);
 

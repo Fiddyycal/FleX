@@ -1,5 +1,6 @@
 package org.fukkit.event.player;
 
+import org.bukkit.Location;
 import org.fukkit.entity.FleXPlayer;
 
 /**
@@ -10,8 +11,18 @@ import org.fukkit.entity.FleXPlayer;
  */
 public class FleXPlayerLoginEvent extends FleXPlayerEvent {
 	
+	private Location spawn;
+	
 	public FleXPlayerLoginEvent(FleXPlayer player) {
 		super(player, false);
+	}
+	
+	public void setSpawnLocation(Location spawn) {
+		this.spawn = spawn;
+	}
+	
+	public Location getSpawnLocation() {
+		return this.spawn;
 	}
 	
 }

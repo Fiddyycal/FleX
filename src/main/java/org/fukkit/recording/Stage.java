@@ -1,6 +1,7 @@
 package org.fukkit.recording;
 
 import java.io.File;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -8,13 +9,19 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.flow.Overwatch;
+import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.WorldUtils;
 
 import io.flex.commons.Nullable;
+import io.flex.commons.file.DataFile;
+import io.flex.commons.utils.ArrayUtils;
+import io.flex.commons.utils.FileUtils;
 
 public class Stage extends BukkitRunnable {
 	
@@ -30,7 +37,7 @@ public class Stage extends BukkitRunnable {
 	
 	private boolean pause, anonymous;
 	
-	public Stage(Recording recording, boolean anonymous, @Nullable FleXPlayer... watchers) {
+	public Stage(Recording recording, boolean anonymous, @Nullable FleXPlayer... watchers) throws FileAlreadyExistsException {
 		
 		this.uuid = recording.getUniqueId();
 		
@@ -43,7 +50,44 @@ public class Stage extends BukkitRunnable {
 		for (FleXPlayer watcher : watchers)
 			this.watchers.add(watcher);
 		
-		World world = WorldUtils.copyWorld(recording.getData().getParentFile().getAbsolutePath(), Bukkit.getWorldContainer().getPath() + File.separator + "flow-" + this.uuid);
+		File data = recording.getData();
+		File directory = data.getParentFile();
+		
+		if (data instanceof DataFile == false)
+			throw new UnsupportedOperationException("data must be DataFile");
+		
+		boolean worldContents = ArrayUtils.contains(directory.list(), "region");
+		
+		World world = Bukkit.getWorld(data.getName());
+		
+		if (world != null)
+			throw new FileAlreadyExistsException("That file is being reviewed, please try again later");
+		
+		if (worldContents)
+			world = WorldUtils.copyWorld(recording.getData().getParentFile().getAbsolutePath(), Bukkit.getWorldContainer().getPath() + File.separator + data.getName());
+		
+		else {
+			
+			String path = ((DataFile<?>)data).getTag("Path");
+			
+			if (path != null)
+				world = WorldUtils.copyWorld(path, Bukkit.getWorldContainer().getPath() + File.separator + "flow-" + this.uuid);
+				
+		}
+		
+		if (world == null) {
+			
+			WorldCreator creator = new WorldCreator(data.getName());
+			
+		    creator.type(WorldType.FLAT);
+		    creator.generateStructures(false);
+		    
+		    world = Bukkit.createWorld(creator);
+			
+		}
+		
+		if (world == null)
+			throw new UnsupportedOperationException("world must not be null");
 		
 		this.world = world;
 			
@@ -54,9 +98,11 @@ public class Stage extends BukkitRunnable {
 				
 				Location loc = frame.getLocation();
 				
+				System.out.println(loc);
+				
 				loc.setWorld(world);
 				
-				if (tp == null) {
+				if (tp == null && loc != null) {
 					
 					if (recording instanceof Overwatch) {
 						
@@ -77,12 +123,12 @@ public class Stage extends BukkitRunnable {
 		}
 		
 		if (tp == null)
-			throw new UnsupportedOperationException("Could not find appropriate spawn location for watchers.");
+			throw new UnsupportedOperationException("Could not find appropriate spawn location for watchers");
 		
 		for (FleXPlayer watcher : watchers)
 			watcher.teleport(tp);
 		
-		this.runTaskTimerAsynchronously(Fukkit.getInstance(), 10L, 2L);
+		this.runTaskTimerAsynchronously(Fukkit.getInstance(), 120L, 2L);
 			
 	}
 	
@@ -124,12 +170,22 @@ public class Stage extends BukkitRunnable {
 			
 		}
 		
-		// TODO
-		/*
-		for (PreRecorded r : frames.entrySet())
-			if (r instanceof Recorded)
-				((Recorded)r).teleport(r.getFrames().get(this.tick));
-			*/
+		for (Recordable recordable : this.recording.getRecorded().values()) {
+			
+			Frame frame = recordable.getFrames().get((int)this.tick);
+			
+			Location location = frame.getLocation();
+			
+			RecordedAction action = frame.getAction();
+			
+			if (location != null)
+				((CraftRecorded)recordable).getActor().teleport(location);
+			
+			if (action != null)
+				((CraftRecorded)recordable).getActor().playAnimation(action);
+			
+		}
+		
 	}
 	
 	public void end(String... reason) {
@@ -141,12 +197,21 @@ public class Stage extends BukkitRunnable {
 		
 		this.cancel();
 		
-		for (FleXPlayer watcher : this.watchers) {
+		String kick = reason[0];
+		
+		BukkitUtils.mainThread(() -> {
 			
-			if (watcher.isOnline())
-				watcher.kick("The stage has closed: " + reason[0]);
+			for (FleXPlayer watcher : this.watchers) {
 				
-		}
+				if (watcher.isOnline())
+					watcher.kick("The stage has closed: " + kick);
+					
+			}
+			
+			WorldUtils.unloadWorld(this.world, false);
+			FileUtils.delete(this.world.getWorldFolder());
+			
+		});
 		
 	}
 	

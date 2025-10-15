@@ -145,7 +145,7 @@ public class SQLDatabase implements Serializable {
 	 */
 	public Set<SQLRowWrapper> getRows(String table, @Nullable SQLCondition<?>... conditions) throws SQLException {
 
-		StringBuilder query = new StringBuilder("SELECT * FROM " + table);
+		StringBuilder query = new StringBuilder("SELECT * FROM " + IDENTIFIER_QUOTE + table + IDENTIFIER_QUOTE);
 		
 		Set<SQLRowWrapper> rows = new HashSet<SQLRowWrapper>();
 		
@@ -163,7 +163,7 @@ public class SQLDatabase implements Serializable {
 			        if (condition != null) {
 			        	
 			            query.append(query.toString().contains(" WHERE ") ? " AND " : " WHERE ");
-			            query.append(IDENTIFIER_QUOTE).append(condition.key()).append(IDENTIFIER_QUOTE).append(" = ?");
+			            query.append(IDENTIFIER_QUOTE + condition.key() + IDENTIFIER_QUOTE).append(" = ?");
 			            
 			            params.add(simplify(condition.value()));
 			            
@@ -200,7 +200,10 @@ public class SQLDatabase implements Serializable {
 			        
 			    }
 		        
-				rows.add(new SQLRowWrapper(this, table, primary, entries));
+				if (primary == null && (conditions != null && conditions.length > 0))
+					rows.add(new SQLRowWrapper(this, table, entries, conditions));
+				
+				else rows.add(new SQLRowWrapper(this, table, primary, entries));
 				
 			}
 			
@@ -284,7 +287,7 @@ public class SQLDatabase implements Serializable {
 		
 		try {
 			
-			String query = "SELECT * FROM " + table + " LIMIT 1";
+			String query = "SELECT * FROM " + IDENTIFIER_QUOTE + table + IDENTIFIER_QUOTE + " LIMIT 1";
 			
 		    statement = connection.getDriverConnection().prepareStatement(query);
 
@@ -362,24 +365,27 @@ public class SQLDatabase implements Serializable {
 	        Map<String, Object> filtered = new LinkedHashMap<>();
  
 	        for (String col : columns) {
+	        	
 	            if (entries.containsKey(col)) {
+	            	
 	                Object val = entries.get(col);
-	                if (val instanceof UUID) {
+	                
+	                if (val instanceof UUID)
 	                    filtered.put(col, val.toString());
-	                } else {
-	                    filtered.put(col, val);
-	                }
+	                
+	                else filtered.put(col, val);
+	                
 	            }
 	        }
  
 	        if (filtered.isEmpty())
 	            throw new SQLException("No valid columns provided for table " + table + ".");
  
-	        StringBuilder query = new StringBuilder("INSERT INTO ").append(table).append(" (");
+	        StringBuilder query = new StringBuilder("INSERT INTO ").append(IDENTIFIER_QUOTE + table + IDENTIFIER_QUOTE).append(" (");
 	        StringBuilder placeholders = new StringBuilder();
- 
-	        for (String col : filtered.keySet()) {
-	            query.append(col).append(", ");
+	        
+	        for (String column : filtered.keySet()) {
+	            query.append(IDENTIFIER_QUOTE + column + IDENTIFIER_QUOTE).append(", ");
 	            placeholders.append("?, ");
 	        }
  
@@ -405,7 +411,7 @@ public class SQLDatabase implements Serializable {
  
 	            } else statement.setObject(index++, value);
 	        }
- 
+	        
 	        statement.executeUpdate();
  
 	        return new SQLRowWrapper(this, table, identifier, filtered);

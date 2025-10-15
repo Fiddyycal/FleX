@@ -11,14 +11,10 @@ public class CraftRecordable implements Recordable {
 
 	private UUID uuid;
 	
-	private List<Frame> frames;
+	private List<Frame> frames = new LinkedList<Frame>() ;
 
 	public CraftRecordable(UUID uuid) {
-		
 		this.uuid = uuid;
-		
-		this.frames = new LinkedList<Frame>();
-		
 	}
 
 	@Override

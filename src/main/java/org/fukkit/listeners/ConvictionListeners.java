@@ -1,6 +1,5 @@
 package org.fukkit.listeners;
 
-import java.nio.file.FileAlreadyExistsException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Set;
@@ -13,6 +12,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
 import org.fukkit.PlayerState;
@@ -37,13 +37,11 @@ import org.fukkit.event.consequence.FleXPreConsequenceEvent;
 import org.fukkit.event.consequence.FleXReportEvent;
 import org.fukkit.event.player.FleXPlayerAsyncChatEvent;
 import org.fukkit.event.player.PlayerChangeStateEvent;
-import org.fukkit.flow.Overwatch;
 import org.fukkit.handlers.FlowLineEnforcementHandler;
 import org.fukkit.metadata.FleXFixedMetadataValue;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.BukkitUtils;
-
 import io.flex.commons.cache.cell.BiCell;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.FileUtils;
@@ -347,66 +345,98 @@ public class ConvictionListeners extends FleXEventListener {
 	@EventHandler(priority = EventPriority.HIGH)
     public void event(PlayerChangeStateEvent event) {
 		
-		if (!event.isAsynchronous())
-			return;
-		
 		FleXPlayer player = event.getPlayer();
-
+		
 		FlowLineEnforcementHandler fle = Fukkit.getFlowLineEnforcementHandler();
 		
 		if (event.getTo() == PlayerState.INGAME) {
 			
-			if (fle.isPending(player)) {
+			BukkitUtils.asyncThread(() -> {
 				
-				// TODO local cache of reports so this doesn't contact database every time player state changes.
-				Set<Report> reports;
+				if (!player.isOnline())
+					return;
 				
 				try {
-					reports = Report.download(player);
-				} catch (SQLException e) {
 					
-					e.printStackTrace();
-					return;
+					if (!fle.isPending(player))
+						return;
 					
-				}
-				
-				if (!reports.isEmpty()) {
-					
-					boolean recording = Fukkit.getFlowLineEnforcementHandler().isRecording(player);
-					
-					for (Report report : reports) {
+					// TODO Make local cache of reports so this doesn't contact database every time player state changes.
+					Set<Report> reports;
 						
+					try {
+						reports = Report.download(player);
+					} catch (SQLException e) {
+						e.printStackTrace();
+						return;
+					}
+					
+					if (reports.isEmpty()) {
+						fle.clear(player);
+						return;
+					}
+					
+					if (fle.isRecording(player))
+						return;
+					
+					for (Report report : reports)
 						if (ArrayUtils.contains(report.getReason().getRequiredEvidence(), EvidenceType.RECORDING_REFERENCE)) {
 							
-							if (!recording) {
-								
-								System.out.println("Starting recording............................ 1");
-								
-								FleXPlayer[] record = player.getWorld().getOnlinePlayers().stream().filter(p -> p.getState() == PlayerState.INGAME).toArray(FleXPlayer[]::new);
-								
-								Fukkit.getFlowLineEnforcementHandler().setRecording(player, true);
-								
-								try {
-									new Overwatch(report, record);
-								} catch (FileAlreadyExistsException ignore) {
-									System.out.println("File already exists, this may be due to multiple reports of the same person. You can ignore this, otherwise if you are a developer reading this, you can remove this message in the back end to confirm recording duplicates cannot be made.");
-								}
-								
-								recording = true;
-								
-							}
-							
-							// Still send recording started message to all who reported.
-							report.onBypassAttempt();
+							if (!report.hasEvidence())
+								report.onBypassAttempt();
 							
 						}
-						
-					}
+					
+				} catch (SQLException e) {
+					e.printStackTrace();
 				}
 				
-			}
+			});
+			
+		} else {
+			
+			BukkitUtils.asyncThread(() -> {
+				
+				try {
+					
+					if (!fle.isRecording(player))
+						return;
+					
+					// TODO check recording length for acceptable amount of frames.
+					fle.setPending(player);
+					
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				
+			});
 			
 		}
+		
+	}
+	
+	@EventHandler
+	public void event(PlayerTeleportEvent event) {
+		
+		BukkitUtils.asyncThread(() -> {
+			
+			FlowLineEnforcementHandler fle = Fukkit.getFlowLineEnforcementHandler();
+			
+			FleXPlayer player = Fukkit.getPlayer(event.getPlayer().getUniqueId());
+			
+			try {
+				
+				if (!fle.isRecording(player))
+					return;
+				
+				// TODO check recording length for acceptable amount of frames.
+				fle.setPending(player);
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+		});
 		
 	}
 

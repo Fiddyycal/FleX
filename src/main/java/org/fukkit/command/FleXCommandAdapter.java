@@ -625,6 +625,7 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements Cachea
         Fukkit.getCommandFactory().unregister(this);
 	}
 	
+	@Override
     public List<String> tabComplete(CommandSender sender, String alias, String[] args) {
 
 		if (this.unknown || this.tab)

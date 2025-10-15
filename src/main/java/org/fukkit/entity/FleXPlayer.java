@@ -55,6 +55,8 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public String getIp() throws FleXPlayerNotLoadedException;
 	
+	public String getDomain();
+	
 	public NameTag getNameTag(FleXPlayer viewer);
 	
 	public NameBar getSubNameTag();
@@ -106,8 +108,6 @@ public interface FleXPlayer extends FleXHumanEntity {
 	public void setDisguise(Disguise disguise);
 	
 	public void setLanguage(Language language);
-	
-	public void setVersion(ProtocolVersion version);
 	
 	public void setVisibility(Visibility visibility);
 	

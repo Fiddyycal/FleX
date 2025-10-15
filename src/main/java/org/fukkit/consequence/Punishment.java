@@ -131,6 +131,7 @@ public abstract class Punishment extends Consequence {
 		SQLRowWrapper row = connection.getRow("flex_punishment", SQLCondition.where("id").is(this.reference));
 		
 		row.set("evidence", Arrays.asList(this.evidence = evidence).toString());
+		row.update();
 		
 	}
 	

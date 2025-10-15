@@ -1,22 +1,24 @@
 package org.fukkit.handlers;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.List;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import org.fukkit.Fukkit;
 import org.fukkit.ai.AIDriver;
 import org.fukkit.api.helper.ConfigHelper;
-import org.fukkit.api.helper.DataHelper;
 import org.fukkit.config.Configuration;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.fle.CriticalHitListeners;
+import org.fukkit.recording.RecordingContext;
+import org.fukkit.recording.RecordingState;
 import org.fukkit.fle.CommandLogListeners;
 
 import io.flex.FleX;
+import io.flex.commons.sql.SQLCondition;
+import io.flex.commons.sql.SQLDatabase;
+import io.flex.commons.sql.SQLRowWrapper;
 
 public class FlowLineEnforcementHandler {
 	
@@ -36,8 +38,6 @@ public class FlowLineEnforcementHandler {
 		new CriticalHitListeners();
 		new CommandLogListeners();
 		
-		DataHelper.set("flow.suspects.recording", new HashSet<UUID>());
-		
 		registered = true;
 		
 	}
@@ -48,52 +48,6 @@ public class FlowLineEnforcementHandler {
 	
 	public AIDriver getAIDriver() {
 		return this.driver;
-	}
-	
-	public Set<UUID> getPendingUnsafe() {
-		
-		List<String> pending = DataHelper.getList("flow.suspects.pending");
-		
-		if (pending == null || pending.isEmpty())
-			return new HashSet<UUID>();
-		
-		return pending.stream().filter(s -> {
-			
-			try {
-				
-				UUID.fromString(s);
-				
-				return true;
-				
-			} catch (IllegalArgumentException e) {
-				return false;
-			}
-			
-		}).map(s -> UUID.fromString(s)).collect(Collectors.toSet());
-		
-	}
-	
-	public Set<UUID> getRecordingUnsafe() {
-		
-		List<String> recording = DataHelper.getList("flow.suspects.recording");
-		
-		if (recording == null || recording.isEmpty())
-			return new HashSet<UUID>();
-		
-		return recording.stream().filter(s -> {
-			
-			try {
-				
-				UUID.fromString(s);
-				
-				return true;
-				
-			} catch (IllegalArgumentException e) {
-				return false;
-			}
-			
-		}).map(s -> UUID.fromString(s)).collect(Collectors.toSet());
-		
 	}
 	
 	public static String flowPath() {
@@ -107,46 +61,141 @@ public class FlowLineEnforcementHandler {
 		
 	}
 	
-	public void setPending(FleXPlayer player, boolean pending) {
+	public void setPending(FleXPlayer player) throws SQLException {
 		
-		if (player == null)
-			return;
+		SQLRowWrapper row = null;
+		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
+		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
 		
-		Set<UUID> list = this.getPendingUnsafe();
+		Set<SQLRowWrapper> rows = base.getRows("flex_overwatch", SQLCondition.where("context").is(context.toString()));
 		
-		if (pending)
-			list.add(player.getUniqueId());
+		for (SQLRowWrapper r : rows) {
 			
-		else list.remove(player.getUniqueId());
-		
-		DataHelper.set("flow.suspects.pending", list);
-		
-	}
-	
-	public void setRecording(FleXPlayer player, boolean recording) {
-		
-		if (player == null)
-			return;
-		
-		this.setPending(player, false);
-		
-		Set<UUID> list = this.getRecordingUnsafe();
-		
-		if (recording)
-			list.add(player.getUniqueId());
+			String state = r.getString("state");
 			
-		else list.remove(player.getUniqueId());
+			if (state.equals(RecordingState.STAGED.name()) || state.equals(RecordingState.RECORDING.name()))
+				row = r;
+			
+		}
 		
-		DataHelper.set("flow.suspects.recording", list);
+		long now = System.currentTimeMillis();
+		
+		// Prevents duplicates.
+		if (row != null) {
+			
+			if (row.getString("state").equals(RecordingState.RECORDING.name()))
+				row.set("data", Collections.emptyMap().toString());
+			
+			row.set("state", RecordingState.STAGED.name());
+			row.set("last_updated", now);
+			row.update();
+			return;
+			
+		}
+		
+		add(context, RecordingState.STAGED);
 		
 	}
 	
-	public boolean isPending(FleXPlayer player) {
-		return this.getPendingUnsafe().contains(player.getUniqueId());
+	public boolean setRecording(FleXPlayer player) throws SQLException {
+		
+		SQLRowWrapper row = null;
+		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
+		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
+		
+		Set<SQLRowWrapper> rows = base.getRows("flex_overwatch", SQLCondition.where("context").is(context.toString()));
+		
+		for (SQLRowWrapper r : rows) {
+			
+			String state = r.getString("state");
+			
+			if (state.equals(RecordingState.COMPLETE.name()))
+				continue;
+			
+			if (state.equals(RecordingState.RECORDING.name()))
+				return false;
+			
+			if (r.getString("state").equals(RecordingState.STAGED.name()))
+				row = r;
+			
+		}
+		
+		long now = System.currentTimeMillis();
+		
+		// Prevents duplicates.
+		if (row != null) {
+			row.set("state", RecordingState.RECORDING.name());
+			row.set("last_updated", now);
+			row.update();
+			return true;
+		}
+		
+		add(context, RecordingState.RECORDING);
+		return true;
+		
 	}
 	
-	public boolean isRecording(FleXPlayer player) {
-		return this.getRecordingUnsafe().contains(player.getUniqueId());
+	public void clear(FleXPlayer player) throws SQLException {
+		
+		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
+		String context = RecordingContext.REPORT + ":" + player.getUniqueId().toString();
+		
+		base.execute("DELETE FROM flex_overwatch WHERE context = '" + context + "' AND state = '" + RecordingState.STAGED.toString() + "'");
+		base.execute("DELETE FROM flex_overwatch WHERE context = '" + context + "' AND state = '" + RecordingState.RECORDING.toString() + "'");
+		
+	}
+	
+	private static SQLRowWrapper add(RecordingContext context, RecordingState state) throws SQLException {
+		
+		long now = System.currentTimeMillis();
+
+		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
+		LinkedHashMap<String, Object> entries = new LinkedHashMap<String, Object>();
+		
+		entries.put("context", context.toString());
+		entries.put("state", state.name());
+		entries.put("last_updated", now);
+		entries.put("world_path", null);
+		entries.put("data", Collections.emptyMap().toString());
+		
+		return base.addRow("flex_overwatch", entries);
+		
+	}
+	
+	public boolean isPending(FleXPlayer player) throws SQLException {
+		
+		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
+		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
+		
+		Set<SQLRowWrapper> rows = base.getRows("flex_overwatch", SQLCondition.where("context").is(context.toString()));
+		
+		for (SQLRowWrapper r : rows) {
+			
+			if (r.getString("state").equals(RecordingState.STAGED.name()))
+				return true;
+			
+		}
+		
+		return false;
+		
+	}
+	
+	public boolean isRecording(FleXPlayer player) throws SQLException {
+		
+		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
+		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
+		
+		Set<SQLRowWrapper> rows = base.getRows("flex_overwatch", SQLCondition.where("context").is(context.toString()));
+		
+		for (SQLRowWrapper r : rows) {
+			
+			if (r.getString("state").equals(RecordingState.RECORDING.name()))
+				return true;
+			
+		}
+		
+		return false;
+		
 	}
 	
 	public boolean isFleEnabled() {

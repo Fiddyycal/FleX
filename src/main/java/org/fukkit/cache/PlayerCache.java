@@ -11,29 +11,42 @@ import java.util.function.Consumer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
 import org.fukkit.PlayerState;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.event.FleXEventListener;
 import org.fukkit.reward.Rank;
 import org.fukkit.utils.BukkitUtils;
 
 import io.flex.FleX.Task;
 import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLRowWrapper;
+
+import net.md_5.fungee.ProtocolVersion;
 
 public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 
-	public static class PlayerCacheMeta {
+	/**
+	 * 
+	 * This is where all bungeecord related information is stored as a player is logging in.
+	 * It's also how FleXPlayer objects are able to load ranks and names on the main thread without blocking.
+	 *
+	 */
+	public static class PlayerCacheMeta extends FleXEventListener {
 		
-		private String name;
-		private String rank;
+		private UUID uuid;
+		private String name, rank, domain;
 		
-		public PlayerCacheMeta(String name, Rank rank) {
-			this.name = name;
-			this.rank = rank != null ? rank.getName() : null;
+		private ProtocolVersion version = ProtocolVersion.UNSPECIFIED;
+		
+		public PlayerCacheMeta(UUID uniqueId) {
+			this.uuid = uniqueId;
 		}
 		
 		public String getName() {
@@ -44,9 +57,73 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 			return Memory.RANK_CACHE.getOrDefault(this.rank, Memory.RANK_CACHE.getDefaultRank());
 		}
 		
+		public ProtocolVersion getVersion() {
+			return this.version;
+		}
+		
+		public String getDomain() {
+			return this.domain;
+		}
+		
+		public void setName(String name) {
+			this.name = name;
+			micro_cache.put(this.uuid, this);
+		}
+		
 		public void setRank(Rank rank) {
 			this.rank = rank != null ? rank.getName() : null;
+			micro_cache.put(this.uuid, this);
 		}
+		
+		public void setVersion(ProtocolVersion version) {
+			this.version = version;
+			micro_cache.put(this.uuid, this);
+		}
+		
+		public void setDomain(String domain) {
+			this.domain = domain;
+			micro_cache.put(this.uuid, this);
+		}
+		
+	}
+	
+	static {
+		
+		new FleXEventListener() {
+			
+			@EventHandler
+			public void event(AsyncPlayerPreLoginEvent event) {
+				
+				try {
+					
+					UUID uid = event.getUniqueId();
+					
+					SQLRowWrapper row = Fukkit.getConnectionHandler().getDatabase().getRow("flex_user", SQLCondition.where("uuid").is(uid));
+					
+					if (row != null) {
+						
+						String r = row.getString("rank");
+						
+						if (r == null)
+							return;
+						
+						String name = event.getName();
+						Rank rank = Memory.RANK_CACHE.getOrDefault(r, Memory.RANK_CACHE.getDefaultRank());
+						
+						PlayerCacheMeta meta = getCachedAttributes(uid);
+						
+						meta.setName(name);
+						meta.setRank(rank);
+						
+					}
+					
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				
+			}
+			
+		};
 		
 	}
 	
@@ -62,15 +139,15 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 		super((fp, player) -> fp.getUniqueId().equals(player.getUniqueId()));
 	}
 	
-	public static Map<UUID, PlayerCacheMeta> getMicroCache() {
-		return micro_cache;
+	public static PlayerCacheMeta getCachedAttributes(UUID uniqueId) {
+		return micro_cache.getOrDefault(uniqueId, new PlayerCacheMeta(uniqueId));
 	}
 	
 	@Override
 	public boolean add(FleXHumanEntity... args) {
 		
 		for (FleXHumanEntity entity : args)
-			micro_cache.put(entity.getUniqueId(), new PlayerCacheMeta(entity.getName(), entity.getRank()));
+			getCachedAttributes(entity.getUniqueId()).setRank(entity.getRank());
 		
 		return super.add(args);
 		
@@ -93,13 +170,21 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 	
 	public void getAsync(UUID uuid, Consumer<FleXHumanEntity> callback) {
 		BukkitUtils.asyncThread(() -> {
-			callback.accept(Fukkit.getPlayerFactory().createFukkitSafe(uuid, null));
+			
+			FleXHumanEntity player = this.getByUniqueId(uuid);
+			
+			BukkitUtils.mainThread(() -> callback.accept(player));
+			
 		});
 	}
 	
 	public void getAsync(String name, Consumer<FleXHumanEntity> callback) {
 		BukkitUtils.asyncThread(() -> {
-			callback.accept(Fukkit.getPlayerFactory().createFukkitSafe(null, name));
+			
+			FleXHumanEntity player = this.getByName(name);
+			
+			BukkitUtils.mainThread(() -> callback.accept(player));
+			
 		});
 	}
 	
@@ -159,7 +244,7 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 				UUID u = entry.getKey();
 				String n = entry.getValue().name;
 				
-				if (n.equalsIgnoreCase(name)) {
+				if (n != null && n.equalsIgnoreCase(name)) {
 					
 					pl = this.getByUniqueId(u);
 					
@@ -197,13 +282,18 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 				
 				try {
 					
-					String uuid = row.get("uuid").toString();
+					String uid = row.getString("uuid");
 					String name = row.getString("name");
 					String rank = row.getString("rank");
 					
-					Task.print("Players", "Caching " + rank + " \"" + row.getString("name") + "\" (" + row.getString("uuid").substring(0, 8) + "...) [" + (i++) + "/" + amount + "]");
+					UUID uuid = UUID.fromString(uid);
 					
-					micro_cache.put(UUID.fromString(uuid), new PlayerCacheMeta(name, rank != null ? Memory.RANK_CACHE.getOrDefault(rank, Memory.RANK_CACHE.getDefaultRank()) : null));
+					Task.print("Players", "Caching " + rank + " \"" + name + "\" (" + uid.substring(0, 8) + "...) [" + (i++) + "/" + amount + "]");
+					
+					PlayerCacheMeta meta = getCachedAttributes(uuid);
+					
+					meta.setName(name);
+					meta.setRank(Memory.RANK_CACHE.getOrDefault(rank, Memory.RANK_CACHE.getDefaultRank()));
 					
 				} catch (Exception e) {
 					e.printStackTrace();

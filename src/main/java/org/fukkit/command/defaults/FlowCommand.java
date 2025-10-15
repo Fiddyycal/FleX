@@ -20,6 +20,7 @@ import org.fukkit.json.JsonComponent;
 import org.fukkit.recording.Stage;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
+import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.ThemeUtils;
 
 import io.flex.commons.file.Language;
@@ -88,19 +89,47 @@ public class FlowCommand extends FleXCommandAdapter {
 						// TODO: REPORT_VIEW_LOADING
 						((FleXPlayer)sender).sendMessage(theme.format("<flow><pc>Evidence loading<pp>,\\s<pc>please wait<pp>..."));
 						
-						try {
+						BukkitUtils.asyncThread(() -> {
 							
-							new Stage(Overwatch.download(report), true, ((FleXPlayer)sender));
-							return true;
+							String error = null;
+							Overwatch ow = null;
 							
-						} catch (Exception e) {
+							try {
+								ow = Overwatch.download(report);
+							} catch (Exception e) {
+								
+								e.printStackTrace();
+								error = e.getMessage();
+								
+							}
 							
-							e.printStackTrace();
+							if (error == null && ow == null)
+								error = "file does not exist";
 							
-							((FleXPlayer)sender).sendMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
-							return false;
+							if (error != null && ((FleXPlayer)sender).isOnline()) {
+								((FleXPlayer)sender).sendMessage(theme.format("<flow><failure>Overwatch failed to load, " + error + "<pp>."));
+								return;
+							}
 							
-						}
+							Overwatch parse = ow;
+							
+							BukkitUtils.mainThread(() -> {
+								try {
+									
+									new Stage(parse, true, ((FleXPlayer)sender));
+									
+								} catch (Exception e) {
+									
+									if (((FleXPlayer)sender).isOnline())
+										((FleXPlayer)sender).sendMessage(theme.format("<flow><failure>" + e.getMessage() + "<pp>."));
+									
+								}
+							});
+							
+						});
+						
+						return true;
+						
 						
 					} else {
 						// TODO: FLOW_REPORT_FAILURE_FLAG
