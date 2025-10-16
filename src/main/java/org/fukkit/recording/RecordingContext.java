@@ -2,7 +2,7 @@ package org.fukkit.recording;
 
 public class RecordingContext {
 
-	public static final int REPORT = 0, GAME = 1, OTHER = 2;
+	public static final int NONE = 0, REPORT = 1, GAME = 2, OTHER = 3;
 	
 	private int type;
 	

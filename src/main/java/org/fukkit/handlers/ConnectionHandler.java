@@ -114,18 +114,20 @@ public class ConnectionHandler {
 			
 			this.database.createTable("flex_punishment", "id", punishment_columns);
 			
-			LinkedHashMap<String, SQLDataType> flow_columns = new LinkedHashMap<String, SQLDataType>();
+			LinkedHashMap<String, SQLDataType> recording_columns = new LinkedHashMap<String, SQLDataType>();
 			
-			flow_columns.put("context", SQLDataType.VARCHAR);
-			flow_columns.put("state", SQLDataType.VARCHAR);
-			flow_columns.put("last_updated", SQLDataType.BIGINT);
-			flow_columns.put("world_path", SQLDataType.VARCHAR);
-			flow_columns.put("data", SQLDataType.BLOB);
+			recording_columns.put("uuid", SQLDataType.VARCHAR);
+			recording_columns.put("context", SQLDataType.VARCHAR);
+			recording_columns.put("time", SQLDataType.VARCHAR);
+			recording_columns.put("state", SQLDataType.VARCHAR);
+			recording_columns.put("world", SQLDataType.VARCHAR);
+			recording_columns.put("players", SQLDataType.VARCHAR);
+			recording_columns.put("data", SQLDataType.BLOB);
 			
-			this.database.createTable("flex_overwatch", flow_columns);
+			this.database.createTable("flex_recording", recording_columns);
 			
 			try {
-				this.database.execute("ALTER TABLE flex_overwatch MODIFY COLUMN data LONGBLOB");
+				this.database.execute("ALTER TABLE flex_recording MODIFY COLUMN data LONGBLOB");
 			} catch (Exception ignore) {}
 			
 			this.createHistoryTable(BadgeHistory.TABLE_NAME);

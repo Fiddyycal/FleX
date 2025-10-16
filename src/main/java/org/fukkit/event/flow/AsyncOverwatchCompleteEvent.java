@@ -4,7 +4,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.fukkit.flow.Overwatch;
 
-public class OverwatchCompleteEvent extends Event {
+public class AsyncOverwatchCompleteEvent extends Event {
 
 	private static HandlerList handlers = new HandlerList();
 	
@@ -19,7 +19,7 @@ public class OverwatchCompleteEvent extends Event {
 		return handlers;
 	}
 	
-	public OverwatchCompleteEvent(Overwatch recording) {
+	public AsyncOverwatchCompleteEvent(Overwatch recording) {
 		this.recording = recording;
 	}
 	

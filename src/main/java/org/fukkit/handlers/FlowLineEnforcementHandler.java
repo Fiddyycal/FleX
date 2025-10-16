@@ -67,7 +67,7 @@ public class FlowLineEnforcementHandler {
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
 		
-		Set<SQLRowWrapper> rows = base.getRows("flex_overwatch", SQLCondition.where("context").is(context.toString()));
+		Set<SQLRowWrapper> rows = base.getRows("flex_recording", SQLCondition.where("context").is(context.toString()));
 		
 		for (SQLRowWrapper r : rows) {
 			
@@ -103,7 +103,7 @@ public class FlowLineEnforcementHandler {
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
 		
-		Set<SQLRowWrapper> rows = base.getRows("flex_overwatch", SQLCondition.where("context").is(context.toString()));
+		Set<SQLRowWrapper> rows = base.getRows("flex_recording", SQLCondition.where("context").is(context.toString()));
 		
 		for (SQLRowWrapper r : rows) {
 			
@@ -140,8 +140,8 @@ public class FlowLineEnforcementHandler {
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		String context = RecordingContext.REPORT + ":" + player.getUniqueId().toString();
 		
-		base.execute("DELETE FROM flex_overwatch WHERE context = '" + context + "' AND state = '" + RecordingState.STAGED.toString() + "'");
-		base.execute("DELETE FROM flex_overwatch WHERE context = '" + context + "' AND state = '" + RecordingState.RECORDING.toString() + "'");
+		base.execute("DELETE FROM flex_recording WHERE context = '" + context + "' AND state = '" + RecordingState.STAGED.toString() + "'");
+		base.execute("DELETE FROM flex_recording WHERE context = '" + context + "' AND state = '" + RecordingState.RECORDING.toString() + "'");
 		
 	}
 	
@@ -158,16 +158,26 @@ public class FlowLineEnforcementHandler {
 		entries.put("world_path", null);
 		entries.put("data", Collections.emptyMap().toString());
 		
-		return base.addRow("flex_overwatch", entries);
+		return base.addRow("flex_recording", entries);
 		
 	}
 	
 	public boolean isPending(FleXPlayer player) throws SQLException {
 		
+		
+		// TODO
+		/**
+		 * Check to see if report is made on player and the report evidence needed is RECORDING and the evidence is empty.
+		 * instead of the below checks..............
+		 */
+		
+		
+		
+		
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
 		
-		Set<SQLRowWrapper> rows = base.getRows("flex_overwatch", SQLCondition.where("context").is(context.toString()));
+		Set<SQLRowWrapper> rows = base.getRows("flex_recording", SQLCondition.where("context").is(context.toString()));
 		
 		for (SQLRowWrapper r : rows) {
 			
@@ -185,7 +195,7 @@ public class FlowLineEnforcementHandler {
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
 		
-		Set<SQLRowWrapper> rows = base.getRows("flex_overwatch", SQLCondition.where("context").is(context.toString()));
+		Set<SQLRowWrapper> rows = base.getRows("flex_recording", SQLCondition.where("context").is(context.toString()));
 		
 		for (SQLRowWrapper r : rows) {
 			

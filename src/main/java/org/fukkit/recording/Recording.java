@@ -1,13 +1,14 @@
 package org.fukkit.recording;
 
-import java.io.Serializable;
+import java.io.File;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -20,207 +21,64 @@ import org.fukkit.entity.FleXPlayer;
 import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
 import io.flex.commons.file.DataFile;
+import io.flex.commons.sql.SQLMap;
+import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.FileUtils;
 
 public abstract class Recording extends BukkitRunnable {
 	
-	protected UUID uuid;
+	protected String uid;
 	
-	private DataFile<HashMap<UUID, String[]>> file;
+	protected World world;
 	
-	private World world;
+	private DataFile<HashMap<UUID, String[]>> data;
 	
-	private boolean pause = false, complete = false;
+	protected boolean pause = true;
 	
-	private long tick = 0, length = -1;
-	
-	private Map<UUID, Recordable> recorded = new HashMap<UUID, Recordable>();
+	protected long tick = 0, length = -1;
 	
 	private RecordingListeners listener;
 	
-	public Recording(String path) {
+	private Map<UUID, Recordable> recorded = new HashMap<UUID, Recordable>();
+	
+	private RecordingContext context;
+	
+	public Recording(File container, @Nullable RecordingContext context) {
 		
-		if (path == null)
-			throw new UnsupportedOperationException("path cannot be null");
-		
-		this.file = new DataFile<HashMap<UUID, String[]>>(path, new LinkedHashMap<UUID, String[]>(), false);
-		
-		if (this.file.isZip())
-			this.file = this.file.unzip();
-		
-		String uid = this.file.getTag("UniqueId", UUID.randomUUID().toString());
-		String length = this.file.getTag("Length", "-1");
-		
-		this.uuid = UUID.fromString(uid);
-		
-		this.length = Long.parseLong(length);
-		
-		System.out.println("LENGTH:::::::::::::::::::::::::::::::::::::: " + length);
-		
-		this.file.setTag("UniqueId", this.uuid.toString());
-		this.file.setTag("Length", length);
-		
-		for (Entry<String, Serializable> iterable_element : this.file.asTags().entrySet()) {
-			System.out.println("v: " + iterable_element.getKey() + ": " + iterable_element.getValue());
-		}
-		
-		if (this.length > 0) {
+		Objects.requireNonNull(container, "container cannot be null");
+
+		if (this instanceof Replay) {
 			
-			LinkedHashMap<UUID, String[]> recorded = (LinkedHashMap<UUID, String[]>) this.file.read();
+			if (!container.isDirectory())
+				throw new UnsupportedOperationException("container must be a directory");
 			
-			if (recorded == null || recorded.isEmpty())
-				throw new UnsupportedOperationException("recorded data is empty");
-			
-			for (Entry<UUID, String[]> entry : recorded.entrySet()) {
-				
-				UUID uuid = entry.getKey();
-				
-				String[] actions = entry.getValue();
-				
-				LinkedList<Frame> frames = new LinkedList<Frame>();
-				
-				for (String action : actions)
-					frames.add(Frame.from(action));
-				
-				System.out.println("TEST 2: " + uuid + " / " + frames.size());
-				
-				this.recorded.put(uuid, CraftRecorded.of(Fukkit.getPlayer(uuid), frames));
-				
-			}
-			
-			if (this.recorded.isEmpty())
-				throw new UnsupportedOperationException("recorded data is empty");
+			if (ArrayUtils.contains(container.list(), "data.rec"))
+				throw new UnsupportedOperationException("data.rec not found at " + container.getAbsolutePath());
 			
 		}
 		
-		this.file.delete();
+		this.context = context;
+		
+		this.data = new DataFile<HashMap<UUID, String[]>>(container.getAbsolutePath(), "data.rec", new LinkedHashMap<UUID, String[]>(), false);
+		
+		String uid = this.data.getTag("UniqueId", UUID.randomUUID().toString().substring(0, 8));
+		String length = this.data.getTag("Length", "-1");
+		
+		this.data.setTag("UniqueId", this.uid = uid);
+		this.data.setTag("Length", this.length = Long.parseLong(length));
 		
 	}
 	
-	public UUID getUniqueId() {
-		return this.uuid;
+	public String getUniqueId() {
+		return this.uid;
 	}
 	
 	public long getLength() {
 		return this.length;
 	}
 	
-	public static Recording download(String path) {
-		return new Recording(path) {
-			
-			@Override
-			public void onComplete() {}
-			
-			@Override
-			public void onPlayerDisconnect(FleXPlayer player) {}
-			
-		};
-	}
-	/*
-	public Recording(@Nullable String path, String name, FleXPlayer... watchers) {
-		
-		this.file = new DataFile<HashMap<UUID, String[]>>(path != null ? path : "", name + ".rec", new LinkedHashMap<UUID, String[]>(), false);
-		
-		if (this.file.isFresh()) {
-			
-			boolean deleted = this.file.delete();
-			
-			if (!deleted)
-				this.file.deleteOnExit();
-			
-			throw new UnsupportedOperationException("Recording data file does not exist, make sure that an Admin has moved the file to the correct directory for reviewal");
-			
-		}
-		
-		if (watchers == null || watchers.length == 0)
-			throw new UnsupportedOperationException("watchers cannot be null");
-		
-		this.watchers = new HashSet<FleXPlayer>(Arrays.asList(watchers));
-		
-		FlowLineEnforcementHandler fle = Fukkit.getFlowLineEnforcementHandler();
-		
-		if (!fle.isFlowEnabled())
-			throw new UnsupportedOperationException("FleX Overwatch replay system is not enabled on this server.");
-		
-		HashMap<UUID, String[]> frames = null;
-		
-		try {
-			
-			frames = this.file.read();
-			
-			if (frames == null || frames.isEmpty())
-				throw new UnsupportedOperationException("Frames map cannot be empty");
-			
-		} catch (Exception e) {
-			throw new UnsupportedOperationException("Frames map cannot be read");
-		}
-		
-		this.world = WorldUtils.copyWorld(this.file.getParentFile().getAbsolutePath(), Bukkit.getWorldContainer().getAbsolutePath() + File.separator + "stage-" + this.file.getName());
-		
-		Location tp = null;
-		
-		for (Entry<UUID, String[]> entry : frames.entrySet()) {
-			
-			UUID uuid = entry.getKey();
-			
-			FleXPlayer fp = Fukkit.getPlayer(uuid);
-			
-			if (fp == null)
-				continue;
-			
-			if (fle.getAIDriver() == AIDriver.FLEX)
-				throw new UnsupportedOperationException(
-						
-						"The FleX AI driver is undergoing heavy maintenance, "
-						+ "please do not use this driver: "
-						+ "Citizens plugin could not be found, "
-						+ "please correct this error before continuing startup.");
-			
-			Recordable recordable = Fukkit.getImplementation().createRecordable(fp);
-			
-			if (recordable == null)
-				throw new UnsupportedOperationException("AI Driver " + fle.getAIDriver().name() + " not found");
-			
-			this.recorded.add(recordable);
-			
-			String[] serialized = entry.getValue();
-			
-			for (String frame : serialized) {
-				
-				Frame f = Frame.from(frame);
-				
-				Location loc = f.getLocation();
-				
-				if (loc != null) {
-					
-					loc.setWorld(this.world);
-					
-					if (tp == null)
-						tp = loc;
-					
-				}
-				
-				if (f.getObject() != null)
-					f.getObject().setWorld(this.world);
-				
-				recordable.getFrames().add(f);
-				
-			}
-			
-		}
-		
-		if (tp == null)
-			throw new UnsupportedOperationException("Could not find appropriate spawn location for watchers");
-		
-		for (FleXPlayer watcher : this.watchers)
-			watcher.teleport(tp);
-		
-		this.runTaskTimer(Fukkit.getInstance(), 20L, 2L);
-		
-	}
-	*/
 	public DataFile<HashMap<UUID, String[]>> getData() {
-		return this.file;
+		return this.data;
 	}
 	
 	public Map<UUID, Recordable> getRecorded() {
@@ -232,15 +90,15 @@ public abstract class Recording extends BukkitRunnable {
 	}
 	
 	public boolean isRecording(Entity entity) {
-		return this.isRecording() && this.recorded.containsKey(entity.getUniqueId());
+		return !this.pause && this.recorded.containsKey(entity.getUniqueId());
 	}
 	
 	public boolean isRecording(FleXPlayer player) {
 		return this.isRecording(player.getPlayer());
 	}
 	
-	public boolean isRecording() {
-		return !this.complete;
+	public boolean isPaused() {
+		return this.pause;
 	}
 
 	@Override
@@ -341,6 +199,8 @@ public abstract class Recording extends BukkitRunnable {
 			
 		}
 		
+		this.pause = false;
+		
 		this.runTaskTimerAsynchronously(Fukkit.getInstance(), 0L, 2L);
 		
 	}
@@ -353,8 +213,7 @@ public abstract class Recording extends BukkitRunnable {
 		
 		this.cancel();
 		
-		// isCancelled doesn't exist in Java 7 (Minecraft 1.8)
-		this.complete = true;
+		this.pause = true;
 		
 		if (reason == null)
 			reason = "End of recording.";
@@ -371,11 +230,11 @@ public abstract class Recording extends BukkitRunnable {
 			if (end) {
 				
 				try {
-					FileUtils.copy(this.world.getWorldFolder(), this.file.getParentFile());
+					FileUtils.copy(this.world.getWorldFolder(), this.data.getParentFile());
 				} catch (Exception ignore) {}
 				
-				this.file.setTag("Path", this.world.getWorldFolder().getAbsolutePath());
-				this.file.setTag("Length", this.tick);
+				this.data.setTag("Path", this.world.getWorldFolder().getAbsolutePath());
+				this.data.setTag("Length", this.tick);
 				
 				LinkedHashMap<UUID, String[]> recorded = new LinkedHashMap<UUID, String[]>();
 				
@@ -387,7 +246,23 @@ public abstract class Recording extends BukkitRunnable {
 				
 				}
 				
-				this.file.write(recorded);
+				this.data.write(recorded);
+				
+				File file = FileUtils.zip(this.data.getParentFile());
+				
+				Fukkit.getConnectionHandler().getDatabase().addRow("flex_recording", 
+						
+						SQLMap.of(
+								
+								SQLMap.entry("uuid", this.uid),
+								SQLMap.entry("context", this.context != null ? RecordingContext.NONE : this.context.toString()),
+								SQLMap.entry("time", System.currentTimeMillis()),
+								SQLMap.entry("state", RecordingState.COMPLETE.name()),
+								SQLMap.entry("world", this.world.getName()),
+								SQLMap.entry("players", this.recorded.keySet().stream().collect(Collectors.toList()).toString()),
+								SQLMap.entry("data", Files.readAllBytes(file.toPath()))
+								
+						));
 				
 				this.onComplete();
 				
@@ -408,15 +283,14 @@ public abstract class Recording extends BukkitRunnable {
 			
 			this.world = null;
 			this.recorded = null;
-			
-			this.file = null;
+			this.data = null;
 			
 		}
 		
 	}
 	
 	public abstract void onPlayerDisconnect(FleXPlayer player);
-
+	
 	public abstract void onComplete();
 	
 }

@@ -15,10 +15,13 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 import io.flex.FleX;
 import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
+import io.flex.commons.Severity;
+import io.flex.commons.console.Console;
 
 public class FileUtils {
 	
@@ -153,6 +156,80 @@ public class FileUtils {
 		copy(source, target, ignoreFiles);
 		delete(source);
 	}
+	
+	public static File zip(File file) {
+
+		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + file.getName());
+		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + file.getName());
+		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + file.getName());
+		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + file.getName());
+		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + file.getName());
+		
+        File zipped = new File(file.getParentFile(), file.getName() + ".zip");
+
+        try (
+            FileOutputStream fos = new FileOutputStream(zipped);
+            ZipOutputStream zipOut = new ZipOutputStream(fos)
+        ) {
+            if (file.isDirectory())
+                zipDirectory(file, file.getName(), zipOut);
+                
+            else zipFile(file, "", zipOut);
+            
+        } catch (IOException e) {
+        	
+	    	Task.error("Cabinet (" + Severity.CRITICAL.name() + ")", "Failed to zip: " + file.getAbsolutePath());
+	    	Console.log("Cabinet", Severity.CRITICAL, e);
+            
+        }
+        
+        return zipped;
+        
+    }
+
+    private static void zipFile(File fileToZip, String parentPath, ZipOutputStream zipOut) throws IOException {
+    	
+        try (FileInputStream fis = new FileInputStream(fileToZip)) {
+        	
+            String zipEntryName = parentPath.isEmpty() ? fileToZip.getName() : parentPath + "/" + fileToZip.getName();
+            
+            ZipEntry zipEntry = new ZipEntry(zipEntryName);
+            
+            zipOut.putNextEntry(zipEntry);
+            
+            byte[] buffer = new byte[1024];
+            
+            int len;
+            
+            while ((len = fis.read(buffer)) >= 0)
+                zipOut.write(buffer, 0, len);
+            
+        }
+        
+    }
+
+    private static void zipDirectory(File folder, String parentPath, ZipOutputStream zipOut) throws IOException {
+    	
+        File[] files = folder.listFiles();
+        
+        if (files == null || files.length == 0) {
+        	
+            zipOut.putNextEntry(new ZipEntry(parentPath + "/"));
+            zipOut.closeEntry();
+            return;
+            
+        }
+
+        for (File file : files) {
+        	
+            if (file.isDirectory())
+                zipDirectory(file, parentPath + "/" + file.getName(), zipOut);
+                
+            else zipFile(file, parentPath, zipOut);
+            
+        }
+        
+    }
 	
     public static void unzip(File source, String destination) {
     	try {

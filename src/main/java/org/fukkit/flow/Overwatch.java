@@ -3,9 +3,7 @@ package org.fukkit.flow;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -14,7 +12,7 @@ import org.fukkit.api.helper.ConfigHelper;
 import org.fukkit.consequence.EvidenceType;
 import org.fukkit.consequence.Report;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.event.flow.OverwatchCompleteEvent;
+import org.fukkit.event.flow.AsyncOverwatchCompleteEvent;
 import org.fukkit.handlers.FlowLineEnforcementHandler;
 import org.fukkit.recording.Recording;
 import org.fukkit.recording.RecordingContext;
@@ -24,41 +22,26 @@ import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.ThemeUtils;
 
-import io.flex.commons.Nullable;
 import io.flex.commons.file.DataFile;
 import io.flex.commons.file.Variable;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLRowWrapper;
 import io.flex.commons.utils.ArrayUtils;
+import io.flex.commons.utils.FileUtils;
 
 public class Overwatch extends Recording {
 
 	private Report report;
 	
-	private static String name() {
+	public Overwatch(Report report) {
 		
-		SimpleDateFormat format = new SimpleDateFormat("MM_dd_yyyy_HH_mm");
-		
-		return format.format(System.currentTimeMillis());
-		
-	}
-	
-	public Overwatch(Report report, @Nullable FleXPlayer... record) {
-		
-		super(FlowLineEnforcementHandler.flowPath() + report.getPlayer().getUniqueId().toString() + File.separator + "flow-" + name() + ".rec");
-		
-		this.uuid = report.getPlayer().getUniqueId();
+		super(new File(FlowLineEnforcementHandler.flowPath() + report.getPlayer().getUniqueId().toString()), RecordingContext.of(RecordingContext.REPORT, report.getPlayer().getUniqueId().toString()));
 		
 		DataFile<HashMap<UUID, String[]>> data = this.getData();
 		
-		data.setTag("UniqueId", this.uuid.toString());
 		data.setTag("Report", (this.report = report).getReference());
 		
-	}
-	
-	protected Overwatch(String path) {
-		super(path);
 	}
 	
 	public static Overwatch download(Report report) throws SQLException, IOException {
@@ -68,13 +51,14 @@ public class Overwatch extends Recording {
 		
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, report.getPlayer().getUniqueId().toString());
-		SQLRowWrapper row = base.getRow("flex_overwatch", SQLCondition.where("context").is(context.toString()), SQLCondition.where("state").is(RecordingState.COMPLETE.name()));
+		SQLRowWrapper row = base.getRow("flex_recording", SQLCondition.where("context").is(context.toString()), SQLCondition.where("state").is(RecordingState.COMPLETE.name()));
 		
 		if (row == null)
 			return null;
 		
-		String path = ConfigHelper.flow_path + File.separator + report.getEvidence()[0].replace("/", File.separator);
-	    File file = new File(path);
+		String rec = report.getEvidence()[0];
+		String parent = ConfigHelper.flow_path + File.separator + rec.split("/")[0];
+	    File file = new File(parent + ".zip");
 	    
 	    if (file.getParentFile() != null)
 	    	file.getParentFile().mkdirs();
@@ -84,8 +68,12 @@ public class Overwatch extends Recording {
 	    try (FileOutputStream fos = new FileOutputStream(file)) {
 	        fos.write(data);
 	    }
+	    
+	    FileUtils.unzip(file, parent);
+	    
+	    System.out.println("UNZIPPINGGGGGGGGGGGGGGGGGGGGGGGGGG: " + file.getAbsolutePath() + " to " + parent);
 		
-		return new Overwatch(file.getAbsolutePath());
+		return new Overwatch(report);
 		
 	}
 	
@@ -147,42 +135,16 @@ public class Overwatch extends Recording {
 	@Override
 	public void onComplete() {
 		
-		Fukkit.getEventFactory().call(new OverwatchCompleteEvent(this));
+		Fukkit.getEventFactory().call(new AsyncOverwatchCompleteEvent(this));
 		
-		// Must be cast before set to null in Recording.
-		DataFile<?> file = this.getData();
-		
-		BukkitUtils.asyncThread(() -> {
+		try {
 			
-			try {
-				
-				// TODO set evidence for all reports that match context critiria
-				this.report.setEvidence(file.getParentFile().getName() + "/" + file.getName());
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			// TODO set evidence for all reports that match context critiria
+			this.report.setEvidence(this.uid + "/" + this.getData().getName());
 			
-			File zipped = file.zip();
-			
-			try {
-				
-				SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
-				RecordingContext context = RecordingContext.of(RecordingContext.REPORT, this.getReport().getPlayer().getUniqueId().toString());
-				SQLRowWrapper row = base.getRow("flex_overwatch", SQLCondition.where("context").is(context.toString()), SQLCondition.where("state").is(RecordingState.RECORDING.name()));
-				
-				if (row == null)
-					return;
-				
-				row.set("state", RecordingState.COMPLETE.name());
-				row.set("data", Files.readAllBytes(zipped.toPath()));
-				row.update();
-			
-			} catch (SQLException | IOException e) {
-				e.printStackTrace();
-			}
-			
-		});
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 	}
 

@@ -2,6 +2,6 @@ package org.fukkit.recording;
 
 public enum RecordingState {
 
-	STAGED, RECORDING, COMPLETE;
+	STAGED, RECORDING, UPLOADING, COMPLETE;
 	
 }

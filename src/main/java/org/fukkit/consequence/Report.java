@@ -171,7 +171,7 @@ public class Report extends Punishment {
 	}
 	
 	public static synchronized void watch(Report report, FleXPlayer... players) throws FileAlreadyExistsException {
-		new Overwatch(report, players).start(report.getPlayer().getPlayer().getWorld(), 400L, players);;
+		new Overwatch(report, players).start(report.getPlayer().getPlayer().getWorld(), 400L, players);
 	}
 
 }

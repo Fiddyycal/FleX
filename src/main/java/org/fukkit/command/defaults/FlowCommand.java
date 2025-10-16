@@ -17,7 +17,7 @@ import org.fukkit.entity.FleXPlayer;
 import org.fukkit.flow.Overwatch;
 import org.fukkit.json.JsonBuffer;
 import org.fukkit.json.JsonComponent;
-import org.fukkit.recording.Stage;
+import org.fukkit.recording.Replay;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.BukkitUtils;
@@ -116,7 +116,7 @@ public class FlowCommand extends FleXCommandAdapter {
 							BukkitUtils.mainThread(() -> {
 								try {
 									
-									new Stage(parse, true, ((FleXPlayer)sender));
+									new Replay(parse, true));
 									
 								} catch (Exception e) {
 									
