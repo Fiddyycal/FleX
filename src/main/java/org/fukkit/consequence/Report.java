@@ -1,6 +1,5 @@
 package org.fukkit.consequence;
 
-import java.nio.file.FileAlreadyExistsException;
 import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -123,12 +122,10 @@ public class Report extends Punishment {
 		BukkitUtils.asyncThread(() -> {
 			
 			try {
-
+				
 				FleXPlayer player = this.getPlayer();
 				FleXWorld world = player.getWorld();
 				FleXPlayer[] record = null;
-				
-				Fukkit.getFlowLineEnforcementHandler().setRecording(player);
 				
 				if (world != null) {
 					
@@ -151,8 +148,6 @@ public class Report extends Punishment {
 				if (record != null && record.length > 0)
 					watch(this, record);
 				
-			} catch (FileAlreadyExistsException ignore) {
-				System.err.println("Overwatch file already exists, this may be due to multiple reports of the same person. You can ignore this.");
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -170,8 +165,14 @@ public class Report extends Punishment {
 		
 	}
 	
-	public static synchronized void watch(Report report, FleXPlayer... players) throws FileAlreadyExistsException {
-		new Overwatch(report, players).start(report.getPlayer().getPlayer().getWorld(), 400L, players);
+	// synchronized ensures only one flow recording can can be made at once.
+	public static synchronized void watch(Report report, FleXPlayer... players) throws SQLException {
+		
+		if (Fukkit.getFlowLineEnforcementHandler().isRecording(report.getPlayer()))
+			return;
+		
+		new Overwatch(report).start(report.getPlayer().getPlayer().getWorld(), 400L, players);
+		
 	}
 
 }

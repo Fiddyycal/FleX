@@ -199,7 +199,7 @@ public class SQLDatabase implements Serializable {
 			        entries.put(column, value);
 			        
 			    }
-		        
+				
 				if (primary == null && (conditions != null && conditions.length > 0))
 					rows.add(new SQLRowWrapper(this, table, entries, conditions));
 				

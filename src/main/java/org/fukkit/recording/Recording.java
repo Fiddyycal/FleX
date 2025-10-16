@@ -2,11 +2,14 @@ package org.fukkit.recording;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -21,7 +24,10 @@ import org.fukkit.entity.FleXPlayer;
 import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
 import io.flex.commons.file.DataFile;
+import io.flex.commons.sql.SQLCondition;
+import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLMap;
+import io.flex.commons.sql.SQLRowWrapper;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.FileUtils;
 
@@ -43,7 +49,7 @@ public abstract class Recording extends BukkitRunnable {
 	
 	private RecordingContext context;
 	
-	public Recording(File container, @Nullable RecordingContext context) {
+	public Recording(File container, @Nullable RecordingContext context) throws SQLException {
 		
 		Objects.requireNonNull(container, "container cannot be null");
 
@@ -62,10 +68,13 @@ public abstract class Recording extends BukkitRunnable {
 		this.data = new DataFile<HashMap<UUID, String[]>>(container.getAbsolutePath(), "data.rec", new LinkedHashMap<UUID, String[]>(), false);
 		
 		String uid = this.data.getTag("UniqueId", UUID.randomUUID().toString().substring(0, 8));
-		String length = this.data.getTag("Length", "-1");
+		long length = this.data.getTag("Length", -1L);
 		
 		this.data.setTag("UniqueId", this.uid = uid);
-		this.data.setTag("Length", this.length = Long.parseLong(length));
+		this.data.setTag("Length", this.length = length);
+		
+		// init row
+		this.getRow();
 		
 	}
 	
@@ -173,8 +182,8 @@ public abstract class Recording extends BukkitRunnable {
 		
 	}
 	
-	public void start(World world, long length, FleXPlayer... players) {
-
+	public void start(World world, long length, FleXPlayer... players) throws SQLException {
+		
 		if (world == null)
 			throw new UnsupportedOperationException("world must not be null");
 		
@@ -200,6 +209,12 @@ public abstract class Recording extends BukkitRunnable {
 		}
 		
 		this.pause = false;
+		
+		SQLRowWrapper row = this.getRow();
+		
+		row.set("time", System.currentTimeMillis());
+		row.set("state", RecordingState.RECORDING.name());
+		row.update();
 		
 		this.runTaskTimerAsynchronously(Fukkit.getInstance(), 0L, 2L);
 		
@@ -250,26 +265,23 @@ public abstract class Recording extends BukkitRunnable {
 				
 				File file = FileUtils.zip(this.data.getParentFile());
 				
-				Fukkit.getConnectionHandler().getDatabase().addRow("flex_recording", 
-						
-						SQLMap.of(
-								
-								SQLMap.entry("uuid", this.uid),
-								SQLMap.entry("context", this.context != null ? RecordingContext.NONE : this.context.toString()),
-								SQLMap.entry("time", System.currentTimeMillis()),
-								SQLMap.entry("state", RecordingState.COMPLETE.name()),
-								SQLMap.entry("world", this.world.getName()),
-								SQLMap.entry("players", this.recorded.keySet().stream().collect(Collectors.toList()).toString()),
-								SQLMap.entry("data", Files.readAllBytes(file.toPath()))
-								
-						));
+				SQLRowWrapper row = this.getRow();
+				
+				if (row != null) {
+					
+					row.set("time", System.currentTimeMillis());
+					row.set("state", RecordingState.COMPLETE.name());
+					row.set("data", Files.readAllBytes(file.toPath()));
+					row.update();
+					
+				}
 				
 				this.onComplete();
 				
 			}
 			
 		} catch(Exception e) {
-
+			
 			e.printStackTrace();
 			
 		} finally {
@@ -286,6 +298,46 @@ public abstract class Recording extends BukkitRunnable {
 			this.data = null;
 			
 		}
+		
+	}
+	
+	public SQLRowWrapper getRow() throws SQLException {
+		
+		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
+		SQLRowWrapper row = null;
+		Set<SQLRowWrapper> rows = base.getRows("flex_recording", SQLCondition.where("context").is(this.context.toString()));
+		
+		for (SQLRowWrapper r : rows) {
+			
+			String id = r.getString("uuid");
+			
+			if (id != null && id.equals(this.uid))
+				row = r;
+			
+		}
+		
+		if (row == null)
+			row = rows.stream().findFirst().orElse(null);
+		
+		if (row == null) {
+			
+			return base.addRow("flex_recording", 
+					
+					SQLMap.of(
+							
+							SQLMap.entry("uuid", this.uid),
+							SQLMap.entry("context", this.context != null ? RecordingContext.NONE : this.context.toString()),
+							SQLMap.entry("time", System.currentTimeMillis()),
+							SQLMap.entry("state", RecordingState.STAGED.name()),
+							SQLMap.entry("world", this.world != null ? this.world.getName() : null),
+							SQLMap.entry("players", this.recorded.keySet().stream().collect(Collectors.toList()).toString()),
+							SQLMap.entry("data", Collections.emptyList().toString())
+							
+					));
+			
+		}
+			
+		return row;
 		
 	}
 	

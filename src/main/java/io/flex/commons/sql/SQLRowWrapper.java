@@ -265,8 +265,8 @@ public class SQLRowWrapper implements Cacheable {
 	        return affected;
 
 	    if ((this.identifier == null || this.entries.get(this.identifier) == null) && (this.conditions == null || this.conditions.length == 0))
-	        throw new SQLException("Cannot update row without a unique identifier or condition. Use SQLRowWrapper#setIdentifier(String column) or specify conditions in the constructor.");
-
+	        throw new SQLException("Cannot update row without a unique identifier or condition(s). Use SQLRowWrapper#setIdentifier(String column) or specify condition(s) in the constructor.");
+	    
 	    StringBuilder builder = new StringBuilder("UPDATE " + this.table + " SET ");
 
 	    int count = 0;

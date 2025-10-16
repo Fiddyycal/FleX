@@ -128,6 +128,7 @@ public class ConnectionHandler {
 			
 			try {
 				this.database.execute("ALTER TABLE flex_recording MODIFY COLUMN data LONGBLOB");
+				this.database.execute("ALTER TABLE flex_recording MODIFY players VARCHAR(2550)");
 			} catch (Exception ignore) {}
 			
 			this.createHistoryTable(BadgeHistory.TABLE_NAME);

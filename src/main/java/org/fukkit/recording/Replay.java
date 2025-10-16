@@ -1,6 +1,9 @@
 package org.fukkit.recording;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -8,26 +11,25 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.Map.Entry;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.WorldType;
 import org.fukkit.Fukkit;
+import org.fukkit.api.helper.ConfigHelper;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.WorldUtils;
 
 import io.flex.commons.Nullable;
-import io.flex.commons.file.DataFile;
-import io.flex.commons.utils.ArrayUtils;
+import io.flex.commons.sql.SQLCondition;
+import io.flex.commons.sql.SQLDatabase;
+import io.flex.commons.sql.SQLRowWrapper;
 import io.flex.commons.utils.FileUtils;
 
 public class Replay extends Recording {
 	
 	private Set<FleXPlayer> watchers = new HashSet<FleXPlayer>();
 	
-	public Replay(File container) {
+	protected Replay(File container) throws SQLException {
 		
 		super(container, null);
 		
@@ -58,6 +60,48 @@ public class Replay extends Recording {
 		
 		if (this.getRecorded().isEmpty())
 			throw new UnsupportedOperationException("recorded data is empty");
+		
+	}
+	
+	public static Replay download(String uniqueId, @Nullable RecordingContext context) throws SQLException, IOException {
+		
+		SQLCondition<?>[] conditions = context != null ? new SQLCondition<?>[] {
+			
+				SQLCondition.where("uuid").is(uniqueId),
+				SQLCondition.where("context").is(context.toString())
+				
+			} : new SQLCondition<?>[] {
+				
+				SQLCondition.where("uuid").is(uniqueId)
+				
+			};
+		
+		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
+		SQLRowWrapper row = base.getRow("flex_recording", conditions);
+		
+		if (row == null)
+			return null;
+		
+		if (!row.getString("state").equals(RecordingState.COMPLETE.name()))
+			throw new IOException("recording is not complete");
+		
+		String path = ConfigHelper.flow_path + File.separator + uniqueId;
+	    File file = new File(path + ".zip");
+	    
+	    if (file.getParentFile() != null)
+	    	file.getParentFile().mkdirs();
+	    
+	    byte[] data = row.getByteArray("data");
+	    
+	    try (FileOutputStream fos = new FileOutputStream(file)) {
+	        fos.write(data);
+	    }
+	    
+	    FileUtils.unzip(file, path);
+	    
+	    System.out.println("UNZIPPINGGGGGGGGGGGGGGGGGGGGGGGGGG: " + file.getAbsolutePath() + " to " + path);
+		
+		return new Replay(new File(path));
 		
 	}
 	
@@ -108,48 +152,14 @@ public class Replay extends Recording {
 	@Override
 	public void start(World world, long length, FleXPlayer... watchers) {
 		
-		for (FleXPlayer watcher : watchers)
-			this.watchers.add(watcher);
-
-		File data = this.getData();
-		File parent = data.getParentFile();
-		String name = parent.getName();
-		
-		boolean worldContents = ArrayUtils.contains(parent.list(), "region");
-		
-		this.world = Bukkit.getWorld(name);
-		
-		if (world != null)
-			throw new UnsupportedOperationException("That file is being reviewed, please try again later");
-		
-		if (worldContents)
-			world = WorldUtils.copyWorld(parent.getAbsolutePath(), Bukkit.getWorldContainer().getPath() + File.separator + name);
-		
-		else {
-			
-			String path = ((DataFile<?>)data).getTag("Path");
-			
-			if (path != null)
-				world = WorldUtils.copyWorld(path, Bukkit.getWorldContainer().getPath() + File.separator + name);
-				
-		}
-		
-		if (world == null) {
-			
-			WorldCreator creator = new WorldCreator(name);
-			
-		    creator.type(WorldType.FLAT);
-		    creator.generateStructures(false);
-		    
-		    world = Bukkit.createWorld(creator);
-			
-		}
-		
 		if (world == null)
 			throw new UnsupportedOperationException("world must not be null");
 		
+		for (FleXPlayer watcher : watchers)
+			this.watchers.add(watcher);
+		
 		this.world = world;
-			
+		
 		Location tp = null;
 		
 		for (Recordable recordable : this.getRecorded().values()) {
@@ -157,10 +167,14 @@ public class Replay extends Recording {
 				
 				Location loc = frame.getLocation();
 				
-				loc.setWorld(world);
-				
-				if (tp == null && loc != null)
-					tp = loc;
+				if (loc != null) {
+					
+					loc.setWorld(world);
+					
+					if (tp == null)
+						tp = loc;
+					
+				}
 				
 			}
 		}

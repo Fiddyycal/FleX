@@ -1,10 +1,15 @@
 package org.fukkit.command.defaults;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 import org.bukkit.command.CommandSender;
 import org.fukkit.Fukkit;
 import org.fukkit.command.Command;
@@ -14,15 +19,16 @@ import org.fukkit.command.GlobalCommand;
 import org.fukkit.command.RestrictCommand;
 import org.fukkit.consequence.Report;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.flow.Overwatch;
+import org.fukkit.flow.OverwatchReplay;
 import org.fukkit.json.JsonBuffer;
 import org.fukkit.json.JsonComponent;
-import org.fukkit.recording.Replay;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.ThemeUtils;
+import org.fukkit.utils.WorldUtils;
 
+import io.flex.commons.file.DataFile;
 import io.flex.commons.file.Language;
 import io.flex.commons.file.Variable;
 import io.flex.commons.sql.SQLCondition;
@@ -92,10 +98,10 @@ public class FlowCommand extends FleXCommandAdapter {
 						BukkitUtils.asyncThread(() -> {
 							
 							String error = null;
-							Overwatch ow = null;
+							OverwatchReplay ow = null;
 							
 							try {
-								ow = Overwatch.download(report);
+								ow = OverwatchReplay.download(report);
 							} catch (Exception e) {
 								
 								e.printStackTrace();
@@ -111,19 +117,55 @@ public class FlowCommand extends FleXCommandAdapter {
 								return;
 							}
 							
-							Overwatch parse = ow;
+							OverwatchReplay parse = ow;
 							
 							BukkitUtils.mainThread(() -> {
+								
 								try {
 									
-									new Replay(parse, true));
+									File data = parse.getData();
+									File parent = data.getParentFile();
+									String name = parent.getName();
+									
+									boolean worldContents = ArrayUtils.contains(parent.list(), "region");
+									
+									World world = Bukkit.getWorld(name);
+									
+									if (world != null)
+										throw new UnsupportedOperationException("That file is being reviewed, please try again later");
+							
+									if (worldContents)
+										world = WorldUtils.copyWorld(parent.getAbsolutePath(), Bukkit.getWorldContainer().getPath() + File.separator + name);
+							
+									else {
+										
+										String path = ((DataFile<?>)data).getTag("Path");
+										
+										if (path != null && new File(path).exists())
+											world = WorldUtils.copyWorld(path, Bukkit.getWorldContainer().getPath() + File.separator + name);
+										
+									}
+							
+									if (world == null) {
+										
+										WorldCreator creator = new WorldCreator(name);
+										
+									    creator.type(WorldType.FLAT);
+									    creator.generateStructures(false);
+									    
+									    world = Bukkit.createWorld(creator);
+										
+									}
+									
+									parse.start(world, 400L, ((FleXPlayer)sender));
 									
 								} catch (Exception e) {
-									
+											
 									if (((FleXPlayer)sender).isOnline())
 										((FleXPlayer)sender).sendMessage(theme.format("<flow><failure>" + e.getMessage() + "<pp>."));
-									
+										
 								}
+								
 							});
 							
 						});
