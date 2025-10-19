@@ -5,10 +5,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.UUID;
 
-import org.fukkit.Fukkit;
 import org.fukkit.consequence.Report;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.event.flow.AsyncOverwatchCompleteEvent;
 import org.fukkit.handlers.FlowLineEnforcementHandler;
 import org.fukkit.recording.Recording;
 import org.fukkit.recording.RecordingContext;
@@ -19,6 +17,7 @@ import org.fukkit.utils.ThemeUtils;
 
 import io.flex.commons.file.DataFile;
 import io.flex.commons.file.Variable;
+import io.flex.commons.utils.StringUtils;
 
 public class Overwatch extends Recording {
 
@@ -26,7 +25,7 @@ public class Overwatch extends Recording {
 	
 	public Overwatch(Report report) throws SQLException {
 		
-		super(new File(FlowLineEnforcementHandler.flowPath() + report.getPlayer().getUniqueId().toString()), RecordingContext.of(RecordingContext.REPORT, report.getPlayer().getUniqueId().toString()));
+		super(new File(FlowLineEnforcementHandler.flowPath() + "flow-" + StringUtils.generate(8, false)), RecordingContext.of(RecordingContext.REPORT, report.getPlayer().getUniqueId().toString()));
 		
 		DataFile<HashMap<UUID, String[]>> data = this.getData();
 		
@@ -73,12 +72,10 @@ public class Overwatch extends Recording {
 	@Override
 	public void onComplete() {
 		
-		Fukkit.getEventFactory().call(new AsyncOverwatchCompleteEvent(this));
-		
 		try {
 			
 			// TODO set evidence for all reports that match context critiria
-			this.report.setEvidence(this.uid + "/" + this.getData().getName());
+			this.report.setEvidence(this.name + "/" + this.getData().getName());
 			
 		} catch (SQLException e) {
 			e.printStackTrace();

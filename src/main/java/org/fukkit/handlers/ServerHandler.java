@@ -10,7 +10,6 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
@@ -22,6 +21,7 @@ import org.fukkit.config.Configuration;
 import org.fukkit.config.YamlConfig;
 import org.fukkit.craftfukkit.Implementation;
 import org.fukkit.disguise.DisguiseFactory;
+import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXLivingEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.PlayerFactory;
@@ -178,16 +178,9 @@ public class ServerHandler {
 		
 		Collection<FleXPlayer> players = new HashSet<FleXPlayer>();
 		
-		for (World world : Bukkit.getWorlds()) {
-			world.getEntities().forEach(e -> {
-				
-				FleXPlayer fp = Fukkit.getPlayer(e.getUniqueId());
-				
-				if (fp != null)
-					players.add(fp);
-				
-			});
-		}
+		for (FleXHumanEntity player : Memory.PLAYER_CACHE)
+			if (player instanceof FleXPlayer)
+				players.add((FleXPlayer)player);
 		
 		return players;
 		

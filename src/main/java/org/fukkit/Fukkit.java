@@ -21,6 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.fukkit.Fukkit;
 import org.fukkit.api.helper.ConfigHelper;
+import org.fukkit.cache.WorldCache;
 import org.fukkit.combat.CombatFactory;
 import org.fukkit.command.CommandFactory;
 import org.fukkit.config.Configuration;
@@ -379,6 +380,10 @@ public final class Fukkit extends JavaPlugin {
 		
 		Fukkit.plugin = plugin;
 		
+	}
+	
+	public static WorldCache getWorlds() {
+		return Memory.WORLD_CACHE;
 	}
 	
 	/**

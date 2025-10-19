@@ -1,7 +1,7 @@
 package org.fukkit.recording;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.fukkit.Fukkit;
@@ -16,11 +16,11 @@ public class CraftRecorded implements Recordable {
 
 	private UUID uuid;
 	
-	private List<Frame> frames = new LinkedList<Frame>();
+	private Map<Long, Frame> frames = new LinkedHashMap<Long, Frame>();
 	
 	private FleXBot bot;
 
-	public CraftRecorded(UUID uuid, @Nullable String name, @Nullable FleXSkin skin, LinkedList<Frame> frames) {
+	private CraftRecorded(UUID uuid, @Nullable String name, @Nullable FleXSkin skin, LinkedHashMap<Long, Frame> frames) {
 		
 		this.uuid = uuid;
 		
@@ -31,6 +31,8 @@ public class CraftRecorded implements Recordable {
 		
 		this.bot = Fukkit.getPlayerFactory().createFukkitBot(name, skin);
 		
+		this.bot.getAI().setGravity(false);
+		
 	}
 
 	@Override
@@ -39,7 +41,7 @@ public class CraftRecorded implements Recordable {
 	}
 
 	@Override
-	public List<Frame> getFrames() {
+	public Map<Long, Frame> getFrames() {
 		return this.frames;
 	}
 	
@@ -52,7 +54,7 @@ public class CraftRecorded implements Recordable {
 		return this.bot;
 	}
 	
-	public static CraftRecorded of(@Nullable FleXPlayer player, LinkedList<Frame> frames) {
+	public static CraftRecorded of(@Nullable FleXPlayer player, LinkedHashMap<Long, Frame> frames) {
 		return new CraftRecorded(player != null ? player.getUniqueId() : UUID.randomUUID(), player != null ? player.getName() : null, player != null ? player.getSkin() : null, frames);
 	}
 	

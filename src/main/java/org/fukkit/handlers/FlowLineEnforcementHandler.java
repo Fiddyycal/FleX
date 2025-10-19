@@ -1,9 +1,15 @@
 package org.fukkit.handlers;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Set;
+
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 import org.fukkit.Fukkit;
 import org.fukkit.ai.AIDriver;
 import org.fukkit.api.helper.ConfigHelper;
@@ -12,13 +18,18 @@ import org.fukkit.entity.FleXPlayer;
 import org.fukkit.fle.CriticalHitListeners;
 import org.fukkit.recording.RecordingContext;
 import org.fukkit.recording.RecordingState;
+import org.fukkit.recording.Replay;
+import org.fukkit.utils.WorldUtils;
 import org.fukkit.fle.CommandLogListeners;
 
 import io.flex.FleX;
+import io.flex.commons.file.DataFile;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLMap;
 import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.utils.ArrayUtils;
+import io.flex.commons.utils.StringUtils;
 
 public class FlowLineEnforcementHandler {
 	
@@ -48,6 +59,73 @@ public class FlowLineEnforcementHandler {
 	
 	public AIDriver getAIDriver() {
 		return this.driver;
+	}
+	
+	public static void watchReplay(Replay replay, FleXPlayer player, int duration) throws IOException, UnsupportedOperationException, IllegalStateException {
+		
+		if (replay.isPlaying()) {
+			
+			replay.addWatcher(player);
+			return;
+			
+		}
+		
+		if (!Bukkit.isPrimaryThread())
+			throw new IllegalArgumentException("Replay must be watched on the main thread.");
+		
+		File data = replay.getData();
+		File parent = data.getParentFile();
+		String name = parent.getName() + "-" + StringUtils.generate(5, false);
+		
+		boolean worldContents = ArrayUtils.contains(parent.list(), "region");
+		
+		World world = Bukkit.getWorld(name);
+		
+		if (world != null)
+			throw new UnsupportedOperationException("A world with that name already exists.");
+		
+		if (worldContents)
+			world = WorldUtils.copyWorld(parent.getAbsolutePath(), Bukkit.getWorldContainer().getPath() + File.separator + name);
+		
+		else {
+			
+			String path = ((DataFile<?>)data).getTag("Path");
+			
+			if (path != null) {
+				
+				File copy = new File(path);
+				
+				if (copy.exists() && copy.isDirectory() && ArrayUtils.contains(copy.list(), "region"))
+					world = WorldUtils.copyWorld(path, Bukkit.getWorldContainer().getPath() + File.separator + name);
+				
+			}
+			
+			path = ((DataFile<?>)data).getTag("Map Path");
+			
+			if (path != null) {
+				
+				File copy = new File(path);
+				
+				if (copy.exists() && copy.isDirectory() && ArrayUtils.contains(copy.list(), "region"))
+					world = WorldUtils.copyWorld(path, Bukkit.getWorldContainer().getPath() + File.separator + name);
+				
+			}
+			
+		}
+
+		if (world == null) {
+			
+			WorldCreator creator = new WorldCreator(name);
+			
+		    creator.type(WorldType.FLAT);
+		    creator.generateStructures(false);
+		    
+		    world = Bukkit.createWorld(creator);
+			
+		}
+		
+		replay.start(world, duration, player);
+		
 	}
 	
 	public static String flowPath() {

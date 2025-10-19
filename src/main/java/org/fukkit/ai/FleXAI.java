@@ -25,7 +25,9 @@ public interface FleXAI extends Runnable {
 	
 	public void attack(LivingEntity entity);
 	
-	public boolean setAggressive(boolean aggressive);
+	public void setAggressive(boolean aggressive);
+	
+	public void setGravity(boolean gravity);
 	
 	public boolean isAggressive();
 	

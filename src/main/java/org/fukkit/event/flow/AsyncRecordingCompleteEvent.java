@@ -2,13 +2,13 @@ package org.fukkit.event.flow;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.fukkit.flow.Overwatch;
+import org.fukkit.recording.Recording;
 
-public class AsyncOverwatchCompleteEvent extends Event {
+public class AsyncRecordingCompleteEvent extends Event {
 
 	private static HandlerList handlers = new HandlerList();
 	
-	private Overwatch recording;
+	private Recording recording;
 	
 	@Override
 	public HandlerList getHandlers() {
@@ -19,11 +19,12 @@ public class AsyncOverwatchCompleteEvent extends Event {
 		return handlers;
 	}
 	
-	public AsyncOverwatchCompleteEvent(Overwatch recording) {
+	public AsyncRecordingCompleteEvent(Recording recording) {
+		super(true);
 		this.recording = recording;
 	}
 	
-	public Overwatch getRecording() {
+	public Recording getRecording() {
 		return this.recording;
 	}
 

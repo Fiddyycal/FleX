@@ -1,15 +1,13 @@
 package org.fukkit.command.defaults;
 
-import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.WorldType;
 import org.bukkit.command.CommandSender;
 import org.fukkit.Fukkit;
 import org.fukkit.command.Command;
@@ -19,16 +17,16 @@ import org.fukkit.command.GlobalCommand;
 import org.fukkit.command.RestrictCommand;
 import org.fukkit.consequence.Report;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.event.flow.AsyncFleXPlayerOverwatchReplayPreDownloadEvent;
 import org.fukkit.flow.OverwatchReplay;
+import org.fukkit.handlers.FlowLineEnforcementHandler;
 import org.fukkit.json.JsonBuffer;
 import org.fukkit.json.JsonComponent;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.ThemeUtils;
-import org.fukkit.utils.WorldUtils;
 
-import io.flex.commons.file.DataFile;
 import io.flex.commons.file.Language;
 import io.flex.commons.file.Variable;
 import io.flex.commons.sql.SQLCondition;
@@ -60,8 +58,6 @@ public class FlowCommand extends FleXCommandAdapter {
 		Theme theme = ((FleXPlayer)sender).getTheme();
 		Language lang = ((FleXPlayer)sender).getLanguage();
 		
-		Set<Report> reports = new LinkedHashSet<Report>();
-		
 		if (args.length == 1) {
 			
 			if (!NumUtils.canParseAsInt(args[0])) {
@@ -69,190 +65,140 @@ public class FlowCommand extends FleXCommandAdapter {
 				return false;
 			}
 			
-			try {
+			BukkitUtils.asyncThread(() -> {
 				
-				// TODO use local report cache instead of this resource taxing way...
-				Set<Report> downloaded = Report.download(SQLCondition.where("id").is(Long.parseLong(args[0])));
-				
-				if (downloaded.isEmpty()) {
-					// TODO: REPORT_VIEW_FAILURE_NOT_FOUND
-					((FleXPlayer)sender).sendMessage(theme.format("<engine><failure>Report <sc>%id%<reset> <failure>doesn't exist<pp>.").replace("%id%", args[0]));
-					return false;
-				}
-				
-				Report report = downloaded.stream().findFirst().orElse(null);
-				
-				if (report.isPardoned() && !((FleXPlayer)sender).hasPermission("flex.command.flow.archive")) {
-					// TODO: REPORT_VIEW_FAILURE_ARCHIVED, REPORT_VIEW_FAILURE_ARCHIVED
-					((FleXPlayer)sender).sendMessage(theme.format(flow ? "<flow><pc>You cannot view archived recording <sc>%id%<pp>." : "<engine><pc>You cannot view archived report <sc>%id%<pp>.").replace("%id%", args[0]));
-					return false;
-				}
-				
-				if (view) {
+				try {
 					
-					if (flow) {
-
-						// TODO: REPORT_VIEW_LOADING
-						((FleXPlayer)sender).sendMessage(theme.format("<flow><pc>Evidence loading<pp>,\\s<pc>please wait<pp>..."));
+					// TODO use local report cache instead of this resource taxing way...
+					Set<Report> downloaded = Report.download(SQLCondition.where("id").is(Long.parseLong(args[0])));
+					
+					if (downloaded.isEmpty()) {
+						// TODO: REPORT_VIEW_FAILURE_NOT_FOUND
+						((FleXPlayer)sender).sendMessage(theme.format("<engine><failure>Report <sc>%id%<reset> <failure>doesn't exist<pp>.").replace("%id%", args[0]));
+						return;
+					}
+					
+					Report report = downloaded.stream().findFirst().orElse(null);
+					
+					BukkitUtils.mainThread(() -> {
 						
-						BukkitUtils.asyncThread(() -> {
+						if (view) {
 							
-							String error = null;
-							OverwatchReplay ow = null;
+							view((FleXPlayer)sender, report);
+							return;
 							
-							try {
-								ow = OverwatchReplay.download(report);
-							} catch (Exception e) {
+						}
+						
+						if (clear) {
+							
+							if (report.isPardoned()) {
 								
-								e.printStackTrace();
-								error = e.getMessage();
-								
-							}
-							
-							if (error == null && ow == null)
-								error = "file does not exist";
-							
-							if (error != null && ((FleXPlayer)sender).isOnline()) {
-								((FleXPlayer)sender).sendMessage(theme.format("<flow><failure>Overwatch failed to load, " + error + "<pp>."));
+								// TODO: REPORT_CLEAR_FAILURE_ARCHIVED
+								((FleXPlayer)sender).sendMessage(theme.format("<engine><pc>That report is already archived<pp>."));
 								return;
+								
 							}
 							
-							OverwatchReplay parse = ow;
+							// TODO: REPORT_CLEARING
+							((FleXPlayer)sender).sendMessage(theme.format("<engine><pc>Clearing report<pp>,\\s<pc>please wait<pp>..."));
 							
-							BukkitUtils.mainThread(() -> {
-								
+							BukkitUtils.asyncThread(() -> {
+
 								try {
 									
-									File data = parse.getData();
-									File parent = data.getParentFile();
-									String name = parent.getName();
+									report.pardon();
 									
-									boolean worldContents = ArrayUtils.contains(parent.list(), "region");
-									
-									World world = Bukkit.getWorld(name);
-									
-									if (world != null)
-										throw new UnsupportedOperationException("That file is being reviewed, please try again later");
-							
-									if (worldContents)
-										world = WorldUtils.copyWorld(parent.getAbsolutePath(), Bukkit.getWorldContainer().getPath() + File.separator + name);
-							
-									else {
-										
-										String path = ((DataFile<?>)data).getTag("Path");
-										
-										if (path != null && new File(path).exists())
-											world = WorldUtils.copyWorld(path, Bukkit.getWorldContainer().getPath() + File.separator + name);
-										
-									}
-							
-									if (world == null) {
-										
-										WorldCreator creator = new WorldCreator(name);
-										
-									    creator.type(WorldType.FLAT);
-									    creator.generateStructures(false);
-									    
-									    world = Bukkit.createWorld(creator);
-										
-									}
-									
-									parse.start(world, 400L, ((FleXPlayer)sender));
-									
-								} catch (Exception e) {
-											
+									// TODO: REPORT_CLEARED
 									if (((FleXPlayer)sender).isOnline())
-										((FleXPlayer)sender).sendMessage(theme.format("<flow><failure>" + e.getMessage() + "<pp>."));
-										
+										((FleXPlayer)sender).sendMessage(theme.format("<engine><success>Report archived and cleared<pp>."));
+									
+								} catch (SQLException e) {
+									
+									e.printStackTrace();
+									
+									// TODO: ERROR_GENERIC
+									if (((FleXPlayer)sender).isOnline())
+										((FleXPlayer)sender).sendMessage(theme.format("<engine><failure>An error occured<pp>:\\s<failure>" +  e.getMessage() + "<pp>."));
+									
 								}
 								
 							});
-							
+							return;
+						}
+						
+						// TODO: Rename: REPORT_LOADING -> REPORT_VIEW_LOADING
+						((FleXPlayer)sender).sendMessage(ThemeMessage.REPORT_LOADING.format(theme, lang, ThemeUtils.getNameVariables(report.getPlayer(), theme)));
+						
+						// TODO: REPORT_INFORMATION
+						((FleXPlayer)sender).sendMessage(new String[] { 
+								
+								theme.format("<engine><pc>Report details for report <sc>#%id%<pp>:").replace("%id%", args[0]),
+								theme.format("<engine><reset>%display_reporter%<reset> <qc>reported <reset>%display%<pp>.").replace("%display%", report.getPlayer().getDisplayName(theme, true)).replace("%display_reporter%", report.getBy().getDisplayName(theme, true)),
+								theme.format("<engine><qc>Category<pp>:<reset> <lore>%category%").replace("%category%", report.getReason().getCategory()),
+								theme.format("<engine><qc>Reason<pp>:<reset> <lore>%reason%").replace("%reason%", report.getReason().toString()),
+								theme.format("<engine><qc>Description<pp>:<reset> <lore>%description%").replace("%description%", report.getReason().getDescription())
+								
 						});
 						
-						return true;
-						
-						
-					} else {
-						// TODO: FLOW_REPORT_FAILURE_FLAG
-						((FleXPlayer)sender).sendMessage(theme.format("<engine><failure>FloW is not enabled on this server<pp>.<reset> <failure>Cannot use flag %flag%<pp>.").replace("%flag%", "-v"));
-						return false;
-					}
-					
-				}
-				
-				if (clear) {
-					// TODO: REPORT_CLEARING
-					((FleXPlayer)sender).sendMessage(theme.format("<engine><pc>Clearing report<pp>,\\s<pc>please wait<pp>..."));
-					// TODO Put new end logic here
-					//BridgeHandler.end(report);
-					report.pardon();
-					// TODO: REPORT_CLEARED
-					((FleXPlayer)sender).sendMessage(theme.format("<engine><success>Report archived and cleared<pp>."));
-					return true;
-				}
-				
-				// TODO: Rename: REPORT_LOADING -> REPORT_VIEW_LOADING
-				((FleXPlayer)sender).sendMessage(ThemeMessage.REPORT_LOADING.format(theme, lang, ThemeUtils.getNameVariables(report.getPlayer(), theme)));
-				
-				// TODO: REPORT_INFORMATION
-				((FleXPlayer)sender).sendMessage(new String[] { 
-						
-						theme.format("<engine><pc>Report details for report <sc>#%id%<pp>:").replace("%id%", args[0]),
-						theme.format("<engine><reset>%display_reporter%<reset> <qc>reported <reset>%display%<pp>.").replace("%display%", report.getPlayer().getDisplayName(theme, true)).replace("%display_reporter%", report.getBy().getDisplayName(theme, true)),
-						theme.format("<engine><qc>Category<pp>:<reset> <lore>%category%").replace("%category%", report.getReason().getCategory()),
-						theme.format("<engine><qc>Reason<pp>:<reset> <lore>%reason%").replace("%reason%", report.getReason().toString()),
-						theme.format("<engine><qc>Description<pp>:<reset> <lore>%description%").replace("%description%", report.getReason().getDescription())
-						
-				});
-				
-				if (report.getReason().getRequiredEvidence() != null && report.getReason().getRequiredEvidence().length > 0) {
+						if (report.getReason().getRequiredEvidence() != null && report.getReason().getRequiredEvidence().length > 0) {
 
-					// TODO: REPORT_INFORMATION_REQUIRED
-					((FleXPlayer)sender).sendMessage(theme.format("<engine><qc>Conviction evidence required<pp>:"));
-					
-					Arrays.asList(report.getReason().getRequiredEvidence()).forEach(e -> {
-						// TODO: REPORT_INFORMATION_EVIDENCE
-						((FleXPlayer)sender).sendMessage(theme.format("<engine><pp>*<reset> <lore>" + e));
+							// TODO: REPORT_INFORMATION_REQUIRED
+							((FleXPlayer)sender).sendMessage(theme.format("<engine><qc>Conviction evidence required<pp>:"));
+							
+							Arrays.asList(report.getReason().getRequiredEvidence()).forEach(e -> {
+								// TODO: REPORT_INFORMATION_EVIDENCE
+								((FleXPlayer)sender).sendMessage(theme.format("<engine><pp>*<reset> <lore>" + e));
+							});
+							
+						}
+						
 					});
 					
+					return;
+					
+				} catch (SQLException e) {
+
+					// TODO: REPORT_FAILURE_ERROR
+					((FleXPlayer)sender).sendMessage("[ThemeMessage=REPORT_FAILURE_ERROR]");
+					
 				}
 				
-				return true;
-				
-			} catch (SQLException e) {
-
-				// TODO: REPORT_FAILURE_ERROR
-				((FleXPlayer)sender).sendMessage("[ThemeMessage=REPORT_FAILURE_ERROR]");
-				
-			}
+			});
 			
-			return false;
+			return true;
 			
 		}
 		
 		if (random) {
 			
-			try {
-				reports = Report.download(SQLCondition.where("pardoned").is(false));
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			
-			if (reports == null || reports.isEmpty()) {
-				// TODO: FLOW_NONE
-				((FleXPlayer)sender).sendMessage("[ThemeMessage=FLOW_NONE]");
-				return false;
-			}
+			BukkitUtils.asyncThread(() -> {
 
-			try {
+				Set<Report> reports = new LinkedHashSet<Report>();
 				
-			} catch (Exception e) {
+				try {
+					reports = Report.download(SQLCondition.where("pardoned").is(false));
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 				
-				((FleXPlayer)sender).sendMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
-				return false;
+				Set<Report> parse = reports;
 				
-			}
+				BukkitUtils.mainThread(() -> {
+					
+					if (!((FleXPlayer)sender).isOnline())
+						return;
+					
+					if (parse == null || parse.isEmpty()) {
+						// TODO: FLOW_NONE
+						((FleXPlayer)sender).sendMessage("[ThemeMessage=FLOW_NONE]");
+						return;
+					}
+					
+					view((FleXPlayer)sender, parse.stream().collect(Collectors.toList()).get(NumUtils.getRng().getInt(0, parse.size()-1)));
+					
+				});
+				
+			});
 			
 			return true;
 			
@@ -262,52 +208,156 @@ public class FlowCommand extends FleXCommandAdapter {
 		
 		String[] reportView = flow ? ThemeMessage.FLOW_REPORTS_VIEW.format(theme, lang) : ThemeMessage.REPORTS_VIEW.format(theme, lang);
 		
-		try {
-			reports = Report.download(SQLCondition.where("pardoned").is(false));
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		if (reports == null || reports.isEmpty()) {
+		BukkitUtils.asyncThread(() -> {
 
-			Arrays.stream((flow ? ThemeMessage.FLOW_REPORTS_NONE : ThemeMessage.REPORTS_NONE).format(lang, new Variable<Integer>("%amount%", reports.size()))).forEach(s -> {
-				((FleXPlayer)sender).sendMessage(theme.format(s));
+			Set<Report> reports = new LinkedHashSet<Report>();
+			
+			try {
+				reports = Report.download(SQLCondition.where("pardoned").is(false));
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+			Set<Report> parse = reports;
+			
+			BukkitUtils.mainThread(() -> {
+
+				if (!((FleXPlayer)sender).isOnline())
+					return;
+				
+				if (parse == null || parse.isEmpty()) {
+					
+					Arrays.stream((flow ? ThemeMessage.FLOW_REPORTS_NONE : ThemeMessage.REPORTS_NONE).format(lang, new Variable<Integer>("%amount%", parse.size()))).forEach(s -> {
+						((FleXPlayer)sender).sendMessage(theme.format(s));
+					});
+					
+					return;
+					
+				}
+				
+				for (Report report : parse) {
+					for (String message : reportView) {
+						
+						JsonBuffer buffer = new JsonBuffer();
+						
+						if (report.getPlayer() == null || report.getBy() == null)
+							continue;
+						
+						message = message.replace("%id%", String.valueOf(report.getReference()));
+						message = message.replace("%name%", report.getPlayer().getDisplayName());
+						message = message.replace("%player%", report.getPlayer().getName());
+						message = message.replace("%display%", report.getPlayer().getDisplayName(((FleXPlayer)sender).getTheme(), true));
+						message = message.replace("%reason%", report.getReason().toString());
+						
+						buffer = buffer.append(new JsonComponent(message)).replace("%interactable_review%", new JsonComponent(((FleXPlayer)sender).getTheme().format("<clickable>Review"))
+										
+										.onHover(((FleXPlayer)sender).getTheme().format("<interactable>Review evidence<pp>."))
+										.onClick(Action.SUGGEST_COMMAND, "/flow " + report.getReference() + " -v"));
+						
+						buffer = buffer.replace("%interactable_clear%", new JsonComponent(((FleXPlayer)sender).getTheme().format("<clickable>Clear"))
+								
+								.onHover(((FleXPlayer)sender).getTheme().format("<interactable>Clear report<pp>."))
+								.onClick(Action.SUGGEST_COMMAND, "/flow " + report.getReference() + " -c"));
+						
+						((FleXPlayer)sender).sendJsonMessage(buffer);
+						
+					}
+				}
+				
 			});
 			
-			return false;
-			
-		}
-		
-		for (Report report : reports) {
-			for (String message : reportView) {
-				
-				JsonBuffer buffer = new JsonBuffer();
-				
-				if (report.getPlayer() == null || report.getBy() == null)
-					continue;
-				
-				message = message.replace("%id%", String.valueOf(report.getReference()));
-				message = message.replace("%name%", report.getPlayer().getDisplayName());
-				message = message.replace("%player%", report.getPlayer().getName());
-				message = message.replace("%display%", report.getPlayer().getDisplayName(((FleXPlayer)sender).getTheme(), true));
-				message = message.replace("%reason%", report.getReason().toString());
-				
-				buffer = buffer.append(new JsonComponent(message)).replace("%interactable_review%", new JsonComponent(((FleXPlayer)sender).getTheme().format("<clickable>Review"))
-								
-								.onHover(((FleXPlayer)sender).getTheme().format("<interactable>Review evidence<pp>."))
-								.onClick(Action.SUGGEST_COMMAND, "/flow " + report.getReference() + " -v"));
-				
-				buffer = buffer.replace("%interactable_clear%", new JsonComponent(((FleXPlayer)sender).getTheme().format("<clickable>Clear"))
-						
-						.onHover(((FleXPlayer)sender).getTheme().format("<interactable>Clear report<pp>."))
-						.onClick(Action.SUGGEST_COMMAND, "/flow " + report.getReference() + " -c"));
-				
-				((FleXPlayer)sender).sendJsonMessage(buffer);
-				
-			}
-		}
+		});
 		
 		return true;
+		
+	}
+	
+	private static void view(FleXPlayer player, Report report) {
+		
+		if (!player.isOnline())
+			return;
+		
+		boolean flow = Fukkit.getFlowLineEnforcementHandler().isFlowEnabled();
+		
+		Theme theme = player.getTheme();
+		
+		if (report.isPardoned() && !player.hasPermission("flex.command.flow.archive")) {
+			// TODO: REPORT_VIEW_FAILURE_ARCHIVED, REPORT_VIEW_FAILURE_ARCHIVED
+			player.sendMessage(theme.format(flow ? "<flow><pc>You cannot view archived recording <sc>%id%<pp>." : "<engine><pc>You cannot view archived report <sc>%id%<pp>.").replace("%id%", String.valueOf(report.getReference())));
+			return;
+		}
+		
+		if (flow) {
+			
+			player.sendMessage(theme.format("<flow><pc>Loading evidence<pp>,\\s<pc>please wait<pp>..."));
+			
+			BukkitUtils.asyncThread(() -> {
+				try {
+					
+					AsyncFleXPlayerOverwatchReplayPreDownloadEvent event = new AsyncFleXPlayerOverwatchReplayPreDownloadEvent(player, report);
+					
+					Fukkit.getEventFactory().call(event);
+					
+					if (event.isCancelled())
+						return;
+					
+					OverwatchReplay replay = OverwatchReplay.download(report);
+					
+					if (replay != null)
+						BukkitUtils.mainThread(() -> {
+							try {
+								
+								FlowLineEnforcementHandler.watchReplay(replay, player, Integer.MAX_VALUE);
+								
+							} catch (UnsupportedOperationException | IllegalStateException | IOException e) {
+								
+								e.printStackTrace();
+								
+								BukkitUtils.mainThread(() -> {
+									
+									String error = e.getMessage();
+									
+									if (error.endsWith("."))
+										error = error.substring(0, error.length()-1);
+									
+									if (player.isOnline())
+										player.sendMessage(theme.format("<flow><failure>" + error + "<pp>."));
+									
+								});
+								
+							}
+						});
+					
+					else throw new FileNotFoundException("Replay could not be found.");
+					
+				} catch (UnsupportedOperationException | IllegalStateException | SQLException | IOException e) {
+					
+					e.printStackTrace();
+					
+					String error = e.getMessage().toLowerCase();
+					
+					if (error.endsWith("."))
+						error = error.substring(0, error.length()-1);
+					
+					String parse = error;
+					
+					BukkitUtils.mainThread(() -> {
+
+						if (player.isOnline())
+							player.sendMessage(theme.format("<flow><failure>Overwatch failed to load, " + parse + "<pp>."));
+						
+					});
+					
+				}
+			});
+			
+			return;
+			
+		} else {
+			// TODO: FLOW_REPORT_FAILURE_FLAG
+			player.sendMessage(theme.format("<engine><failure>FloW is not enabled on this server<pp>.<reset> <failure>Cannot use flag %flag%<pp>.").replace("%flag%", "-v"));
+			return;
+		}
 		
 	}
 	

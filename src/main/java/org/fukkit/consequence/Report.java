@@ -38,13 +38,13 @@ public class Report extends Punishment {
 		return download((SQLCondition<?>)null);
 	}
 	
-	public static Set<Report> download(@Nullable SQLCondition<?> condition) throws SQLException {
+	public static Set<Report> download(@Nullable SQLCondition<?>... conditions) throws SQLException {
 
 		SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
 		
 		Set<Report> convictions = new LinkedHashSet<Report>();
 		
-		for (SQLRowWrapper row : database.getRows("flex_punishment", condition)) {
+		for (SQLRowWrapper row : database.getRows("flex_punishment", conditions)) {
 			
 			PunishmentType check = null;
 			
@@ -119,49 +119,40 @@ public class Report extends Punishment {
 	
 	private void watchLikeAFuckinHawk(boolean instant) {
 		
-		BukkitUtils.asyncThread(() -> {
-			
-			try {
+		FleXPlayer player = this.getPlayer();
+		FleXWorld world = player.getWorld();
+		
+		FleXPlayer[] record = world != null ?
 				
-				FleXPlayer player = this.getPlayer();
-				FleXWorld world = player.getWorld();
-				FleXPlayer[] record = null;
+				world.getOnlinePlayers()
 				
-				if (world != null) {
-					
-					record = world.getOnlinePlayers()
-							
-							.stream()
-							.filter(p -> p.getState() == PlayerState.INGAME)
-							.toArray(FleXPlayer[]::new);
-					
-				} else {
-					
-					record = Fukkit.getOnlinePlayers()
-							
-							.stream()
-							.filter(p -> p.getState() == PlayerState.INGAME)
-							.toArray(FleXPlayer[]::new);
-					
-				}
+					.stream()
+					.filter(p -> p.getState() == PlayerState.INGAME)
+					.toArray(FleXPlayer[]::new)
 				
-				if (record != null && record.length > 0)
+				:
+					
+				Fukkit.getOnlinePlayers()
+					
+					.stream()
+					.filter(p -> p.getState() == PlayerState.INGAME)
+					.toArray(FleXPlayer[]::new);
+		
+		if (record != null && record.length > 0)
+			BukkitUtils.asyncThread(() -> {
+				try {
+					
 					watch(this, record);
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-
-			BukkitUtils.mainThread(() -> {
-				
-				FleXPlayer by = this.getBy();
-				
-				if (by.isOnline())
-					by.sendMessage(ThemeMessage.FLOW_RECORDING_STARTED.format(by.getTheme(), by.getLanguage(), ThemeUtils.getNameVariables(this.getPlayer(), by.getTheme())));
-				
+					
+					FleXPlayer by = this.getBy();
+					
+					if (by.isOnline())
+						by.sendMessage(ThemeMessage.FLOW_RECORDING_STARTED.format(by.getTheme(), by.getLanguage(), ThemeUtils.getNameVariables(this.getPlayer(), by.getTheme())));
+					
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			});
-			
-		});
 		
 	}
 	
@@ -171,7 +162,7 @@ public class Report extends Punishment {
 		if (Fukkit.getFlowLineEnforcementHandler().isRecording(report.getPlayer()))
 			return;
 		
-		new Overwatch(report).start(report.getPlayer().getPlayer().getWorld(), 400L, players);
+		new Overwatch(report).start(report.getPlayer().getPlayer().getWorld(), 20, players);
 		
 	}
 

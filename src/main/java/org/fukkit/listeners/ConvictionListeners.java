@@ -2,6 +2,7 @@ package org.fukkit.listeners;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.ChatColor;
@@ -39,10 +40,15 @@ import org.fukkit.event.player.FleXPlayerAsyncChatEvent;
 import org.fukkit.event.player.PlayerChangeStateEvent;
 import org.fukkit.handlers.FlowLineEnforcementHandler;
 import org.fukkit.metadata.FleXFixedMetadataValue;
+import org.fukkit.recording.Frame;
+import org.fukkit.recording.RecordedAction;
+import org.fukkit.recording.Recording;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.BukkitUtils;
+
 import io.flex.commons.cache.cell.BiCell;
+import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.FileUtils;
 import io.flex.commons.utils.NumUtils;
@@ -76,45 +82,109 @@ public class ConvictionListeners extends FleXEventListener {
 			
 		} else {
 			
-			String log;
-			
-			try {
-				log = flowEvidence(player, consequence);
-			} catch (FleXPlayerNotLoadedException e) {
-				e.printStackTrace();
-				return;
-			}
-			
-			by.setMetadata("input_evidence", new FleXFixedMetadataValue(new BiCell<Consequence, String>() {
+			BukkitUtils.asyncThread(() -> {
 				
-				private static final long serialVersionUID = -5368438625243730572L;
+				String log;
+				
+				try {
+					log = attemptToRetrieveFlowEvidence(player, consequence);
+				} catch (FleXPlayerNotLoadedException e) {
+					e.printStackTrace();
+					return;
+				}
+				
+				BukkitUtils.mainThread(() -> {
+					
+					if (!by.isOnline())
+						return;
+						
+					by.setMetadata("input_evidence", new FleXFixedMetadataValue(new BiCell<Consequence, String>() {
+						
+						private static final long serialVersionUID = -5368438625243730572L;
 
-				@Override
-				public Consequence a() {
-					return consequence;
-				}
+						@Override
+						public Consequence a() {
+							return consequence;
+						}
+						
+						@Override
+						public String b() {
+							return log;
+						}
+						
+					}));
+					
+					Theme theme = player.getTheme();
+					
+					by.sendMessage(theme.format("<engine><success>Insert the evidence for this punishment into chat<pp>."));
+					
+					if (log != null)
+						by.sendMessage(theme.format("<flow>&7&oOverwatch evidence available<sp>," + Theme.reset + " &7&otype &8\"&dAuto&8\" &7&oto reference it<pp>."));
+					
+					by.sendMessage(theme.format("<engine><pc>Enter <sp>\"<sc>None<sp>\"" + Theme.reset + " <pc>if this is Administration approved<pp>."));
+					by.sendMessage(theme.format("<engine><pc>Insert <sp>\"<sc>Temp<sp>\"" + Theme.reset + " <pc>if you need time to process the evidence<pp>."));
+					by.sendMessage(theme.format("<engine><pc>Simply type <sp>\"<sc>Cancel<sp>\"" + Theme.reset + " <pc>if you have made a mistake<pp>."));
+					
+				});
 				
-				@Override
-				public String b() {
-					return log;
-				}
-				
-			}));
-			
-			Theme theme = player.getTheme();
-			
-			by.sendMessage(theme.format("<engine><success>Insert the evidence for this punishment into chat<pp>."));
-			
-			if (log != null)
-				by.sendMessage(theme.format("<flow>&7&oEvidence available<sp>," + Theme.reset + " &7&otype &8\"&dAuto&8\" &7&oto reference it<pp>."));
-			
-			by.sendMessage(theme.format("<engine><pc>Enter <sp>\"<sc>None<sp>\"" + Theme.reset + " <pc>if this is Administration approved<pp>."));
-			by.sendMessage(theme.format("<engine><pc>Insert <sp>\"<sc>Temp<sp>\"" + Theme.reset + " <pc>if you need time to process the evidence<pp>."));
-			by.sendMessage(theme.format("<engine><pc>Simply type <sp>\"<sc>Cancel<sp>\"" + Theme.reset + " <pc>if you have made a mistake<pp>."));
+			});
 			
 		}
 		
     }
+	
+	private static String attemptToRetrieveFlowEvidence(FleXPlayer player, Consequence consequence) throws FleXPlayerNotLoadedException {
+		
+		EvidenceType[] required = consequence.getReason().getRequiredEvidence();
+		
+		if (required == null)
+			return null;
+		
+		if (Arrays.stream(required).anyMatch(e -> e.isChatType())) {
+			
+			long logged = player.getHistory().getChatAndCommands().asMap().entrySet().stream().filter(e -> {
+				return e.getValue().contains(":") && e.getKey() >= (System.currentTimeMillis() - (NumUtils.MINUTE_TO_MILLIS * 10));
+				
+			}).map(e -> e.getKey()).findFirst().orElse(-1L);
+			
+			if (logged != -1L)
+				return "flow-" + FileUtils.getTimeStamp(logged) + ".chat";
+			
+		}
+		
+		if (Arrays.stream(required).anyMatch(e -> e.isPhysicalType())) {
+			
+			try {
+				
+				Set<Report> reports = Report.download(player);
+				
+				for (Report report : reports) {
+					
+					if (report.getEvidence() == null || report.getEvidence().length == 0)
+						continue;
+					
+					if (!ArrayUtils.contains(report.getReason().getRequiredEvidence(), EvidenceType.RECORDING_REFERENCE))
+						continue;
+					
+					if (!report.getEvidence()[0].contains("/"))
+						continue;
+					
+					return report.getEvidence()[0];
+					
+				}
+				
+			} catch (SQLException e) {
+				
+				e.printStackTrace();
+				return null;
+				
+			}
+			
+		}
+		
+		return null;
+				
+	}
 
 	@EventHandler
 	@SuppressWarnings("unchecked")
@@ -221,45 +291,6 @@ public class ConvictionListeners extends FleXEventListener {
 		
     }
 	
-	/**
-	 * Not sure whats going on here, look over and see what i was trying to achieve.
-	 */
-	@Deprecated
-	private static String flowEvidence(FleXPlayer player, Consequence consequence) throws FleXPlayerNotLoadedException {
-		
-		EvidenceType[] required = consequence.getReason().getRequiredEvidence();
-		
-		if (required == null)
-			return null;
-		
-		if (Arrays.stream(required).anyMatch(e -> e.isChatType())) {
-			
-			long logged = player.getHistory().getChatAndCommands().asMap().entrySet().stream().filter(e -> {
-				return e.getValue().contains(":") && e.getKey() >= (System.currentTimeMillis() - (NumUtils.MINUTE_TO_MILLIS * 10));
-				
-			}).map(e -> e.getKey()).findFirst().orElse(-1L);
-			
-			if (logged != -1L)
-				return "flow-" + FileUtils.getTimeStamp(logged) + ".chat";
-			
-		}
-		/* TODO
-		if (Arrays.stream(required).anyMatch(e -> e.isPhysicalType())) {
-			
-			long logged = player.getHistory().getFlowRecords().asMap().entrySet().stream().filter(e -> {
-				return e.getKey() >= (System.currentTimeMillis() - (NumUtils.MINUTE_TO_MILLIS * 10));
-				
-			}).map(e -> e.getKey()).findFirst().orElse(-1L);
-			
-			if (logged != -1L)
-				return "flow-" + FileUtils.getTimeStamp(logged) + ".rec";
-			
-		}
-		*/
-		return null;
-				
-	}
-	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void event(FleXConvictEvent event) {
 		
@@ -363,29 +394,37 @@ public class ConvictionListeners extends FleXEventListener {
 					
 					// TODO Make local cache of reports so this doesn't contact database every time player state changes.
 					Set<Report> reports;
-						
+					
 					try {
-						reports = Report.download(player);
+						reports = Report.download(SQLCondition.where("uuid").is(player.getUniqueId()), SQLCondition.where("pardoned").is(false));
 					} catch (SQLException e) {
 						e.printStackTrace();
 						return;
 					}
 					
 					if (reports.isEmpty()) {
-						fle.clear(player);
+						//Keeping recordings archived incase of false bans, disputes and appeals.
+						//fle.clear(player);
 						return;
+						
 					}
 					
 					if (fle.isRecording(player))
 						return;
 					
-					for (Report report : reports)
+					if (!player.getName().equalsIgnoreCase("Fiddycal"))
+						return;
+					
+					for (Report report : reports) {
+						
 						if (ArrayUtils.contains(report.getReason().getRequiredEvidence(), EvidenceType.RECORDING_REFERENCE)) {
 							
 							if (!report.hasEvidence())
 								report.onBypassAttempt();
 							
 						}
+					}
+						
 					
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -397,13 +436,54 @@ public class ConvictionListeners extends FleXEventListener {
 			
 			BukkitUtils.asyncThread(() -> {
 				
+				if (!player.isOnline())
+					return;
+				
 				try {
 					
 					if (!fle.isRecording(player))
 						return;
 					
-					// TODO check recording length for acceptable amount of frames.
+					Recording recording = Memory.RECORDING_CACHE.getByPlayer(player);
+					
+					if (recording != null) {
+						
+						double elapsed = (recording.getTick() * (double) Recording.TICK_RATE) / 20.0;
+						
+						if (elapsed > 5) {
+							
+							Map<Long, Frame> frames = recording.getRecorded().get(player.getUniqueId()).getFrames();
+							
+							if (frames != null) {
+								
+								int count = 0;
+								
+								for (Frame frame : frames.values()) {
+									
+									if (frame.getInteractAtLocation() == null)
+										continue;
+									
+									if (frame.getActions() == null || frame.getActions().length == 0)
+										continue;
+									
+									if (ArrayUtils.contains(frame.getActions(), RecordedAction.SWING_ARM))
+										count++;
+										
+								}
+								
+								if (count > 10) {
+									recording.end();
+									return;
+								}
+								
+							}
+							
+						}
+						
+					}
+						
 					fle.setPending(player);
+					return;
 					
 				} catch (SQLException e) {
 					e.printStackTrace();

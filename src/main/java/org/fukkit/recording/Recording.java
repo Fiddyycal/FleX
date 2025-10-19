@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -19,10 +18,14 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.fukkit.Fukkit;
+import org.fukkit.Memory;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.event.flow.AsyncRecordingCompleteEvent;
+import org.fukkit.event.flow.AsyncRecordingStartEvent;
 
 import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
+import io.flex.commons.cache.Cacheable;
 import io.flex.commons.file.DataFile;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
@@ -31,9 +34,11 @@ import io.flex.commons.sql.SQLRowWrapper;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.FileUtils;
 
-public abstract class Recording extends BukkitRunnable {
+public abstract class Recording extends BukkitRunnable implements Cacheable {
 	
-	protected String uid;
+	public static final long TICK_RATE = 2L;
+	
+	protected String name;
 	
 	protected World world;
 	
@@ -52,14 +57,23 @@ public abstract class Recording extends BukkitRunnable {
 	public Recording(File container, @Nullable RecordingContext context) throws SQLException {
 		
 		Objects.requireNonNull(container, "container cannot be null");
-
-		if (this instanceof Replay) {
+		
+		this.name = container.getName();
+		
+		boolean replay = this instanceof Replay;
+		
+		if (replay) {
 			
 			if (!container.isDirectory())
 				throw new UnsupportedOperationException("container must be a directory");
 			
-			if (ArrayUtils.contains(container.list(), "data.rec"))
+			if (!ArrayUtils.contains(container.list(), "data.rec"))
 				throw new UnsupportedOperationException("data.rec not found at " + container.getAbsolutePath());
+			
+		} else {
+			
+			if (container.exists())
+				throw new UnsupportedOperationException("recording name must be unique, recording \"" + this.name + "\" already exists");
 			
 		}
 		
@@ -67,19 +81,21 @@ public abstract class Recording extends BukkitRunnable {
 		
 		this.data = new DataFile<HashMap<UUID, String[]>>(container.getAbsolutePath(), "data.rec", new LinkedHashMap<UUID, String[]>(), false);
 		
-		String uid = this.data.getTag("UniqueId", UUID.randomUUID().toString().substring(0, 8));
 		long length = this.data.getTag("Length", -1L);
 		
-		this.data.setTag("UniqueId", this.uid = uid);
+		this.data.setTag("UniqueId", this.name);
 		this.data.setTag("Length", this.length = length);
 		
-		// init row
-		this.getRow();
+		// init recording row
+		if (!replay)
+			this.getRow();
+		
+		Memory.RECORDING_CACHE.add(this);
 		
 	}
 	
 	public String getUniqueId() {
-		return this.uid;
+		return this.name;
 	}
 	
 	public long getLength() {
@@ -96,6 +112,10 @@ public abstract class Recording extends BukkitRunnable {
 	
 	public long getTick() {
 		return this.tick;
+	}
+	
+	public World getWorld() {
+		return this.world;
 	}
 	
 	public boolean isRecording(Entity entity) {
@@ -137,12 +157,12 @@ public abstract class Recording extends BukkitRunnable {
 				
 			}
 			
-			List<Frame> frames = recorded.getFrames();
+			Map<Long, Frame> frames = recorded.getFrames();
 			
 			if (player != null && !player.isOnline()) {
 				
 				// Player has disconnected but may come back...
-				frames.add(null);
+				frames.put(this.tick, null);
 				
 				this.onPlayerDisconnect(player);
 				continue;
@@ -162,12 +182,16 @@ public abstract class Recording extends BukkitRunnable {
 			if (!player.getPlayer().getWorld().getUID().equals(this.world.getUID())) {
 				
 				// Player has moved worlds but may come back...
-				frames.add(null);
+				frames.put(this.tick, null);
 				continue;
 				
 			}
 			
-			frames.add(new Frame(RecordedAction.MOVE, player.getLocation()));
+			Frame frame = frames.getOrDefault(this.tick, new Frame(player.getLocation()));
+			
+			frame.addAction(RecordedAction.MOVE);
+			
+			frames.put(this.tick, frame);
 			
 		}
 		
@@ -182,20 +206,27 @@ public abstract class Recording extends BukkitRunnable {
 		
 	}
 	
-	public void start(World world, long length, FleXPlayer... players) throws SQLException {
+	public void start(World world, int duration, FleXPlayer... players) throws SQLException {
 		
 		if (world == null)
 			throw new UnsupportedOperationException("world must not be null");
 		
 		this.world = world;
 		
-		if (length < 0)
-			throw new UnsupportedOperationException("length must be more than 0");
+		this.length = (long) (duration * (20.0 / TICK_RATE));
 		
-		this.length = length;
+		if (this.length <= 0)
+			throw new UnsupportedOperationException("length must be more than 0");
 		
 		if (players == null || players.length == 0)
 			throw new UnsupportedOperationException("players cannot be null");
+		
+		AsyncRecordingStartEvent event = new AsyncRecordingStartEvent(this);
+		
+		Fukkit.getEventFactory().call(event);
+		
+		if (event.isCancelled())
+			return;
 		
 		for (FleXPlayer fp : players) {
 			
@@ -216,7 +247,7 @@ public abstract class Recording extends BukkitRunnable {
 		row.set("state", RecordingState.RECORDING.name());
 		row.update();
 		
-		this.runTaskTimerAsynchronously(Fukkit.getInstance(), 0L, 2L);
+		this.runTaskTimerAsynchronously(Fukkit.getInstance(), 0L, TICK_RATE);
 		
 	}
 	
@@ -235,11 +266,18 @@ public abstract class Recording extends BukkitRunnable {
 		
 		boolean end = reason.equalsIgnoreCase("End of recording.");
 		
-		if (end)
+		if (end) {
+			
 			Task.debug("Stopping recording: " + reason);
+			
+			Fukkit.getEventFactory().call(new AsyncRecordingCompleteEvent(this));
+			
+			this.onComplete();
+			
+		}
 		
 		else Task.error("Cancelled recording: " + reason);
-
+		
 		try {
 			
 			if (end) {
@@ -255,10 +293,10 @@ public abstract class Recording extends BukkitRunnable {
 				
 				for (Recordable recordable : this.recorded.values()) {
 					
-					String[] frames = recordable.getFrames().stream().map(f -> f.toString()).toArray(i -> new String[i]);
+					String[] frames = recordable.getFrames().values().stream().map(f -> f.toString()).toArray(i -> new String[i]);
 					
 					recorded.put(recordable.getUniqueId(), frames);
-				
+					
 				}
 				
 				this.data.write(recorded);
@@ -270,13 +308,12 @@ public abstract class Recording extends BukkitRunnable {
 				if (row != null) {
 					
 					row.set("time", System.currentTimeMillis());
+					row.set("duration", this.tick * (double) TICK_RATE / 20.0);
 					row.set("state", RecordingState.COMPLETE.name());
 					row.set("data", Files.readAllBytes(file.toPath()));
 					row.update();
 					
 				}
-				
-				this.onComplete();
 				
 			}
 			
@@ -286,18 +323,26 @@ public abstract class Recording extends BukkitRunnable {
 			
 		} finally {
 			
-			// Cleanup
-			if (this.listener != null)
-				this.listener.unregister();
-			
-			if (!this.recorded.isEmpty())
-				this.recorded.clear();
-			
-			this.world = null;
-			this.recorded = null;
-			this.data = null;
+			this.destroy();
 			
 		}
+		
+	}
+	
+	public void destroy() {
+		
+		// Cleanup
+		if (this.listener != null)
+			this.listener.unregister();
+		
+		if (!this.recorded.isEmpty())
+			this.recorded.clear();
+		
+		this.world = null;
+		this.recorded = null;
+		this.data = null;
+		
+		Memory.RECORDING_CACHE.remove(this);
 		
 	}
 	
@@ -311,7 +356,7 @@ public abstract class Recording extends BukkitRunnable {
 			
 			String id = r.getString("uuid");
 			
-			if (id != null && id.equals(this.uid))
+			if (id != null && id.equals(this.name))
 				row = r;
 			
 		}
@@ -325,9 +370,10 @@ public abstract class Recording extends BukkitRunnable {
 					
 					SQLMap.of(
 							
-							SQLMap.entry("uuid", this.uid),
+							SQLMap.entry("uuid", this.name),
 							SQLMap.entry("context", this.context != null ? RecordingContext.NONE : this.context.toString()),
 							SQLMap.entry("time", System.currentTimeMillis()),
+							SQLMap.entry("duration", 0.0),
 							SQLMap.entry("state", RecordingState.STAGED.name()),
 							SQLMap.entry("world", this.world != null ? this.world.getName() : null),
 							SQLMap.entry("players", this.recorded.keySet().stream().collect(Collectors.toList()).toString()),

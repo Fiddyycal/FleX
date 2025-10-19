@@ -158,6 +158,7 @@ public abstract class Punishment extends Consequence {
 			row.set("until", this.until = until);
 		
 		row.set("pardoned", this.pardoned = true);
+		row.update();
 		
 	}
 	

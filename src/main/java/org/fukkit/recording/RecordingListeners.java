@@ -1,15 +1,23 @@
 package org.fukkit.recording;
 
+import java.util.UUID;
+import java.util.function.Consumer;
+
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.fukkit.Fukkit;
+import org.fukkit.entity.FleXBot;
+import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.FleXEventListener;
+import org.fukkit.event.player.FleXPlayerMessageReceiveEvent;
 
 import net.md_5.fungee.server.ServerVersion;
 
@@ -22,18 +30,58 @@ public class RecordingListeners extends FleXEventListener {
 	}
 	
 	@EventHandler
-	public void event(PlayerInteractEvent event) {
+	public void event(FleXPlayerMessageReceiveEvent event) {
 		
-		Player player = event.getPlayer();
+		FleXPlayer player = event.getPlayer();
 		
-		System.out.println("ACTION TAKEN WAS: " + event.getAction());
+		if (player instanceof FleXBot)
+			return;
 		
 		if (!this.recording.isRecording(player))
 			return;
 		
-		Recordable recordable = this.recording.getRecorded().get(player.getUniqueId());
+		this.editFrame(player, f -> f.setMessage(event.getMessage()));
 		
-		recordable.getFrames().add(new Frame(RecordedAction.SWING_ARM, player.getLocation(), event.getClickedBlock() != null ? event.getClickedBlock().getLocation() : null));
+	}
+	
+	@EventHandler
+	public void event(EntityInteractEvent event) {
+		
+		Entity entity = event.getEntity();
+		
+		if (entity instanceof Player == false)
+			return;
+		
+		if (!this.recording.isRecording(entity))
+			return;
+    	
+    	this.editFrame(entity, f -> {
+    		
+    		f.addAction(RecordedAction.SWING_ARM);
+    		
+    		if (event.getBlock() != null)
+    			f.setInteractAtLocation(event.getBlock().getLocation());
+    		
+    	});
+    	
+	}
+	
+	@EventHandler
+	public void event(PlayerInteractEvent event) {
+		
+		Entity entity = event.getPlayer();
+		
+		if (!this.recording.isRecording(entity))
+			return;
+    	
+    	this.editFrame(entity, f -> {
+    		
+    		f.addAction(RecordedAction.SWING_ARM);
+    		
+    		if (event.getClickedBlock() != null)
+    			f.setInteractAtLocation(event.getClickedBlock().getLocation());
+    		
+    	});
 		
 	}
 	
@@ -55,9 +103,7 @@ public class RecordingListeners extends FleXEventListener {
     	if (cause == DamageCause.ENTITY_ATTACK || cause == DamageCause.ENTITY_EXPLOSION || (version.ordinal() > ServerVersion.v1_8_R3.ordinal() && cause == DamageCause.valueOf("ENTITY_SWEEP_ATTACK")))
     		return;
     	
-		Recordable recordable = this.recording.getRecorded().get(entity.getUniqueId());
-		
-		recordable.getFrames().add(new Frame(RecordedAction.DAMAGE, entity.getLocation()));
+    	this.editFrame(entity, f -> f.addAction(RecordedAction.DAMAGE));
 		
 	}
 	
@@ -78,9 +124,50 @@ public class RecordingListeners extends FleXEventListener {
 			
 		}
 		
-		Recordable recordable = this.recording.getRecorded().get(entity.getUniqueId());
+		Entity parse = damager;
+    	
+		this.editFrame(entity, f -> {
+			
+			f.addAction(RecordedAction.DAMAGE);
+			
+			if (parse != null)
+				f.setInteractAtLocation(parse.getLocation());
+			
+		});
 		
-		recordable.getFrames().add(new Frame(RecordedAction.DAMAGE /* TODO Determine if this is a critical hit or hit with damage multiplying enchantment. */, entity.getLocation(), damager != null ? damager.getLocation() : null));
+		if (damager != null) {
+			
+			this.editFrame(damager, f -> {
+				
+				f.addAction(RecordedAction.SWING_ARM);
+				f.setInteractAtLocation(entity.getLocation());
+				
+				if (parse != null)
+					f.setInteractAtLocation(parse.getLocation());
+				
+			});
+			
+		}
+    	
+	}
+	
+	private void editFrame(FleXPlayer player, Consumer<Frame> update) {
+		this.editFrame(player.getUniqueId(), player.getLocation(), update);
+	}
+	
+	private void editFrame(Entity entity, Consumer<Frame> update) {
+		this.editFrame(entity.getUniqueId(), entity.getLocation(), update);
+	}
+	
+	private void editFrame(UUID uuid, Location location, Consumer<Frame> update) {
+		
+		Recordable recordable = this.recording.getRecorded().get(uuid);
+		
+		Frame frame = recordable.getFrames().getOrDefault(this.recording.tick, new Frame(location));
+		
+		update.accept(frame);
+		
+		recordable.getFrames().put(this.recording.tick, frame);
 		
 	}
 	

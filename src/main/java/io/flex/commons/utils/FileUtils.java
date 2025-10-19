@@ -158,12 +158,6 @@ public class FileUtils {
 	}
 	
 	public static File zip(File file) {
-
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + file.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + file.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + file.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + file.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + file.getName());
 		
         File zipped = new File(file.getParentFile(), file.getName() + ".zip");
 

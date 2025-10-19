@@ -119,6 +119,7 @@ public class ConnectionHandler {
 			recording_columns.put("uuid", SQLDataType.VARCHAR);
 			recording_columns.put("context", SQLDataType.VARCHAR);
 			recording_columns.put("time", SQLDataType.VARCHAR);
+			recording_columns.put("duration", SQLDataType.INTEGER);
 			recording_columns.put("state", SQLDataType.VARCHAR);
 			recording_columns.put("world", SQLDataType.VARCHAR);
 			recording_columns.put("players", SQLDataType.VARCHAR);

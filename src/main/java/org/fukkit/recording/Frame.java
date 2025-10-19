@@ -1,117 +1,240 @@
 package org.fukkit.recording;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import org.fukkit.utils.ItemUtils;
 import org.fukkit.utils.WorldUtils;
 
 import io.flex.commons.Nullable;
+import io.flex.commons.utils.ArrayUtils;
 
 public class Frame {
 	
-	private RecordedAction action;
+	private static final String
 	
-	private Location location, object;
+	time_key = "time=",
+	action_key = "actions=",
+	location_key = "location=",
+	interacted_key  = "interacted=",
+	item_key = "item=",
+	message_key = "message=";
+	
+	private long time;
+	
+	private RecordedAction[] actions = new RecordedAction[0];
+	
+	private Location location, interacted;
 	
 	private ItemStack item;
 	
-	public Frame(RecordedAction action, Location location, @Nullable Location object, @Nullable ItemStack item) {
-		this.action = action;
+	private String message, timestamp;
+	
+	private Frame(long time, Location location, @Nullable Location interacted, @Nullable ItemStack item, @Nullable String message, @Nullable RecordedAction... actions) {
+		
+		this.setTime(time);
+		
+		if (actions != null && actions.length > 0)
+			this.actions = actions;
+		
 		this.location = location;
-		this.object = object;
+		this.interacted = interacted;
 		this.item = item;
+		this.message = message;
+		
 	}
 	
-	public Frame(RecordedAction action, Location location, @Nullable Location object) {
-		this(action, location, object, null);
+	public Frame(Location location) {
+		this(System.currentTimeMillis(), location, null, null, null);
 	}
 	
-	public Frame(RecordedAction action, Location location, @Nullable ItemStack item) {
-		this(action, location, null, item);
+	public String getTimeStamp() {
+		return this.timestamp;
 	}
 	
-	public Frame(RecordedAction action, Location location) {
-		this(action, location, null, null);
-	}
-	
-	public RecordedAction getAction() {
-		return this.action;
+	public RecordedAction[] getActions() {
+		return this.actions;
 	}
 	
 	public Location getLocation() {
 		return this.location;
 	}
 	
-	public Location getObject() {
-		return this.object;
+	public Location getInteractAtLocation() {
+		return this.interacted;
 	}
 	
 	public ItemStack getItem() {
 		return this.item;
 	}
 	
+	public String getMessage() {
+		return this.message;
+	}
+	
+	public void addAction(RecordedAction action) {
+		
+		this.setTime(System.currentTimeMillis());
+		
+		if (!ArrayUtils.contains(this.actions, action))
+			this.actions = ArrayUtils.add(this.actions, action);
+		
+	}
+	
+	public void setLocation(Location location) {
+		this.setTime(System.currentTimeMillis());
+		this.location = location;
+	}
+	
+	public void setInteractAtLocation(Location interacted) {
+		this.setTime(System.currentTimeMillis());
+		this.interacted = interacted;
+	}
+	
+	public void setItem(ItemStack item) {
+		this.setTime(System.currentTimeMillis());
+		this.item = item;
+	}
+	
+	public void setMessage(String message) {
+		this.setTime(System.currentTimeMillis());
+		this.message = message;
+	}
+	
+	private void setTime(long time) {
+		this.time = time;
+		SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+		this.timestamp = format.format(time);
+	}
+	
 	@Override
 	public String toString() {
 		
-		String frame = "action=" + (this.action != null ? this.action.name().toLowerCase() : RecordedAction.NONE) + " location=" + (this.location != null ? this.location.toString() : null);
+		StringBuilder builder = new StringBuilder();
 		
-		if (this.object != null)
-			frame = frame + " object=" + this.object.toString();
+		for (RecordedAction action : this.actions) {
+			
+		    if (builder.length() > 0)
+		    	builder.append(",");
+		    
+		    builder.append(action.name().toLowerCase());
+		    
+		}
+		
+		String actions = builder.length() > 0 ? builder.toString() : RecordedAction.NONE.name().toLowerCase();
+		String frame = time_key + this.time + " " + action_key + actions + " " + location_key + (this.location != null ? this.location.toString() : "null");
+		
+		if (this.interacted != null)
+			frame += " " + interacted_key + this.interacted.toString();
 		
 		if (this.item != null)
-			frame = frame + " item=" + ItemUtils.serializeB64(item);
+			frame += " " + item_key + ItemUtils.serializeB64(this.item);
+		
+		if (this.message != null) {
+			// Escape single quotes inside the message
+			String escaped = this.message.replace("'", "\\'");
+			frame += " " + message_key + "'" + escaped + "'";
+		}
 		
 		return frame;
-		
 	}
 	
 	public static Frame from(String serialization) {
 		
-		try {
+		if (serialization == null || serialization.equalsIgnoreCase("null"))
+			return new Frame(null);
+		
+		long time = -1;
+		
+		RecordedAction[] actions = { RecordedAction.NONE };
+		
+		Location loc = null, obj = null;
+		
+		ItemStack item = null;
+		
+		String message = null;
+		
+		boolean quotes = false;
+		
+		StringBuilder current = new StringBuilder();
+		List<String> tokens = new ArrayList<String>();
+
+		for (int i = 0; i < serialization.length(); i++) {
 			
-			if (serialization == null || serialization.equalsIgnoreCase("null"))
-				return new Frame(RecordedAction.NONE, null);
+			char c = serialization.charAt(i);
 			
-			String[] split = serialization.split(" ");
-			
-			RecordedAction action = RecordedAction.valueOf(split[0].split("action=")[1].toUpperCase());
-			
-			Location loc = null, obj = null;
-			
-			ItemStack item = null;
-			
-			for (String key : split) {
+			if (c == '\'' && (i == 0 || serialization.charAt(i - 1) != '\\')) {
 				
-				if (key.startsWith("action=")) {
-					String str = key.split("action=")[1];
-					action = str != null && !str.equalsIgnoreCase("null") ? RecordedAction.valueOf(str.toUpperCase()) : RecordedAction.IDLE;
+				quotes = !quotes;
+				continue;
+				
+			}
+			
+			if (c == ' ' && !quotes) {
+				
+				if (current.length() > 0) {
+					tokens.add(current.toString());
+					current.setLength(0);
 				}
 				
-				if (key.startsWith("location=")) {
-					String str = key.split("location=")[1];
-					loc = str != null && !str.equalsIgnoreCase("null") ? WorldUtils.locationFromString(key.split("location=")[1]) : null;
-				}
+			} else current.append(c);
+			
+		}
+		
+		if (current.length() > 0)
+			tokens.add(current.toString());
+		
+		for (String key : tokens) {
+			
+			if (key.startsWith(time_key)) {
+				String str = key.substring(time_key.length());
+				time = str != null && !str.equalsIgnoreCase("-1") ? Long.valueOf(str) : -1;
+			}
+			
+			if (key.startsWith(action_key)) {
 				
-				if (key.startsWith("object=")) {
-					String str = key.split("object=")[1];
-					obj = str != null && !str.equalsIgnoreCase("null") ? WorldUtils.locationFromString(key.split("object=")[1]) : null;
-				}
+				String str = key.substring(action_key.length());
 				
-				if (key.startsWith("item=")) {
-					String str = key.split("item=")[1];
-					item = str != null && !str.equalsIgnoreCase("null") ? ItemUtils.deserializeB64(key.split("item=")[1]) : null;
+				if (str != null && !str.equalsIgnoreCase("null")) {
+					
+					String[] all = str.split(",");
+					
+					actions = new RecordedAction[all.length];
+					
+					for (int i = 0; i < all.length; i++)
+						actions[i] = RecordedAction.valueOf(all[i].toUpperCase());
+					
 				}
 				
 			}
 			
-			return new Frame(action, loc, obj, item);
+			if (key.startsWith(location_key)) {
+				String str = key.substring(location_key.length());
+				loc = str != null && !str.equalsIgnoreCase("null") ? WorldUtils.locationFromString(str) : null;
+			}
 			
-		} catch (Exception e) {
-			e.printStackTrace();
+			if (key.startsWith(interacted_key)) {
+				String str = key.substring(interacted_key.length());
+				obj = str != null && !str.equalsIgnoreCase("null") ? WorldUtils.locationFromString(str) : null;
+			}
+			
+			if (key.startsWith(item_key)) {
+				String str = key.substring(item_key.length());
+				item = str != null && !str.equalsIgnoreCase("null") ? ItemUtils.deserializeB64(str) : null;
+			}
+			
+			if (key.startsWith(message_key)) {
+				String str = key.substring(message_key.length());
+				// Unescaping quotes
+				message = str.replace("\\'", "'");
+			}
+			
 		}
 		
-		return null;
+		return new Frame(time, loc, obj, item, message, actions);
 		
 	}
-
 }

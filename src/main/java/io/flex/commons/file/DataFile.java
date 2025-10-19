@@ -188,22 +188,6 @@ public class DataFile<T extends Serializable> extends File implements Serializab
 	}
 	
 	public File zip() {
-
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
-		System.out.println("ZIPPINGGGGGGGGGGGGGGGGGGGGGG: " + this.getName());
 		
         File zipped = new File(this.getParentFile(), this.getName() + ".zip");
 

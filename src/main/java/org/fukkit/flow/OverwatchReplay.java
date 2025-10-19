@@ -38,6 +38,14 @@ public class OverwatchReplay extends Replay {
 		if (!report.getEvidence()[0].contains("/"))
 			throw new UnsupportedOperationException("report evidence link invalid format");
 		
+		String name = report.getEvidence()[0].split("/")[0];
+		String path = ConfigHelper.flow_path + File.separator + name;
+		
+		File container = new File(path);
+		
+		if (container.exists())
+			container.delete();
+		
 		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, report.getPlayer().getUniqueId().toString());
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		SQLRowWrapper row = base.getRow("flex_recording", SQLCondition.where("context").is(context.toString()));
@@ -48,23 +56,24 @@ public class OverwatchReplay extends Replay {
 		if (!row.getString("state").equals(RecordingState.COMPLETE.name()))
 			throw new IOException("recording is not complete");
 		
-		String path = ConfigHelper.flow_path + File.separator + report.getEvidence()[0].split("/")[0];
-	    File file = new File(path + ".zip");
-	    
-	    if (file.getParentFile() != null)
-	    	file.getParentFile().mkdirs();
+		File recordings = container.getParentFile();
+		
+		if (recordings != null)
+			recordings.mkdirs();
+		
+	    File zip = new File(recordings.getAbsolutePath(), container.getName() + ".zip");
 	    
 	    byte[] data = row.getByteArray("data");
 	    
-	    try (FileOutputStream fos = new FileOutputStream(file)) {
+	    try (FileOutputStream fos = new FileOutputStream(zip)) {
 	        fos.write(data);
 	    }
 	    
-	    FileUtils.unzip(file, path);
-	    
-	    System.out.println("UNZIPPINGGGGGGGGGGGGGGGGGGGGGGGGGG: " + file.getAbsolutePath() + " to " + path);
+	    FileUtils.unzip(zip, recordings.getAbsolutePath());
+	     
+		return new OverwatchReplay(container);
 		
-		return new OverwatchReplay(new File(path));
+		
 		
 	}
 	

@@ -1,7 +1,7 @@
 package org.fukkit.recording;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.fukkit.Fukkit;
@@ -11,9 +11,9 @@ public class CraftRecordable implements Recordable {
 
 	private UUID uuid;
 	
-	private List<Frame> frames = new LinkedList<Frame>() ;
+	private Map<Long, Frame> frames = new LinkedHashMap<Long, Frame>() ;
 
-	public CraftRecordable(UUID uuid) {
+	private CraftRecordable(UUID uuid) {
 		this.uuid = uuid;
 	}
 
@@ -23,7 +23,7 @@ public class CraftRecordable implements Recordable {
 	}
 
 	@Override
-	public List<Frame> getFrames() {
+	public Map<Long, Frame> getFrames() {
 		return this.frames;
 	}
 	

@@ -4,19 +4,28 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.WorldType;
+import org.bukkit.entity.Player;
 import org.fukkit.Fukkit;
-import org.fukkit.api.helper.ConfigHelper;
+import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.utils.BukkitUtils;
+import org.fukkit.event.flow.ReplayCompleteEvent;
+import org.fukkit.event.flow.ReplayEndEvent;
+import org.fukkit.event.flow.ReplayStartEvent;
+import org.fukkit.event.flow.ReplayWatchEvent;
+import org.fukkit.theme.Theme;
 import org.fukkit.utils.WorldUtils;
 
 import io.flex.commons.Nullable;
@@ -27,7 +36,11 @@ import io.flex.commons.utils.FileUtils;
 
 public class Replay extends Recording {
 	
-	private Set<FleXPlayer> watchers = new HashSet<FleXPlayer>();
+	private Location spawn;
+	
+	private List<FleXPlayer> watchers = new LinkedList<FleXPlayer>();
+	
+	private UUID transcript = null;
 	
 	protected Replay(File container) throws SQLException {
 		
@@ -47,12 +60,10 @@ public class Replay extends Recording {
 			
 			String[] actions = entry.getValue();
 			
-			LinkedList<Frame> frames = new LinkedList<Frame>();
+			LinkedHashMap<Long, Frame> frames = new LinkedHashMap<Long, Frame>();
 			
-			for (String action : actions)
-				frames.add(Frame.from(action));
-			
-			System.out.println("TEST 2: " + uuid + " / " + frames.size());
+			for (int i = 0; i < actions.length; i++)
+				frames.put((long)i, Frame.from(actions[i]));
 			
 			this.getRecorded().put(uuid, CraftRecorded.of(Fukkit.getPlayer(uuid), frames));
 			
@@ -63,16 +74,21 @@ public class Replay extends Recording {
 		
 	}
 	
-	public static Replay download(String uniqueId, @Nullable RecordingContext context) throws SQLException, IOException {
+	public static Replay download(File container, @Nullable RecordingContext context) throws SQLException, IOException {
+		
+		String name = container.getName();
+		
+		if (container.exists())
+			throw new UnsupportedOperationException("file \"" + name + "\" already exists at destination path");
 		
 		SQLCondition<?>[] conditions = context != null ? new SQLCondition<?>[] {
 			
-				SQLCondition.where("uuid").is(uniqueId),
+				SQLCondition.where("uuid").is(name),
 				SQLCondition.where("context").is(context.toString())
 				
 			} : new SQLCondition<?>[] {
 				
-				SQLCondition.where("uuid").is(uniqueId)
+				SQLCondition.where("uuid").is(name)
 				
 			};
 		
@@ -85,44 +101,87 @@ public class Replay extends Recording {
 		if (!row.getString("state").equals(RecordingState.COMPLETE.name()))
 			throw new IOException("recording is not complete");
 		
-		String path = ConfigHelper.flow_path + File.separator + uniqueId;
-	    File file = new File(path + ".zip");
-	    
-	    if (file.getParentFile() != null)
-	    	file.getParentFile().mkdirs();
+		File recordings = container.getParentFile();
+		
+		if (recordings != null)
+			recordings.mkdirs();
+		
+	    File zip = new File(recordings.getAbsolutePath(), container.getName() + ".zip");
 	    
 	    byte[] data = row.getByteArray("data");
 	    
-	    try (FileOutputStream fos = new FileOutputStream(file)) {
+	    try (FileOutputStream fos = new FileOutputStream(zip)) {
 	        fos.write(data);
 	    }
 	    
-	    FileUtils.unzip(file, path);
+	    FileUtils.unzip(zip, recordings.getAbsolutePath());
 	    
-	    System.out.println("UNZIPPINGGGGGGGGGGGGGGGGGGGGGGGGGG: " + file.getAbsolutePath() + " to " + path);
-		
-		return new Replay(new File(path));
+		return new Replay(container);
 		
 	}
 	
-	public Set<FleXPlayer> getWatchers() {
-		return this.watchers;
+	public FleXPlayer getHost() {
+		return !this.watchers.isEmpty() ? this.watchers.get(0) : null;
+	}
+	
+	public Set<FleXPlayer> getWatchersUnsafe() {
+		return this.watchers.stream().collect(Collectors.toSet());
+	}
+	
+	public void addWatcher(FleXPlayer player) {
+		
+		ReplayWatchEvent event = new ReplayWatchEvent(this, player);
+		
+		Fukkit.getEventFactory().call(event);
+		
+		if (event.isCancelled())
+			return;
+		
+		if (this.watchers.stream().noneMatch(w -> player.getUniqueId().equals(w.getUniqueId())))
+	        this.watchers.add(player);
+		
+		player.teleport(this.spawn);
+		
+		Player pl = player.getPlayer();
+		
+		pl.setAllowFlight(true);
+		pl.setFlying(true);
+		
+		if (this.transcript == null)
+			player.sendMessage(player.getTheme().format("<flow><pc>Not currently displaying a transcript<pp>."));
+		
+		else player.sendMessage(player.getTheme().format("<flow><pc>You are seeing<reset> <sc>" + this.getRecorded().get(this.transcript) + "<pv>'s chat log<pp>."));
+		
+		player.sendMessage(player.getTheme().format("<flow><pc>View player recieved messages by punching them<pp>."));
+		
 	}
 
 	@Override
 	public void run() {
 		
 		for (FleXPlayer watcher : this.watchers) {
+			
+			if (watcher == null)
+				continue;
+			
 			if (!watcher.isOnline() || !watcher.getPlayer().getWorld().getUID().equals(this.world.getUID())) {
 				this.onPlayerDisconnect(watcher);
 				return;
 			}
+			
 		}
 		
 		if (this.pause)
 			return;
 		
 		if (this.tick == this.getLength()) {
+			
+			ReplayCompleteEvent event = new ReplayCompleteEvent(this);
+			
+			Fukkit.getEventFactory().call(event);
+			
+			if (event.isCancelled())
+				return;
 			
 			this.onComplete();
 			return;
@@ -131,17 +190,49 @@ public class Replay extends Recording {
 		
 		for (Recordable recordable : this.getRecorded().values()) {
 			
-			Frame frame = recordable.getFrames().get((int)this.tick);
+			Map<Long, Frame> frames = recordable.getFrames();
 			
-			Location location = frame.getLocation();
-			
-			RecordedAction action = frame.getAction();
-			
-			if (location != null)
-				((CraftRecorded)recordable).getActor().teleport(location);
-			
-			if (action != null)
-				((CraftRecorded)recordable).getActor().playAnimation(action);
+			if ((int)this.tick < frames.size()) {
+				
+				Frame frame = frames.get(this.tick);
+				
+				Location location = frame.getLocation();
+				
+				RecordedAction[] actions = frame.getActions();
+				
+				if (actions != null && actions.length > 0)
+					for (RecordedAction action : actions)
+						if (action != RecordedAction.NONE)
+							((CraftRecorded)recordable).getActor().playAnimation(action);
+				
+				if (this.transcript != null) {
+					
+					if (recordable.getUniqueId().equals(this.transcript)) {
+						
+						String message = frame.getMessage();
+						
+						if (location != null)
+							((CraftRecorded)recordable).getActor().teleport(location);
+						
+						if (message != null) {
+							for (FleXPlayer watcher : this.watchers) {
+								
+								if (watcher != null && watcher instanceof FleXPlayer) {
+									
+									Theme theme = watcher.getTheme();
+									
+									watcher.sendMessage(theme.format("<pp>[<pv>" + frame.getTimeStamp() + "<pp>]<reset> ") + message);
+									
+								}
+								
+							}
+						}
+						
+					}
+					
+				}
+				
+			}
 			
 		}
 		
@@ -150,20 +241,24 @@ public class Replay extends Recording {
 	}
 	
 	@Override
-	public void start(World world, long length, FleXPlayer... watchers) {
+	@SuppressWarnings("deprecation")
+	public void start(World world, int duration, FleXPlayer... watchers) {
 		
 		if (world == null)
 			throw new UnsupportedOperationException("world must not be null");
 		
-		for (FleXPlayer watcher : watchers)
-			this.watchers.add(watcher);
+		long request = (long) (duration * (20.0 / TICK_RATE));
+		
+		if (request < this.length)
+			this.length = request;
+		
+		if (this.length <= 0)
+			throw new UnsupportedOperationException("length must be more than 0");
 		
 		this.world = world;
 		
-		Location tp = null;
-		
 		for (Recordable recordable : this.getRecorded().values()) {
-			for (Frame frame : recordable.getFrames()) {
+			for (Frame frame : recordable.getFrames().values()) {
 				
 				Location loc = frame.getLocation();
 				
@@ -171,24 +266,46 @@ public class Replay extends Recording {
 					
 					loc.setWorld(world);
 					
-					if (tp == null)
-						tp = loc;
+					if (this.spawn == null)
+						this.spawn = loc;
+					
+					if (world.getWorldType() == WorldType.FLAT)
+						loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY() - 2, loc.getBlockZ()).setType(Material.STONE);
+					
+					FleXBot bot = ((CraftRecorded)recordable).getActor();
+					
+					if (!bot.isOnline()) {
+						bot.teleport(loc);
+						bot.getAI().setGravity(false);
+					}
 					
 				}
 				
 			}
 		}
 		
-		if (tp == null)
+		if (this.spawn == null)
 			throw new UnsupportedOperationException("Could not find appropriate spawn location for watchers");
 		
 		for (FleXPlayer watcher : watchers)
-			watcher.teleport(tp);
+			this.addWatcher(watcher);
 		
 		this.pause = false;
 		
-		this.runTaskTimerAsynchronously(Fukkit.getInstance(), 120L, 2L);
+		ReplayStartEvent event = new ReplayStartEvent(this);
 		
+		Fukkit.getEventFactory().call(event);
+		
+		if (event.isCancelled())
+			return;
+		
+		this.runTaskTimer(Fukkit.getInstance(), 120L, TICK_RATE);
+		
+	}
+
+	@Override
+	public void end() {
+		this.end(null);
 	}
 
 	@Override
@@ -197,35 +314,49 @@ public class Replay extends Recording {
 		if (reason == null)
 			reason = "No further information.";
 		
+		ReplayEndEvent event = new ReplayEndEvent(this, reason);
+		
+		if (event.isCancelled())
+			return;
+		
+		Fukkit.getEventFactory().call(event);
+		
 		System.out.println("Stopping stage: " + reason);
 		
 		this.cancel();
 		
 		String kick = reason;
 		
-		BukkitUtils.mainThread(() -> {
+		for (FleXPlayer watcher : this.watchers) {
 			
-			for (FleXPlayer watcher : this.watchers) {
+			if (watcher != null && watcher.isOnline())
+				watcher.kick("The stage has closed: " + kick);
 				
-				if (watcher.isOnline())
-					watcher.kick("The stage has closed: " + kick);
-					
-			}
-			
-			WorldUtils.unloadWorld(this.world, false);
-			FileUtils.delete(this.world.getWorldFolder());
-			
-		});
+		}
+		
+		WorldUtils.unloadWorld(this.world, false);
+		FileUtils.delete(this.world.getWorldFolder());
+		
+		if (this.watchers != null)
+			this.watchers.clear();
+		
+		this.watchers = null;
+		this.spawn = null;
+		
+		this.destroy();
 		
 	}
 	
-	public boolean isWatching() {
+	public boolean isPlaying() {
 		return !this.watchers.isEmpty();
 	}
 
 	@Override
 	public void onPlayerDisconnect(FleXPlayer player) {
-		this.end("Watcher has disconnected.");
+		
+		if (player.getUniqueId().equals(this.getHost().getUniqueId()))
+			this.end("Host has disconnected.");
+		
 	}
 
 	@Override
