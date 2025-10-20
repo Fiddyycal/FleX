@@ -5,10 +5,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.fukkit.Fukkit;
 import org.fukkit.api.helper.ConfigHelper;
 import org.fukkit.consequence.EvidenceType;
 import org.fukkit.consequence.Report;
+import org.fukkit.entity.FleXPlayer;
 import org.fukkit.recording.RecordingContext;
 import org.fukkit.recording.RecordingState;
 import org.fukkit.recording.Replay;
@@ -20,11 +23,17 @@ import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.FileUtils;
 
 public class OverwatchReplay extends Replay {
+	
+	private FleXPlayer suspect;
 
 	private boolean anonymous = false;
 	
-	protected OverwatchReplay(File container) throws SQLException {
+	protected OverwatchReplay(File container, FleXPlayer suspect) throws SQLException {
+		
 		super(container);
+		
+		this.suspect = suspect;
+		
 	}
 	
 	public static OverwatchReplay download(Report report) throws SQLException, IOException {
@@ -71,10 +80,12 @@ public class OverwatchReplay extends Replay {
 	    
 	    FileUtils.unzip(zip, recordings.getAbsolutePath());
 	     
-		return new OverwatchReplay(container);
+		return new OverwatchReplay(container, report.getPlayer());
 		
-		
-		
+	}
+	
+	public FleXPlayer getSuspect() {
+		return suspect;
 	}
 	
 	public void setAnonymous(boolean anonymous) {
@@ -83,6 +94,33 @@ public class OverwatchReplay extends Replay {
 	
 	public boolean isAnonymous() {
 		return this.anonymous;
+	}
+	
+	@Override
+	public void start(World world, int duration, FleXPlayer... watchers) {
+		
+		Location spawn = this.getRecorded().get(this.suspect.getUniqueId()).getFrames()
+				
+				.values()
+				.stream()
+				.filter(f -> f != null && f.getLocation() != null)
+				.map(f -> {
+					
+					Location loc = f.getLocation();
+					
+					loc.setWorld(world);
+					
+					return loc;
+					
+				}).findFirst().orElse(null);
+		
+		if (spawn != null)
+			this.spawn = spawn;
+		
+		this.setTranscript(this.suspect);
+		
+		super.start(world, duration, watchers);
+		
 	}
 
 }

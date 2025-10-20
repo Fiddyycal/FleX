@@ -25,6 +25,7 @@ import org.fukkit.consequence.Kick;
 import org.fukkit.consequence.Mute;
 import org.fukkit.consequence.Consequence;
 import org.fukkit.consequence.Report;
+import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
@@ -432,91 +433,78 @@ public class ConvictionListeners extends FleXEventListener {
 				
 			});
 			
-		} else {
-			
-			BukkitUtils.asyncThread(() -> {
-				
-				if (!player.isOnline())
-					return;
-				
-				try {
-					
-					if (!fle.isRecording(player))
-						return;
-					
-					Recording recording = Memory.RECORDING_CACHE.getByPlayer(player);
-					
-					if (recording != null) {
-						
-						double elapsed = (recording.getTick() * (double) Recording.TICK_RATE) / 20.0;
-						
-						if (elapsed > 5) {
-							
-							Map<Long, Frame> frames = recording.getRecorded().get(player.getUniqueId()).getFrames();
-							
-							if (frames != null) {
-								
-								int count = 0;
-								
-								for (Frame frame : frames.values()) {
-									
-									if (frame.getInteractAtLocation() == null)
-										continue;
-									
-									if (frame.getActions() == null || frame.getActions().length == 0)
-										continue;
-									
-									if (ArrayUtils.contains(frame.getActions(), RecordedAction.SWING_ARM))
-										count++;
-										
-								}
-								
-								if (count > 10) {
-									recording.end();
-									return;
-								}
-								
-							}
-							
-						}
-						
-					}
-						
-					fle.setPending(player);
-					return;
-					
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				
-			});
-			
-		}
+		} else BukkitUtils.asyncThread(() -> this.finishOrRestart(player));
 		
 	}
 	
 	@EventHandler
 	public void event(PlayerTeleportEvent event) {
 		
-		BukkitUtils.asyncThread(() -> {
+		if (event.getFrom().getWorld().getUID().equals(event.getTo().getWorld().getUID()))
+			return;
+		
+		FleXPlayer player = Fukkit.getCachedPlayer(event.getPlayer().getUniqueId());
+		
+		if (player == null || player instanceof FleXBot)
+			return;
+		
+		BukkitUtils.asyncThread(() -> this.finishOrRestart(player));
+		
+	}
+	
+	private void finishOrRestart(FleXPlayer player) {
+
+		FlowLineEnforcementHandler fle = Fukkit.getFlowLineEnforcementHandler();
+		
+		try {
 			
-			FlowLineEnforcementHandler fle = Fukkit.getFlowLineEnforcementHandler();
+			if (!fle.isRecording(player))
+				return;
 			
-			FleXPlayer player = Fukkit.getPlayer(event.getPlayer().getUniqueId());
+			Recording recording = Memory.RECORDING_CACHE.getByPlayer(player);
 			
-			try {
+			if (recording != null) {
 				
-				if (!fle.isRecording(player))
-					return;
+				double elapsed = (recording.getTick() * (double) Recording.TICK_RATE) / 20.0;
 				
-				// TODO check recording length for acceptable amount of frames.
-				fle.setPending(player);
+				if (elapsed > 5) {
+					
+					Map<Long, Frame> frames = recording.getRecorded().get(player.getUniqueId()).getFrames();
+					
+					if (frames != null) {
+						
+						int count = 0;
+						
+						for (Frame frame : frames.values()) {
+							
+							if (frame.getInteractAtLocation() == null)
+								continue;
+							
+							if (frame.getActions() == null || frame.getActions().length == 0)
+								continue;
+							
+							if (ArrayUtils.contains(frame.getActions(), RecordedAction.SWING_ARM))
+								count++;
+								
+						}
+						
+						if (count > 10) {
+							recording.end();
+							return;
+						}
+						
+					}
+					
+				}
 				
-			} catch (SQLException e) {
-				e.printStackTrace();
 			}
+				
+			fle.setPending(player);
+			return;
 			
-		});
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 	}
 

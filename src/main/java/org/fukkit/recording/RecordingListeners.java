@@ -8,10 +8,11 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXBot;
@@ -45,25 +46,15 @@ public class RecordingListeners extends FleXEventListener {
 	}
 	
 	@EventHandler
-	public void event(EntityInteractEvent event) {
+	public void event(PlayerItemHeldEvent event) {
 		
-		Entity entity = event.getEntity();
+		Player player = event.getPlayer();
 		
-		if (entity instanceof Player == false)
+		if (!this.recording.isRecording(event.getPlayer()))
 			return;
 		
-		if (!this.recording.isRecording(entity))
-			return;
-    	
-    	this.editFrame(entity, f -> {
-    		
-    		f.addAction(RecordedAction.SWING_ARM);
-    		
-    		if (event.getBlock() != null)
-    			f.setInteractAtLocation(event.getBlock().getLocation());
-    		
-    	});
-    	
+		this.editFrame(player, f -> f.setItem(player.getInventory().getItem(event.getNewSlot())));
+		
 	}
 	
 	@EventHandler
@@ -74,6 +65,9 @@ public class RecordingListeners extends FleXEventListener {
 		if (!this.recording.isRecording(entity))
 			return;
     	
+		if (event.getAction() != Action.LEFT_CLICK_AIR && event.getAction() != Action.LEFT_CLICK_BLOCK)
+			return;
+		
     	this.editFrame(entity, f -> {
     		
     		f.addAction(RecordedAction.SWING_ARM);

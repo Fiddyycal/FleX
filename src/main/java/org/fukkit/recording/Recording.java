@@ -143,9 +143,6 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 			
 		}
 		
-		if (this.listener == null)
-			this.listener = new RecordingListeners(this);
-		
 		for (Recordable recorded : this.recorded.values()) {
 			
 			FleXPlayer player = recorded.toPlayer();
@@ -190,6 +187,11 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 			Frame frame = frames.getOrDefault(this.tick, new Frame(player.getLocation()));
 			
 			frame.addAction(RecordedAction.MOVE);
+			
+			if (player.getPlayer().isSneaking())
+				frame.addAction(RecordedAction.CROUCH);
+			
+			else frame.addAction(RecordedAction.UNCROUCH);
 			
 			frames.put(this.tick, frame);
 			
@@ -246,6 +248,9 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 		row.set("time", System.currentTimeMillis());
 		row.set("state", RecordingState.RECORDING.name());
 		row.update();
+		
+		if (this.listener == null)
+			this.listener = new RecordingListeners(this);
 		
 		this.runTaskTimerAsynchronously(Fukkit.getInstance(), 0L, TICK_RATE);
 		
@@ -339,6 +344,7 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 			this.recorded.clear();
 		
 		this.world = null;
+		this.listener = null;
 		this.recorded = null;
 		this.data = null;
 		

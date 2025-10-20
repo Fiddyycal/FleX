@@ -7,6 +7,8 @@ import org.fukkit.entity.FleXPlayer;
 
 public interface Recordable {
 
+	public String getName();
+	
 	public UUID getUniqueId();
 	
 	public Map<Long, Frame> getFrames();

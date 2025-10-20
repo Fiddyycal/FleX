@@ -17,6 +17,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldType;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXBot;
@@ -36,11 +37,13 @@ import io.flex.commons.utils.FileUtils;
 
 public class Replay extends Recording {
 	
-	private Location spawn;
+	protected Location spawn;
 	
 	private List<FleXPlayer> watchers = new LinkedList<FleXPlayer>();
 	
 	private UUID transcript = null;
+	
+	private ReplayListeners listener;
 	
 	protected Replay(File container) throws SQLException {
 		
@@ -65,7 +68,12 @@ public class Replay extends Recording {
 			for (int i = 0; i < actions.length; i++)
 				frames.put((long)i, Frame.from(actions[i]));
 			
-			this.getRecorded().put(uuid, CraftRecorded.of(Fukkit.getPlayer(uuid), frames));
+			CraftRecorded actor = CraftRecorded.of(Fukkit.getPlayer(uuid), frames);
+			
+			// Update uniqueId for bots.
+			uuid = actor.getUniqueId();
+			
+			this.getRecorded().put(uuid, actor);
 			
 		}
 		
@@ -128,6 +136,14 @@ public class Replay extends Recording {
 		return this.watchers.stream().collect(Collectors.toSet());
 	}
 	
+	public boolean isWatching(Entity entity) {
+		return this.watchers.stream().anyMatch(p -> p.getUniqueId().equals(entity.getUniqueId()));
+	}
+	
+	public void setTranscript(FleXPlayer player) {
+		this.transcript = player.getUniqueId();
+	}
+	
 	public void addWatcher(FleXPlayer player) {
 		
 		ReplayWatchEvent event = new ReplayWatchEvent(this, player);
@@ -147,12 +163,14 @@ public class Replay extends Recording {
 		pl.setAllowFlight(true);
 		pl.setFlying(true);
 		
+		Theme theme = player.getTheme();
+		
 		if (this.transcript == null)
-			player.sendMessage(player.getTheme().format("<flow><pc>Not currently displaying a transcript<pp>."));
+			player.sendMessage(theme.format("<flow><pc>Not currently displaying a transcript<pp>."));
 		
-		else player.sendMessage(player.getTheme().format("<flow><pc>You are seeing<reset> <sc>" + this.getRecorded().get(this.transcript) + "<pv>'s chat log<pp>."));
+		else player.sendMessage(theme.format("<flow><pc>You are seeing<reset> <sc>" + this.getRecorded().get(this.transcript).toPlayer().getDisplayName(theme, true) + "<pc>'s complete chat log<pp>."));
 		
-		player.sendMessage(player.getTheme().format("<flow><pc>View player recieved messages by punching them<pp>."));
+		player.sendMessage(theme.format("<flow><pc>View player recieved messages by clicking them<pp>."));
 		
 	}
 
@@ -205,14 +223,14 @@ public class Replay extends Recording {
 						if (action != RecordedAction.NONE)
 							((CraftRecorded)recordable).getActor().playAnimation(action);
 				
+				if (location != null)
+					((CraftRecorded)recordable).getActor().teleport(location);
+				
 				if (this.transcript != null) {
 					
 					if (recordable.getUniqueId().equals(this.transcript)) {
 						
 						String message = frame.getMessage();
-						
-						if (location != null)
-							((CraftRecorded)recordable).getActor().teleport(location);
 						
 						if (message != null) {
 							for (FleXPlayer watcher : this.watchers) {
@@ -292,6 +310,8 @@ public class Replay extends Recording {
 		
 		this.pause = false;
 		
+		this.listener = new ReplayListeners(this);
+		
 		ReplayStartEvent event = new ReplayStartEvent(this);
 		
 		Fukkit.getEventFactory().call(event);
@@ -325,14 +345,19 @@ public class Replay extends Recording {
 		
 		this.cancel();
 		
-		String kick = reason;
-		
 		for (FleXPlayer watcher : this.watchers) {
 			
 			if (watcher != null && watcher.isOnline())
-				watcher.kick("The stage has closed: " + kick);
+				watcher.kick("The stage has closed: " + reason);
 				
 		}
+		
+		this.destroy();
+		
+	}
+	
+	@Override
+	public void destroy() {
 		
 		WorldUtils.unloadWorld(this.world, false);
 		FileUtils.delete(this.world.getWorldFolder());
@@ -340,10 +365,14 @@ public class Replay extends Recording {
 		if (this.watchers != null)
 			this.watchers.clear();
 		
+		if (this.listener != null)
+			this.listener.unregister();
+		
+		this.listener = null;
 		this.watchers = null;
 		this.spawn = null;
 		
-		this.destroy();
+		super.destroy();
 		
 	}
 	
@@ -362,7 +391,12 @@ public class Replay extends Recording {
 	@Override
 	public void onComplete() {
 		
-		System.out.println("Replaying stage...");
+		for (FleXPlayer watcher : this.watchers) {
+			
+			if (watcher != null && watcher instanceof FleXPlayer)
+				watcher.sendMessage(watcher.getTheme().format("<flow><pc>Restarting recording<pp>..."));
+			
+		}
 		
 		this.tick = 0;
 		

@@ -36,10 +36,8 @@ public interface Implementation {
 	
 	public boolean isItemUnbreakable(ItemMeta meta);
 	
-	@Deprecated
 	public void hideEntity(Player player, Entity hide);
 
-	@Deprecated
 	public void showEntity(Player player, Entity show);
 	
 	public void dumbify(LivingEntity entity, boolean invincible);

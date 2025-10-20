@@ -11,10 +11,18 @@ public class CraftRecordable implements Recordable {
 
 	private UUID uuid;
 	
+	private String name;
+	
 	private Map<Long, Frame> frames = new LinkedHashMap<Long, Frame>() ;
 
-	private CraftRecordable(UUID uuid) {
+	private CraftRecordable(UUID uuid, String name) {
 		this.uuid = uuid;
+		this.name = name;
+	}
+
+	@Override
+	public String getName() {
+		return this.name;
 	}
 
 	@Override
@@ -33,7 +41,7 @@ public class CraftRecordable implements Recordable {
 	}
 	
 	public static CraftRecordable of(FleXPlayer player) {
-		return new CraftRecordable(player.getUniqueId());
+		return new CraftRecordable(player.getUniqueId(), player.getName());
 	}
 	
 }

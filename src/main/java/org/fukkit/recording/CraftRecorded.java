@@ -15,24 +15,32 @@ import io.flex.commons.Nullable;
 public class CraftRecorded implements Recordable {
 
 	private UUID uuid;
+	private String name;
 	
 	private Map<Long, Frame> frames = new LinkedHashMap<Long, Frame>();
 	
 	private FleXBot bot;
-
+	
 	private CraftRecorded(UUID uuid, @Nullable String name, @Nullable FleXSkin skin, LinkedHashMap<Long, Frame> frames) {
+		
+		name = name != null ? name : Memory.NAME_CACHE.getRandom();
+		skin = skin != null ? skin : Memory.SKIN_CACHE.getRandom();
 		
 		this.uuid = uuid;
 		
 		this.frames = frames;
 		
-		name = name != null ? name : Memory.NAME_CACHE.getRandom();
-		skin = skin != null ? skin : Memory.SKIN_CACHE.getRandom();
+		this.name = name;
 		
 		this.bot = Fukkit.getPlayerFactory().createFukkitBot(name, skin);
 		
 		this.bot.getAI().setGravity(false);
 		
+	}
+
+	@Override
+	public String getName() {
+		return this.name;
 	}
 
 	@Override
@@ -47,7 +55,7 @@ public class CraftRecorded implements Recordable {
 	
 	@Override
 	public FleXPlayer toPlayer() {
-		return Fukkit.getPlayer(this.uuid);
+		return this.bot != null ? this.bot : Fukkit.getPlayer(this.uuid);
 	}
 	
 	public FleXBot getActor() {
