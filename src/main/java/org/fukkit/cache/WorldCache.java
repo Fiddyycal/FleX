@@ -133,7 +133,7 @@ public class WorldCache extends LinkedCache<FleXWorld, UUID> {
 			
 			String name = world.getName();
 			
-			if (name != null && ignore != null && name.equals(ignore))
+			if (name != null && name.contains(ignore))
 				continue;
 			
 			if (!world.getAbsoluteFile().isDirectory() || !ArrayUtils.contains(world.list(), "level.dat"))
@@ -147,12 +147,15 @@ public class WorldCache extends LinkedCache<FleXWorld, UUID> {
 			
 			if (!exists) {
 				
+				Task.error("Backup", "The world " +  name + " does not exist in the flex worlds container.");
+				Task.print("Backup", "Saving world " +  name + " and moving to " + backups.getAbsolutePath() + "...");
+				
 				if (Bukkit.getWorld(name) != null)
 					Bukkit.unloadWorld(name, true);
 				
-				Task.error("Backup", "The world " +  name + " does not exist in the flex worlds container.");
-				Task.print("Backup", "Moving world " +  name + " to " + backups.getAbsolutePath() + ".");
+				Task.print("Backup", "World saved and moved.");
 				Task.print("Backup", "If this is an error please make sure the world is either loaded after flex or put into the flex worlds container so it can load into the engine logic properly.");
+				Task.print("Backup", "Alternatively, if you need to load worlds outside of FleX, add \".ignore\" to the world folder name.");
 				
 				String timeStamp = NumUtils.asDateTime(System.currentTimeMillis());
 				
