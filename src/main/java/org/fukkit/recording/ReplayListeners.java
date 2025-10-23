@@ -2,8 +2,15 @@ package org.fukkit.recording;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.fukkit.Fukkit;
@@ -19,6 +26,36 @@ public class ReplayListeners extends FleXEventListener {
 	
 	public ReplayListeners(Replay replay) {
 		this.replay = replay;
+	}
+	
+	@EventHandler
+	public void event(PlayerDropItemEvent event) {
+		
+		if (!this.replay.isWatching(event.getPlayer()))
+			return;
+		
+		event.setCancelled(true);
+		
+	}
+	
+	@EventHandler
+	public void event(BlockPlaceEvent event) {
+		
+		if (!this.replay.isWatching(event.getPlayer()))
+			return;
+		
+		event.setCancelled(true);
+		
+	}
+	
+	@EventHandler
+	public void event(BlockBreakEvent event) {
+		
+		if (!this.replay.isWatching(event.getPlayer()))
+			return;
+		
+		event.setCancelled(true);
+		
 	}
 	
 	@EventHandler
@@ -93,6 +130,30 @@ public class ReplayListeners extends FleXEventListener {
 	public void event(EntityDamageEvent event) {
 		
 		Entity entity = event.getEntity();
+		
+		if (this.replay.isWatching(entity)) {
+	    	event.setCancelled(true);
+			return;
+		}
+		
+		System.out.println("CAUSE: " + event.getCause());
+		
+		if (event.getCause() != DamageCause.CUSTOM) {
+			if (this.replay.getRecorded().values().stream().anyMatch(r -> r.getName().equalsIgnoreCase(entity.getName()))) {
+		    	event.setCancelled(true);
+				return;
+			}
+		}
+		
+	}
+	
+	@EventHandler
+	public void event(EntityDamageByEntityEvent event) {
+		
+		Entity entity = event.getDamager();
+		
+		if (entity != null && entity instanceof Projectile && ((Projectile)entity).getShooter() instanceof Player)
+			entity = (Player) ((Projectile)entity).getShooter();
 		
 		if (!this.replay.isWatching(entity))
 			return;
