@@ -11,9 +11,10 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.bukkit.ChatColor;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.fukkit.Fukkit;
-import org.fukkit.clickable.Menu;
+import org.fukkit.Memory;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.clickable.button.ExecutableButton;
 import org.fukkit.entity.FleXPlayer;
@@ -79,9 +80,6 @@ public class ThemeButton extends ExecutableButton {
 		
 		this.setLore(lore.toArray(new String[lore.size()]));
 		
-		/**
-		 * Do not use a FukkitRunnable here, this task must stay on a seperate thread.
-		 */
 		new BukkitRunnable() {
 			
 			private Map<Integer, String> fin = new HashMap<Integer, String>();
@@ -92,9 +90,21 @@ public class ThemeButton extends ExecutableButton {
 				
 				String[] lines = new String[sorted.size()];
 				
-				Menu menu = (Menu) ThemeButton.this.getClickable();
+				boolean exists1 = Memory.BUTTON_CACHE.get(ThemeButton.this.getUniqueId()) != null;
+				boolean exists2 = Memory.GUI_CACHE.getByItem(ThemeButton.this) != null;
 				
-				if (menu == null || !menu.isOpen()) {
+				System.out.println("-----------------------------------");
+				System.out.println(exists1 + "/" + exists2);
+				System.out.println(exists1 + "/" + exists2);
+				System.out.println(exists1 + "/" + exists2);
+				System.out.println(exists1 + "/" + exists2);
+				System.out.println(exists1 + "/" + exists2);
+				System.out.println(exists1 + "/" + exists2);
+				System.out.println(exists1 + "/" + exists2);
+				System.out.println(exists1 + "/" + exists2);
+				System.out.println("-----------------------------------");
+				
+				if (!exists1 || !exists2) {
 					this.cancel();
 					return;
 				}
@@ -163,7 +173,7 @@ public class ThemeButton extends ExecutableButton {
 	}
 
 	@Override
-	public boolean onExecute(FleXPlayer player, ButtonAction action) {
+	public boolean onExecute(FleXPlayer player, ButtonAction action, Inventory inventory) {
 		
 		if (action != ButtonAction.GUI_LEFT_CLICK)
 			return false;

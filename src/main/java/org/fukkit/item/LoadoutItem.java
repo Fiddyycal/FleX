@@ -10,7 +10,9 @@ import org.bukkit.inventory.ItemStack;
 import org.fukkit.clickable.Clickable;
 import org.fukkit.clickable.Loadout;
 import org.fukkit.clickable.button.Button;
+import org.fukkit.utils.BukkitUtils;
 
+import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
 
 public class LoadoutItem extends Item implements Button {
@@ -38,43 +40,59 @@ public class LoadoutItem extends Item implements Button {
 	}
 	
 	@Override
-	public ItemStack asItemStack() {
-		return this;
-	}
-
-	@Override
-	public Loadout getClickable() {
-
+	public Set<? extends Clickable> getClickables() {
+		
+		// Some sub classes may access this method before the class is fully instantiated.
+		if (this.loadouts == null)
+			this.loadouts = new HashSet<Loadout>();
+		
 		if (this.loadouts.isEmpty())
-			throw new NullPointerException("Loadouts must be linked with LoadoutItem#linkTo");
+			BukkitUtils.runLater(() -> {
+				
+				// If still empty after initially creating the items for loadouts.
+				if (this.loadouts.isEmpty()) {
+					
+					Task.error("Loadout", "Potential Memory leak, please review:");
+					Task.error("Loadout", "This LoadoutItem is not bound to any loadouts.");
+					Task.error("Loadout", "Item: " + this.getType());
+					Task.error("Loadout", "Meta: " + (this.hasItemMeta() ? (this.getItemMeta().hasDisplayName() ? this.getItemMeta().getDisplayName() : "NULL_DISPLAY") : null));
+					
+				}
+				
+			});
 		
-		return this.loadouts.stream().findAny().get();
+		return this.loadouts;
 		
 	}
-
+	
 	@Override
-	public void linkTo(Clickable clickable) {
+	public void bind(Clickable clickable) {
 		
 		if (clickable instanceof Loadout == false)
-			throw new IllegalArgumentException("clickable must be Loadout");
+			throw new UnsupportedOperationException("clickable must bbe a loadout");
 		
 		this.loadouts.add((Loadout)clickable);
 		
 	}
-
+	
 	@Override
-	public void unlink(Clickable clickable) {
-		
-		if (clickable instanceof Loadout == false)
-			throw new IllegalArgumentException("clickable must be Loadout");
-		
-		this.loadouts.remove((Loadout)clickable);
-		
+	public void unbind(Clickable clickable) {
+		this.loadouts.remove(clickable);
 	}
 	
 	@Override
 	public boolean isLinked() {
 		return !this.loadouts.isEmpty();
+	}
+	
+	@Override
+	public boolean isLinked(Clickable clickable) {
+		return this.loadouts.contains(clickable);
+	}
+	
+	@Override
+	public ItemStack asItemStack() {
+		return this;
 	}
 
 }

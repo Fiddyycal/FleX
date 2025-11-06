@@ -12,6 +12,7 @@ import java.util.stream.IntStream;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.inventory.Inventory;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.clickable.button.ExecutableButton;
 import org.fukkit.consequence.Punishment;
@@ -47,7 +48,7 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 	}
 	
 	@Override
-	public boolean onExecute(FleXPlayer player, ButtonAction action) {
+	public boolean onExecute(FleXPlayer player, ButtonAction action, Inventory inventory) {
 		
 		if (!action.isClick())
 			return false;

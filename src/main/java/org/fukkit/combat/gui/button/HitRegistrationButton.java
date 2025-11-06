@@ -1,6 +1,7 @@
 package org.fukkit.combat.gui.button;
 
 import org.bukkit.Material;
+import org.bukkit.inventory.Inventory;
 import org.fukkit.Fukkit;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.clickable.button.ExecutableButton;
@@ -36,7 +37,7 @@ public class HitRegistrationButton extends ExecutableButton {
 	}
 
 	@Override
-	public boolean onExecute(FleXPlayer player, ButtonAction action) {
+	public boolean onExecute(FleXPlayer player, ButtonAction action, Inventory inventory) {
 		
 		if (!action.isClick())
 			return false;

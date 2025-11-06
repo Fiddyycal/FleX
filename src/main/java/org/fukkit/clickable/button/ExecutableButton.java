@@ -1,6 +1,7 @@
 package org.fukkit.clickable.button;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -32,7 +33,7 @@ public abstract class ExecutableButton extends UniqueItem implements Button, Ser
 	
 	private static long debugged = System.currentTimeMillis();
 	
-	private Set<Clickable> clickables;
+	private Set<Clickable> clickables = new HashSet<Clickable>();
 	
 	private boolean intractable, droppable;
 	
@@ -67,10 +68,14 @@ public abstract class ExecutableButton extends UniqueItem implements Button, Ser
 	}
 	
 	@Override
-	public Set<Clickable> getClickables() {
+	public Set<? extends Clickable> getClickables() {
 		
 		if (this instanceof PointlessButton || this instanceof FacelessButton)
 			return null;
+		
+		// Some sub classes, like UniqueItem, access this method before the class is fully instantiated.
+		if (this.clickables == null)
+			this.clickables = new HashSet<Clickable>();
 		
 		if (this.clickables.isEmpty())
 			BukkitUtils.runLater(() -> {
@@ -79,7 +84,7 @@ public abstract class ExecutableButton extends UniqueItem implements Button, Ser
 				if (this.clickables.isEmpty()) {
 					
 					Task.error("Clickable", "Potential Memory leak, please review:");
-					Task.error("Clickable", "This ExecutableButton is not linked to any clickables.");
+					Task.error("Clickable", "This ExecutableButton is not bound to any clickables.");
 					Task.error("Clickable", "UniqueId: " + this.getUniqueId());
 					Task.error("Clickable", "Item: " + this.getType());
 					Task.error("Clickable", "Meta: " + (this.hasItemMeta() ? (this.getItemMeta().hasDisplayName() ? this.getItemMeta().getDisplayName() : "NULL_DISPLAY") : null));
@@ -134,7 +139,7 @@ public abstract class ExecutableButton extends UniqueItem implements Button, Ser
 		if (!force && this.unchanged())
 			return;
 		
-		Set<Clickable> clickables = this.getClickables();
+		Set<? extends Clickable> clickables = this.getClickables();
 		
 		if (clickables.isEmpty())
 			return;

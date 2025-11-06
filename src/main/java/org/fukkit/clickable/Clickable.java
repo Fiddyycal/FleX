@@ -46,6 +46,9 @@ public abstract class Clickable implements Inventory, Cacheable, Metadatable {
 		
 	}
 	
+	/**
+	 * @deprecated Use asBukkitInventory if you *need* the delegation.
+	 */
 	@Deprecated
 	public Inventory getInventory() {
 		return this.inventory;

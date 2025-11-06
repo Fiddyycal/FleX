@@ -1,5 +1,6 @@
 package org.fukkit.event.player;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.fukkit.cache.PlayerCache.PlayerCacheMeta;
@@ -26,7 +27,7 @@ public class PlayerMicroCacheUpdateEvent extends Event {
 	
 	public PlayerMicroCacheUpdateEvent(PlayerCacheMeta meta, PlayerCacheMetaType type, Object obj) {
 		
-		super(false);
+		super(!Bukkit.isPrimaryThread());
 		
 		this.meta = meta;
 		

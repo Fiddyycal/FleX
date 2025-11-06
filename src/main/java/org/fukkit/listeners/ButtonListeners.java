@@ -31,6 +31,7 @@ import org.fukkit.event.player.PlayerGuiClickEvent;
 import org.fukkit.event.player.PlayerGuiCloseEvent;
 import org.fukkit.event.player.PlayerGuiOpenEvent;
 import org.fukkit.event.player.PlayerLoadoutClickEvent;
+import org.fukkit.item.LoadoutItem;
 import org.fukkit.utils.BukkitUtils;
 
 public class ButtonListeners extends FleXEventListener {
@@ -146,26 +147,22 @@ public class ButtonListeners extends FleXEventListener {
 		
 		Menu menu = Memory.GUI_CACHE.get(clicked);
 		
-		/**
-		 * @bandaid
-		 * For menus with the same buttons but different unique identifiers.
-		 * ie. "menu" with theme Default has the same buttons as "menu" with theme FleX.
-		 */
-		if (menu == null) 
-			menu = Memory.GUI_CACHE.getByInventory(clicked);
-		
 		if (menu != null)
 			clickEvent = new PlayerGuiClickEvent(player, menu, button, action, false);
 		
 		if (button != null && clickEvent == null) {
 			
-			Clickable clickable = button.isLinked() ? button.getClickable() : null;
-			
-			if (clickable != null && clickable instanceof Loadout)
-				clickEvent = new PlayerLoadoutClickEvent(player, (Loadout) clickable, button, action, false);
-			
-			if (clickable == null || clickEvent == null)
-				clickEvent = new PlayerButtonExecuteEvent(player, button, action, false);
+			if (button instanceof LoadoutItem) {
+				
+				Clickable clickable = button.getClickables().stream().findFirst().orElse(null);
+				
+				if (clickable != null && clickable instanceof Loadout)
+					clickEvent = new PlayerLoadoutClickEvent(player, (Loadout) clickable, button, action, false);
+				
+				if (clickable == null || clickEvent == null)
+					clickEvent = new PlayerButtonExecuteEvent(player, button, action, false);
+				
+			}
 			
 		}
 		
@@ -180,7 +177,7 @@ public class ButtonListeners extends FleXEventListener {
 		
 		if (button != null) {
 			
-			clickEvent.setExecuted(button.exec(player, action));
+			clickEvent.setExecuted(button.exec(player, action, menu != null ? menu : clicked));
 			
 			if (button.isDroppable())
 				return;
@@ -206,14 +203,15 @@ public class ButtonListeners extends FleXEventListener {
 		
 		if (button != null) {
 			
-			FleXPlayer player = PlayerHelper.getPlayerSafe(event.getPlayer().getUniqueId());
+			Player pl = event.getPlayer();
+			FleXPlayer player = Fukkit.getPlayer(pl.getUniqueId());
 			
 			ButtonAction action = this.toButtonAction(event.getAction(), player.getPlayer().isSneaking());
 			
 			PlayerButtonExecuteEvent clickEvent;
-			
-			/*
+
 			Loadout lo = player.getLoadout();
+			/*
 			
 			if (lo != null) {
 				
@@ -229,7 +227,7 @@ public class ButtonListeners extends FleXEventListener {
 			if (clickEvent.isCancelled())
 				return;
 			
-			clickEvent.setExecuted(button.exec(player, action));
+			clickEvent.setExecuted(button.exec(player, action, lo != null ? lo : pl.getInventory()));
 			
 			if (button.isIntractable())
 				return;
@@ -254,13 +252,14 @@ public class ButtonListeners extends FleXEventListener {
 		ExecutableButton button = Memory.BUTTON_CACHE.getByItem(item);
 		
 		if (button != null) {
-			
-			FleXPlayer player = PlayerHelper.getPlayerSafe(event.getPlayer().getUniqueId());
+
+			Player pl = event.getPlayer();
+			FleXPlayer player = Fukkit.getPlayer(pl.getUniqueId());
 			
 			PlayerButtonExecuteEvent clickEvent;
-			
-			/*
+
 			Loadout lo = player.getLoadout();
+			/*
 			
 			if (lo != null) {
 				
@@ -276,7 +275,7 @@ public class ButtonListeners extends FleXEventListener {
 			if (clickEvent.isCancelled())
 				return;
 			
-			clickEvent.setExecuted(button.exec(player, ButtonAction.INTERACT_DROP));
+			clickEvent.setExecuted(button.exec(player, ButtonAction.INTERACT_DROP, lo != null ? lo : pl.getInventory()));
 			
 			if (button.isDroppable())
 				return;

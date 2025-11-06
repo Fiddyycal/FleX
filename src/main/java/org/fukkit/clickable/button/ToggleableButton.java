@@ -42,7 +42,7 @@ public abstract class ToggleableButton extends ExecutableButton {
 	@Override
 	public boolean onExecute(FleXPlayer player, ButtonAction action, Inventory inventory) {
 		
-		if (this.onToggle(player, action)) {
+		if (this.onToggle(player, action, inventory)) {
 			this.toggle();
 			return true;
 		}
@@ -55,6 +55,6 @@ public abstract class ToggleableButton extends ExecutableButton {
 		return this.toggled;
 	}
 	
-	public abstract boolean onToggle(FleXPlayer player, ButtonAction action);
+	public abstract boolean onToggle(FleXPlayer player, ButtonAction action, Inventory inventory);
 
 }

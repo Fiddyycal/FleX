@@ -1,5 +1,6 @@
 package org.fukkit.combat.gui.button;
 
+import org.bukkit.inventory.Inventory;
 import org.fukkit.Fukkit;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.clickable.button.ToggleableButton;
@@ -28,7 +29,7 @@ public class ToggleModifierButton extends ToggleableButton {
 	}
 	
 	@Override
-	public boolean onToggle(FleXPlayer player, ButtonAction action) {
+	public boolean onToggle(FleXPlayer player, ButtonAction action, Inventory inventory) {
 		
 		Fukkit.getCombatFactory().setEnabled(!isEnabled());
 		

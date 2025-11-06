@@ -11,7 +11,9 @@ import org.bukkit.inventory.ItemStack;
 import org.fukkit.clickable.Clickable;
 import org.fukkit.clickable.Loadout;
 import org.fukkit.clickable.button.Button;
+import org.fukkit.utils.BukkitUtils;
 
+import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
 
 public class LoadoutUniqueItem extends UniqueItem implements Button {
@@ -45,41 +47,6 @@ public class LoadoutUniqueItem extends UniqueItem implements Button {
 	@Override
 	public ItemStack asItemStack() {
 		return this;
-	}
-
-	@Override
-	public Loadout getClickable() {
-
-		if (this.loadouts.isEmpty())
-			throw new NullPointerException("Loadouts must be linked with LoadoutItem#linkTo");
-		
-		return this.loadouts.stream().findAny().get();
-		
-	}
-
-	@Override
-	public void linkTo(Clickable clickable) {
-		
-		if (clickable instanceof Loadout == false)
-			throw new IllegalArgumentException("clickable must be Loadout");
-		
-		this.loadouts.add((Loadout)clickable);
-		
-	}
-
-	@Override
-	public void unlink(Clickable clickable) {
-		
-		if (clickable instanceof Loadout == false)
-			throw new IllegalArgumentException("clickable must be Loadout");
-		
-		this.loadouts.remove((Loadout)clickable);
-		
-	}
-	
-	@Override
-	public boolean isLinked() {
-		return !this.loadouts.isEmpty();
 	}
 	
 	@SuppressWarnings("deprecation")

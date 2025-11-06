@@ -2,6 +2,7 @@ package org.fukkit.theme;
 
 import java.util.Arrays;
 import org.bukkit.Material;
+import org.bukkit.inventory.Inventory;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.clickable.button.ExecutableButton;
 import org.fukkit.entity.FleXPlayer;
@@ -28,7 +29,7 @@ public class LanguageButton extends ExecutableButton {
 	}
 
 	@Override
-	public boolean onExecute(FleXPlayer player, ButtonAction action) {
+	public boolean onExecute(FleXPlayer player, ButtonAction action, Inventory inventory) {
 		
 		if (action != ButtonAction.GUI_LEFT_CLICK)
 			return false;

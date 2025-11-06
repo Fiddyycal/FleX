@@ -19,28 +19,34 @@ import io.flex.commons.cache.LinkedCache;
 public class GuiCache extends LinkedCache<Menu, Inventory> {
 
 	private static final long serialVersionUID = -9198738498209231101L;
+
+	// This was the old way
+	//Arrays.asList(gui.asBukkitInventory().getContents()).equals(Arrays.asList(inv.getContents()))
 	
 	public GuiCache() {
-		super((gui, inv) -> Arrays.asList(gui.getInventory().getContents()).equals(Arrays.asList(inv.getContents())));
+		super((gui, inv) -> gui.asBukkitInventory() == inv);
 	}
 
 	/**
-	 * @deprecated Bandaid approach.
+	 * @bandaid
+	 * @eprecated Bandaid approach.
 	 * If players can rename items, this could be an exploit.
 	 * Although very rare, if no other NBT is present, similar items will return a false positive.
-	 */
-	@Deprecated
+	 *
+	@eprecated
 	public Menu getByInventory(Inventory inventory) {
 		return this.stream().filter(g -> {
 			
 			String uid = "uid=........-....-....-....-............", match = "uid={removed_to_match}";
-			String guiM = Arrays.asList(g.getInventory().getContents()).toString().replaceAll(uid, match);
+			String guiM = Arrays.asList(g.asBukkitInventory().getContents()).toString().replaceAll(uid, match);
 			String invM = Arrays.asList(inventory.getContents()).toString().replaceAll(uid, match);
 			
 			return guiM.equals(invM);
 			
 		}).findFirst().orElse(null);
 	}
+	*
+	*/
 	
 	@Override
 	public boolean remove(Menu... args) {
@@ -123,7 +129,7 @@ public class GuiCache extends LinkedCache<Menu, Inventory> {
 	public Menu getByPlayerExact(FleXPlayer player) {
 		return this.stream().filter(gui -> {
 			
-			if (gui.getViewers().contains(player))
+			if (gui.getViewers().contains(player.getEntity()))
 				return true;
 			
 			InventoryView view = player.getPlayer().getOpenInventory();
