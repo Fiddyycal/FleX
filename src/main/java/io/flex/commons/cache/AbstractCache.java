@@ -42,10 +42,15 @@ public abstract class AbstractCache<E extends Cacheable, U> implements Cache<E, 
 	@Override
 	@SuppressWarnings("unchecked")
 	public boolean add(E... args) {
+		
+		if (args == null)
+			return false;
+		
 		return Arrays.stream(args).anyMatch(e -> {
 			this.onAdd(e);
 			return this.set.add(e);
 		});
+		
 	}
 	
 	@Override
@@ -60,10 +65,15 @@ public abstract class AbstractCache<E extends Cacheable, U> implements Cache<E, 
 	@Override
 	@SuppressWarnings("unchecked")
 	public boolean remove(E... args) {
+		
+		if (args == null)
+			return false;
+		
 		return Arrays.stream(args).anyMatch(e -> {
 			this.onRemove(e);
 			return this.set.remove(e);
 		});
+		
 	}
 	
 	public boolean removeIf(Predicate<E> filter) {
@@ -81,29 +91,29 @@ public abstract class AbstractCache<E extends Cacheable, U> implements Cache<E, 
 
 	@Override
 	public boolean addAll(Collection<? extends E> c) {
-        boolean mod = false;
+        boolean modified = false;
         for (E e : c) {
 			this.onAdd(e);
 			if (this.set.add(e))
-            	mod = true;
+				modified = true;
         }
-        return mod;
+        return modified;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public boolean removeAll(Collection<? extends E> c) {
-        boolean mod = false;
+        boolean modified = false;
         Iterator<?> it = this.set.iterator();
         while (it.hasNext()) {
 			E e = (E) it.next();
             if (c.contains(e)) {
             	this.onRemove(e);
                 it.remove();
-                mod = true;
+                modified = true;
             }
         }
-        return mod;
+        return modified;
 	}
 
 	@Override

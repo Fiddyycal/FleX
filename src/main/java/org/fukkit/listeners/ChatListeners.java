@@ -10,7 +10,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -44,10 +43,9 @@ public class ChatListeners extends FleXEventListener {
 	public ChatListeners() {
 		
 		YamlConfig yaml = Fukkit.getResourceHandler().getYaml(Configuration.ENGINE);
-		FileConfiguration conf = yaml.getConfig();
 		
-		this.delay = conf.getDouble("Chat.Delay.Seconds", 1.5);
-		this.weight = conf.getLong("Chat.Delay.Bypass", 10);
+		this.delay = yaml.getDouble("Chat.Delay.Seconds", 1.5);
+		this.weight = yaml.getLong("Chat.Delay.Bypass", 10);
 		
 	}
 

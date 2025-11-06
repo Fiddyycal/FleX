@@ -712,8 +712,10 @@ public class SQLDatabase implements Serializable {
     			
     	        if (table != null) {
     	        	try (ResultSet rs = connection.getDriverConnection().getMetaData().getPrimaryKeys(null, null, table)) {
+    	        		
     		            if (rs.next())
     		            	primary = rs.getString("COLUMN_NAME");
+    		            
     		        }
     	        }
     	        

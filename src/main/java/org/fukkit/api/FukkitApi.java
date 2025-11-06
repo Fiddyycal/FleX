@@ -8,11 +8,16 @@ import org.fukkit.scoreboard.sidebar.Sidebar;
 
 public class FukkitApi {
 	
-	public static Sidebar createSidebar(FleXPlayer player, String title, ScoredTeamEntry... lines) {
-		return new Sidebar(player, title, lines);
+	public static Sidebar createSidebar(FleXPlayer player, String title, Runnable onTick, ScoredTeamEntry... lines) {
+		return new Sidebar(player, title, lines) {
+			@Override
+			public void onUpdate() {
+				onTick.run();
+			}
+		};
 	}
 	
-	public static Sidebar createSidebar(FleXPlayer player, String title, String... lines) {
+	public static Sidebar createSidebar(FleXPlayer player, String title, Runnable onTick, String... lines) {
 		
 		ScoredTeamEntry[] entries = IntStream.range(0, lines.length).mapToObj(i -> {
 			
@@ -20,7 +25,11 @@ public class FukkitApi {
 			
 		}).toArray(t -> new ScoredTeamEntry[lines.length]);
 		
-		return new Sidebar(player, title, entries);
+		return new Sidebar(player, title, entries) {
+			public void onUpdate() {
+				onTick.run();
+			}
+		};
 	}
 
 }

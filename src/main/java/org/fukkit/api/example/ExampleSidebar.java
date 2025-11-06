@@ -11,8 +11,8 @@ public class ExampleSidebar extends Sidebar implements Minimizable {
 
 	public ExampleSidebar(FleXPlayer player) {
 		
-		super(player, "&4&lFleX&8: &7Example",
-
+		super(player, "&4&lFleX&8: &7Example", 10L,
+				
 				new ScoredTeamEntry(14, " &8&m                            "),
 				new ScoredTeamEntry(13, "&cCharacter length&8: &732"),
 				new ScoredTeamEntry(12, "&cLine score&8: &712"),
@@ -30,8 +30,6 @@ public class ExampleSidebar extends Sidebar implements Minimizable {
 				new ScoredTeamEntry(1, "&6&lnew &fExampleSidebar();")
 				
 		);
-
-		this.setIntervals(10L);
 		
 	}
 
@@ -48,9 +46,7 @@ public class ExampleSidebar extends Sidebar implements Minimizable {
 	private boolean unchanged = true;
 	
 	@Override
-	public void onTick() {
-		
-		super.onTick();
+	public void onUpdate() {
 		
 		this.setTitle((this.unchanged = !this.unchanged) ? "&4&lFleX&8: &7Example" : "&4&lFleX&8: &7Sidebar");
 		

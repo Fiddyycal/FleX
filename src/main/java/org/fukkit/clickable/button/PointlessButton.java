@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.Inventory;
 import org.fukkit.entity.FleXPlayer;
 
 import io.flex.commons.Nullable;
@@ -33,7 +34,7 @@ public class PointlessButton extends ExecutableButton {
 	}
 	
 	@Override
-	public boolean onExecute(FleXPlayer player, ButtonAction action) {
+	public boolean onExecute(FleXPlayer player, ButtonAction action, Inventory inventory) {
 		return true;
 	}
 

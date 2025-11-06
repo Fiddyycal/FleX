@@ -49,7 +49,7 @@ public class RankCache extends LinkedCache<Rank, String> {
 			this.clear();
 		
 		YamlConfig yml = Fukkit.getResourceHandler().getYaml(Configuration.RANKS);
-		FileConfiguration conf = yml.getConfig();
+		FileConfiguration conf = yml.asFileConfiguration();
 		
 		ConfigurationSection section = conf.getConfigurationSection("Ranks");
 		

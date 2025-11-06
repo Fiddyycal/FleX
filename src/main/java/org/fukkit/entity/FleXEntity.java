@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
@@ -21,6 +23,10 @@ public interface FleXEntity extends Cacheable {
 	public UUID getUniqueId();
 	
 	public List<MetadataValue> getMetadata(String metadata);
+	
+	public Entity getNearestEntity(int radius, EntityType type);
+	
+    public Block getNearestBlock(int radius, Material type);
 	
     public List<Block> getNearbyBlocks(int radius);
 	

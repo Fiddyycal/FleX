@@ -1,5 +1,6 @@
 package org.fukkit.consequence.gui.button;
 
+import org.bukkit.inventory.Inventory;
 import org.fukkit.Fukkit;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.clickable.button.ExecutableButton;
@@ -47,11 +48,15 @@ public class ReasonButton extends ExecutableButton {
 	}
 
 	@Override
-	public boolean onExecute(FleXPlayer player, ButtonAction action) {
+	public boolean onExecute(FleXPlayer player, ButtonAction action, Inventory inventory) {
 		
 		if (action.isClick()) {
 			
-			SanctionGui menu = (SanctionGui) this.getClickable();
+			if (inventory instanceof SanctionGui == false)
+				return false;
+			
+			SanctionGui menu = (SanctionGui) inventory;
+			
 			PunishmentType type = menu.getConsequenceType();
 			
 			Consequence consequence = new Consequence(this.threatened, player, this.reason, menu.hasMetadata("punishment_ip"), menu.hasMetadata("punishment_silent")) {

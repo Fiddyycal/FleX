@@ -130,7 +130,7 @@ public class FlowLineEnforcementHandler {
 	
 	public static String flowPath() {
 		
-		String path = Fukkit.getResourceHandler().getYaml(Configuration.DATA).getConfig().getString("FloW-Path", FleX.EXE_PATH + "/flex/data/flow/");
+		String path = Fukkit.getResourceHandler().getYaml(Configuration.DATA).getString("FloW-Path", FleX.EXE_PATH + "/flex/data/flow/");
 		
 		path = path.replace("${server_absolute_path}", FleX.EXE_PATH);
 		path = path.replace("${volumes_absolute_path}", new File(FleX.EXE_PATH).getParentFile().getAbsolutePath());

@@ -23,7 +23,7 @@ public interface FleXWorld extends Cacheable {
 	
 	public String getPassword();
 	
-	public World getWorld() throws FleXWorldNotLoadedException;
+	public World getWorld();
 	
 	public WorldState getState();
 	

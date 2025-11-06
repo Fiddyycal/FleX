@@ -95,12 +95,19 @@ public class SQLRowWrapper implements Cacheable {
 		return this.getInt(key, -1);
 	}
 	
-	public int getInt(String key, @Nullable int def) {
-		try {
-			return (int) this.entries.getOrDefault(key, def);
-		} catch (ClassCastException e) {
-			return def;
-		}
+	public int getInt(String key, int def) {
+		
+	    Object obj = this.entries.getOrDefault(key, def);
+	    
+	    if (obj instanceof Number)
+	    	return ((Number)obj).intValue();
+	    
+	    try {
+	        return Integer.parseInt(obj.toString());
+	    } catch (NumberFormatException e) {
+	        return def;
+	    }
+	    
 	}
 	
 	public boolean getBoolean(String key) {
@@ -112,8 +119,8 @@ public class SQLRowWrapper implements Cacheable {
 			return (boolean) this.entries.getOrDefault(key, def);
 		} catch (ClassCastException e) {
 			try {
-				return (int) this.entries.getOrDefault(key, def) == 1;
-			} catch (ClassCastException | NullPointerException fail) {
+				return this.getInt(key, def ? 1 : 0) == 1;
+			} catch (Exception fail) {
 				return def;
 			}
 		}
@@ -157,51 +164,57 @@ public class SQLRowWrapper implements Cacheable {
 		return this.getDouble(key, -1D);
 	}
 	
-	public double getDouble(String key, @Nullable double def) {
-		try {
-			return (double) this.entries.getOrDefault(key, def);
-		} catch (ClassCastException e) {
-			try {
-				Object obj = this.entries.getOrDefault(key, def);
-				return (double) (obj != null ? Double.parseDouble(obj.toString()) : def);
-			} catch (NumberFormatException | NullPointerException fail) {
-				return def;
-			}
-		}
+	public double getDouble(String key, double def) {
+		
+	    Object obj = this.entries.getOrDefault(key, def);
+	    
+	    if (obj instanceof Number)
+	    	return ((Number)obj).doubleValue();
+	    
+	    try {
+	        return Double.parseDouble(obj.toString());
+	    } catch (NumberFormatException e) {
+	        return def;
+	    }
+	    
 	}
 	
 	public long getLong(String key) {
 		return this.getLong(key, -1L);
 	}
 	
-	public long getLong(String key, @Nullable long def) {
-		try {
-			return (long) this.entries.getOrDefault(key, def);
-		} catch (ClassCastException e) {
-			try {
-				Object obj = this.entries.getOrDefault(key, def);
-				return (long) (obj != null ? Long.parseLong(obj.toString()) : def);
-			} catch (NumberFormatException | NullPointerException fail) {
-				return def;
-			}
-		}
+	public long getLong(String key, long def) {
+		
+	    Object obj = this.entries.getOrDefault(key, def);
+	    
+	    if (obj instanceof Number)
+	    	return ((Number)obj).longValue();
+	    
+	    try {
+	        return Long.parseLong(obj.toString());
+	    } catch (NumberFormatException e) {
+	        return def;
+	    }
+	    
 	}
 	
 	public float getFloat(String key) {
 		return this.getFloat(key, -1f);
 	}
 	
-	public float getFloat(String key, @Nullable float def) {
-		try {
-			return (float) this.entries.getOrDefault(key, def);
-		} catch (ClassCastException e) {
-			try {
-				Object obj = this.entries.getOrDefault(key, def);
-				return (float) (obj != null ? Float.parseFloat(obj.toString()) : def);
-			} catch (NumberFormatException | NullPointerException fail) {
-				return def;
-			}
-		}
+	public float getFloat(String key, float def) {
+		
+	    Object obj = this.entries.getOrDefault(key, def);
+	    
+	    if (obj instanceof Number)
+	    	return ((Number)obj).floatValue();
+	    
+	    try {
+	        return Float.parseFloat(obj.toString());
+	    } catch (NumberFormatException e) {
+	        return def;
+	    }
+	    
 	}
 
 	// Java

@@ -1,6 +1,7 @@
 package org.fukkit.api.example;
 
 import org.bukkit.Material;
+import org.bukkit.inventory.Inventory;
 import org.fukkit.clickable.Loadout;
 import org.fukkit.clickable.button.ExecutableButton;
 import org.fukkit.clickable.button.ButtonAction;
@@ -16,10 +17,10 @@ public class ExampleLoadout extends Loadout {
 		ExecutableButton test = new ExecutableButton(Material.PAPER) {
 			
 			private static final long serialVersionUID = -6132974559526764938L;
-
+			
 			@Override
 			@SuppressWarnings("deprecation")
-			public boolean onExecute(FleXPlayer player, ButtonAction action) {
+			public boolean onExecute(FleXPlayer player, ButtonAction action, Inventory inventory) {
 				
 				if (!action.isClick())
 					return false;
@@ -41,6 +42,7 @@ public class ExampleLoadout extends Loadout {
 		};
 		
 		test.setName("&4&lButton&8: &7&nClick&7 to show your ping&8.");
+		
 		this.addButton(test);
 		
 	}

@@ -16,27 +16,32 @@ public class VersionUtils {
 	public static Material material(String... values) {
 		
 		Material material = null;
-		int i = 0;
 		
-		while (material == null) {
-			
-			if (i >= values.length)
-				break;
-			
+		for (String string : values)
 			try {
-				material = Material.valueOf(values[i]);
-			} catch (NoSuchElementException | IllegalArgumentException e) {
-				i++;
-			}
-			
-			if (material != null)
-				return material;
-			
-		}
+				
+				/**
+				 * TODO Remove "LEGACY_" from all VersionUtils.material usage,
+				 * I am forcing the test for LEGACY materials AFTER normal ones.
+				 * Some things depend on the logic to be this way unfortunately.
+				 */
+				if (string.startsWith("LEGACY_"))
+					continue;
+				
+				material = Material.valueOf(string);
+				
+			} catch (NoSuchElementException | IllegalArgumentException e) {}
 		
-		Console.log("Version", Severity.NOTICE, new NoSuchElementException("Tried " + StringUtils.join(values, ", ") + " with no result. Is your version up to date?"));
+		if (material == null)
+			for (String string : values)
+				try {
+					material = Material.valueOf("LEGACY_" + string);
+				} catch (NoSuchElementException | IllegalArgumentException e) {}
 		
-		return null;
+		if (material == null)
+			Console.log("Version", Severity.NOTICE, new NoSuchElementException("Tried " + StringUtils.join(values, ", ") + " with no result. Is your version up to date?"));
+		
+		return material;
 		
 	}
 

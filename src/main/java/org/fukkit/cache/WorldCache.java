@@ -82,9 +82,9 @@ public class WorldCache extends LinkedCache<FleXWorld, UUID> {
 	
 	private void unloadWorlds() {
 		
-		YamlConfig bukkitYml = new YamlConfig(null, null, "bukkit");
+		YamlConfig bukkitYml = new YamlConfig(Bukkit.getWorldContainer().getAbsolutePath(), "bukkit");
 		
-		bukkitYml.getConfig().set("ticks-per.autosave", -1);
+		bukkitYml.asFileConfiguration().set("ticks-per.autosave", -1);
 		bukkitYml.save();
 		
 		String defaultWorld = null;

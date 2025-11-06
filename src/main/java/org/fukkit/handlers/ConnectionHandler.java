@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.fukkit.Fukkit;
 import org.fukkit.config.Configuration;
 import org.fukkit.config.YamlConfig;
@@ -44,24 +43,23 @@ public class ConnectionHandler {
 		
 		@SuppressWarnings("deprecation")
 		YamlConfig sql = Fukkit.getResourceHandler().getYaml(Configuration.SQL);
-		FileConfiguration config = sql.getConfig();
 		
-		String driver = config.getString("Driver", SQLDriverType.MYSQL.name());
-		String hostname = config.getString("Credentials.Host", "localhost");
+		String driver = sql.getString("Driver", SQLDriverType.MYSQL.name());
+		String hostname = sql.getString("Credentials.Host", "localhost");
 		
-		int port = config.getInt("Credentials.Port", 3306);
+		int port = sql.getInt("Credentials.Port", 3306);
 		
-		String database = config.getString("Credentials.Database", "flex_db");
-		String username = config.getString("Credentials.Username", "root");
-		String password = config.getString("Credentials.Password", "foobar");
+		String database = sql.getString("Credentials.Database", "flex_db");
+		String username = sql.getString("Credentials.Username", "root");
+		String password = sql.getString("Credentials.Password", "foobar");
 		
 		try {
 			
 			SQLDriverType type = SQLDriverType.valueOf(driver);
 			
-			if (type == SQLDriverType.SQLITE && config.contains("SQLite-Path")) {
+			if (type == SQLDriverType.SQLITE && sql.contains("SQLite-Path")) {
 				
-				String path = config.getString("SQLite-Path", FleX.EXE_PATH + "/flex/data/sqlite");
+				String path = sql.getString("SQLite-Path", FleX.EXE_PATH + "/flex/data/sqlite");
 				
 				path = path.replace("${server_absolute_path}", FleX.EXE_PATH);
 				path = path.replace("${volumes_absolute_path}", new File(FleX.EXE_PATH).getParentFile().getAbsolutePath());

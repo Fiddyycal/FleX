@@ -2,6 +2,7 @@ package org.fukkit.event.player;
 
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.entity.FleXEntityDeathEvent;
@@ -34,7 +35,7 @@ public class FleXPlayerDeathEvent extends FleXEntityDeathEvent {
         this.deathMessage = deathMessage;
         
         if (this.deathMessage != null)
-        	this.entity.getWorld().getOnlinePlayers().stream().forEach(p -> p.sendMessage(this.deathMessage));
+        	Bukkit.getOnlinePlayers().stream().forEach(p -> p.sendMessage(this.deathMessage));
         
     }
 

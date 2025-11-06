@@ -1,6 +1,12 @@
 package org.fukkit.item;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Egg;
+import org.bukkit.entity.EnderPearl;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Snowball;
+import org.bukkit.entity.ThrownExpBottle;
+import org.bukkit.entity.ThrownPotion;
 
 import io.flex.commons.utils.ArrayUtils;
 
@@ -72,8 +78,15 @@ public enum ChartedItem {
 	WOODEN_AXE(4.0, "LEGACY_WOODEN_AXE", "LEGACY_WOOD_AXE", "WOOD_AXE"),
 	WOODEN_PICKAXE(3.0, "LEGACY_WOODEN_PICKAXE", "LEGACY_WOOD_PICKAXE", "WOOD_PICKAXE"),
 	WOODEN_SHOVEL(2.0, "LEGACY_WOODEN_SHOVEL", "LEGACY_WOOD_SPADE", "WOOD_SPADE"),
-	WOODEN_HOE(1.0, "LEGACY_WOODEN_HOE", "LEGACY_WOOD_HOE", "WOOD_HOE"); // TODO Test if this is correct
-
+	WOODEN_HOE(1.0, "LEGACY_WOODEN_HOE", "LEGACY_WOOD_HOE", "WOOD_HOE"),
+	
+	BOW(1.0, "LEGACY_BOW", "BOW"),
+	EXP_BOTTLE(1.0, "LEGACY_EXP_BOTTLE", "EXP_BOTTLE", "EXPERIENCE_BOTTLE", "LEGACY_EXPERIENCE_BOTTLE"),
+	SPLASH_POTION(1.0, "LEGACY_SPLASH_POTION", "SPLASH_POTION"),
+	ENDER_PEARL(1.0, "LEGACY_ENDER_PEARL", "ENDER_PEARL"),
+	EGG(1.0, "LEGACY_EGG", "EGG"),
+	SNOW_BALL(1.0, "LEGACY_SNOW_BALL", "SNOW_BALL");
+	
 	private double amplifier;
 	
 	private String[] names;
@@ -143,6 +156,14 @@ public enum ChartedItem {
 		return this.name().endsWith("_BOOTS");
 	}
 	
+	public boolean isProjectile() {
+		return this == EXP_BOTTLE || this == SPLASH_POTION || this == ENDER_PEARL || this == EGG || this == SNOW_BALL;
+	}
+	
+	public boolean isProjectileSource() {
+		return this == BOW;
+	}
+	
 	public static boolean isCharted(Material material) {
 		return valueOf(material) != null;
 	}
@@ -150,10 +171,29 @@ public enum ChartedItem {
 	public static ChartedItem valueOf(Material material) {
 		
 		for (ChartedItem charted : ChartedItem.values())
-			if (ArrayUtils.contains(charted.names, material.name()))
+			if (charted.name().equals(material.name()) || ArrayUtils.contains(charted.names, material.name()))
 				return charted;
 		
 		return null;
+		
+	}
+	
+	public Class<? extends Projectile> projectile() {
+		
+		switch (this) {
+		case EXP_BOTTLE:
+			return ThrownExpBottle.class;
+		case SPLASH_POTION:
+			return ThrownPotion.class;
+		case ENDER_PEARL:
+			return EnderPearl.class;
+		case EGG:
+			return Egg.class;
+		case SNOW_BALL:
+			return Snowball.class;
+		default:
+			throw new UnsupportedOperationException(this.name() + " is not a thrown projectile.");
+		}
 		
 	}
 	

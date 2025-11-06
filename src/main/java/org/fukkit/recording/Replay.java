@@ -221,7 +221,7 @@ public class Replay extends Recording {
 				if (actions != null && actions.length > 0)
 					for (RecordedAction action : actions)
 						if (action != RecordedAction.NONE)
-							((CraftRecorded)recordable).getActor().playAnimation(action);
+							((CraftRecorded)recordable).getActor().playAction(action);
 				
 				if (location != null)
 					((CraftRecorded)recordable).getActor().teleport(location);

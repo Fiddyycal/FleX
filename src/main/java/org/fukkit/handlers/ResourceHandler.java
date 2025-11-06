@@ -14,8 +14,8 @@ import org.fukkit.config.YamlConfig;
 import io.flex.FleX;
 
 import static java.io.File.separator;
-import static org.fukkit.api.helper.ConfigHelper.defaults;
-import static org.fukkit.api.helper.ConfigHelper.world_container_path_absolute;;
+
+import static org.fukkit.api.helper.ConfigHelper.*;
 
 public class ResourceHandler {
 	
@@ -45,8 +45,8 @@ public class ResourceHandler {
 		String path = this.plugyml.getString("flex.config.path", "plugins" + separator + "aFleX");
 		String name = this.plugyml.getString("flex.config.name", "flex");
 		
-		this.aflex = new YamlConfig(null, path, name, defaults + "flex.yml");
-		this.config = new YamlConfig(Fukkit.getPlugin(), null, "config", defaults + "config.yml");
+		this.aflex = new YamlConfig(path, name, defaults + "flex.yml");
+		this.config = new YamlConfig(plugin_path_absolute, "config", defaults + "config.yml");
 		
 		File local = new File("flex" + separator + "data" + separator + "local");
 		File sqlite = new File("flex" + separator + "data" + separator + "sqlite");
@@ -62,11 +62,11 @@ public class ResourceHandler {
 		if (!disguises.exists())
 			disguises.mkdirs();
 		
-		this.data = new YamlConfig(Fukkit.getPlugin(), "data", "config", defaults + "data" + separator + "config.yml");
-		this.network = new YamlConfig(Fukkit.getPlugin(), "network", "config", defaults + "network" + separator + "config.yml");
+		this.data = new YamlConfig(plugin_path_absolute + separator + "data", "config", defaults + "data" + separator + "config.yml");
+		this.network = new YamlConfig(plugin_path_absolute + separator + "network", "config", defaults + "network" + separator + "config.yml");
 		
-		this.ranks = new YamlConfig(Fukkit.getPlugin(), "ranks", "config", defaults + "ranks" + separator + "config.yml");
-		this.themes = new YamlConfig(Fukkit.getPlugin(), "themes", "config", defaults + "themes" + separator + "config.yml");
+		this.ranks = new YamlConfig(plugin_path_absolute + separator + "ranks", "config", defaults + "ranks" + separator + "config.yml");
+		this.themes = new YamlConfig(plugin_path_absolute + separator + "themes", "config", defaults + "themes" + separator + "config.yml");
 		
 		registered = true;
 		

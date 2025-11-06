@@ -68,7 +68,7 @@ public class ServerHandler {
 		Task.print("Version", "Detecting server version...");
 		
 		@SuppressWarnings("deprecation")
-		FileConfiguration sqlConf = Fukkit.getResourceHandler().getYaml(Configuration.SQL).getConfig();
+		FileConfiguration sqlConf = Fukkit.getResourceHandler().getYaml(Configuration.SQL).asFileConfiguration();
 		
 		Task.try_(() -> {
 			this.driver = SQLDriverType.valueOf(sqlConf.getString("Driver", SQLDriverType.SQLITE.name()));
@@ -108,7 +108,7 @@ public class ServerHandler {
 	        
 		}
 		
-		FileConfiguration c = Fukkit.getResourceHandler().getYaml(Configuration.NETWORK).getConfig();
+		FileConfiguration c = Fukkit.getResourceHandler().getYaml(Configuration.NETWORK).asFileConfiguration();
 
 		this.settings.put(NetworkSetting.SERVER_REGION, ServerRegion.fromString(c.getString(NetworkSetting.SERVER_REGION.getKey(), NetworkSetting.SERVER_REGION.getDefault().toString())));
 		this.settings.put(NetworkSetting.CLEAN_TYPE, CleanType.valueOf(c.getString(NetworkSetting.CLEAN_TYPE.getKey(), NetworkSetting.CLEAN_TYPE.getDefault().toString())));
@@ -150,9 +150,8 @@ public class ServerHandler {
 	public FleXWorld getDefaultWorld() {
 		
 		YamlConfig yml = Fukkit.getResourceHandler().getYaml(Configuration.NETWORK);
-		FileConfiguration config = yml.getConfig();
 		
-		FleXWorld world = Memory.WORLD_CACHE.getByName(config.getString("World", "void"));
+		FleXWorld world = Memory.WORLD_CACHE.getByName(yml.getString("World", "void"));
 		
 		return world != null ? world : Memory.WORLD_CACHE.stream().findFirst().orElse(null);
 		

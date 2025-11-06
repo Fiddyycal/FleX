@@ -1,5 +1,6 @@
 package org.fukkit.listeners;
 
+import java.io.File;
 import java.util.Set;
 
 import org.bukkit.ChatColor;
@@ -89,9 +90,9 @@ public class ThemeListeners extends FleXEventListener {
 
 	@EventHandler
 	public void event(FleXFinalizeEvent event) {
-		
-		YamlConfig yaml = new YamlConfig(null, ConfigHelper.flex_path + "/data", "themed");
-		FileConfiguration conf = yaml.getConfig();
+
+		YamlConfig yaml = new YamlConfig(ConfigHelper.flex_path + File.separator + "data", "themed");
+		FileConfiguration conf = yaml.asFileConfiguration();
 		
 		if (conf == null)
 			return;

@@ -1,6 +1,7 @@
 package org.fukkit.theme;
 
 import java.util.Map.Entry;
+import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -9,7 +10,6 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
-import org.fukkit.Fukkit;
 import org.fukkit.api.helper.ConfigHelper;
 import org.fukkit.config.YamlConfig;
 import org.fukkit.item.UniqueItem;
@@ -46,15 +46,13 @@ public class Theme extends YamlConfig implements Cacheable {
 	
 	public Theme(String name) {
 		
-		super(Fukkit.getInstance(), "themes" + separator + name, "theme", ConfigHelper.assets + "themes" + separator + "theme.yml");
+		super(ConfigHelper.plugin_path_absolute + File.separator + "themes" + separator + name, "theme", ConfigHelper.assets + "themes" + separator + "theme.yml");
 		
 		this.name = name;
 		
-		FileConfiguration themConf = this.getConfig();
+		this.category = this.getString("Display.Category", "FleX_Engine").replace("_", " ");
 		
-		this.category = themConf.getString("Display.Category", "FleX_Engine").replace("_", " ");
-		
-		String parse = themConf.getString("Display.Icon.Material", "BOOK");
+		String parse = this.getString("Display.Icon.Material", "BOOK");
 		
 		Material iconMat = null;
 		
@@ -73,12 +71,12 @@ public class Theme extends YamlConfig implements Cacheable {
 		if (iconMat == null)
 			iconMat = VersionUtils.material(parse, Material.BOOK.name());
 		
-	    this.icon = new UniqueItem(iconMat, "&f", 1, (short) themConf.getInt("Display.Icon.Data", 0));
+	    this.icon = new UniqueItem(iconMat, "&f", 1, (short) this.getInt("Display.Icon.Data", 0));
 	    
-		this.data = (short) themConf.getInt("Display.Blocks.Primary.Data", 0);
-		this.subdata = (short) themConf.getInt("Display.Blocks.Secondary.Data", 0);
+		this.data = (short) this.getInt("Display.Blocks.Primary.Data", 0);
+		this.subdata = (short) this.getInt("Display.Blocks.Secondary.Data", 0);
 		
-		this.enabled = themConf.getBoolean("Enabled", true);
+		this.enabled = this.getBoolean("Enabled", true);
 		
 		this.loadTags();
 		this.loadMessages();
@@ -125,7 +123,7 @@ public class Theme extends YamlConfig implements Cacheable {
 	
 	public void setEnabled(boolean enabled) {
 		
-		this.getConfig().set("Enabled", enabled);
+		this.set("Enabled", enabled);
 		this.save();
 		
 		this.enabled = enabled;
@@ -138,7 +136,7 @@ public class Theme extends YamlConfig implements Cacheable {
 	
 	public void loadTags() {
 		
-		FileConfiguration conf = this.getConfig();
+		FileConfiguration conf = this.asFileConfiguration();
 		ConfigurationSection section = conf.getConfigurationSection("Tags");
 		
 		if (section == null)
@@ -189,8 +187,8 @@ public class Theme extends YamlConfig implements Cacheable {
 			String writeToPath = "themes" + separator + this.name + separator + "lang";
 			String defaultFromPath = ConfigHelper.assets + "themes" + separator + "lang" + separator;
 			
-			YamlConfig langYaml = new YamlConfig(Fukkit.getInstance(), writeToPath, language.toString(), defaultFromPath + language + ".yml");
-			FileConfiguration langConf = langYaml.getConfig();
+			YamlConfig langYaml = new YamlConfig(ConfigHelper.plugin_path_absolute + File.separator + writeToPath, language.toString(), defaultFromPath + language + ".yml");
+			FileConfiguration langConf = langYaml.asFileConfiguration();
 			
 			langConf.getKeys(true).stream().forEach(k -> {
 				

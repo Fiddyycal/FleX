@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.bukkit.configuration.file.FileConfiguration;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
 import org.fukkit.api.helper.ConfigHelper;
@@ -44,15 +43,13 @@ public class Rank extends FleXEventListener implements Cacheable {
 		
 		YamlConfig yml = Fukkit.getResourceHandler().getYaml(Configuration.RANKS);
 		
-		FileConfiguration conf = yml.getConfig();
-		
 		this.name = name;
 		
-		this.abbreviation = conf.getString("Ranks."  + name + ".Abbreviation", name.length() >= 3 ? name.substring(0, 3) : name);
+		this.abbreviation = yml.getString("Ranks."  + name + ".Abbreviation", name.length() >= 3 ? name.substring(0, 3) : name);
 		
-		this.weight = conf.getLong("Ranks." + name + ".Weight", 1);
+		this.weight = yml.getLong("Ranks." + name + ".Weight", 1);
 	    
-		conf.getStringList("Ranks." + this.name + ".Inherit").stream().forEach(i -> {
+		yml.getStringList("Ranks." + this.name + ".Inherit").stream().forEach(i -> {
 	    	
 			Rank inherit = Memory.RANK_CACHE.get(i);
 			
@@ -63,9 +60,9 @@ public class Rank extends FleXEventListener implements Cacheable {
 	    	
 	    });
 		
-		this.permissions.addAll(conf.getStringList("Ranks." + this.name + ".Permissions"));
+		this.permissions.addAll(yml.getStringList("Ranks." + this.name + ".Permissions"));
 		
-		this.staff = this.weight >= conf.getLong("Staff.Weight", 10);
+		this.staff = this.weight >= yml.getLong("Staff.Weight", 10);
 		
 		BukkitUtils.runLater(() -> {
 			this.loadDisplays();
@@ -134,28 +131,26 @@ public class Rank extends FleXEventListener implements Cacheable {
 		
 		YamlConfig rankYml = Fukkit.getResourceHandler().getYaml(Configuration.RANKS);
 		
-		FileConfiguration rankConf = rankYml.getConfig();
-		
 		for (Theme theme : Memory.THEME_CACHE) {
 			
 			String writeToPath = "themes" + File.separator + theme.getName();
 			String defaultFromPath = ConfigHelper.assets + "themes" + File.separator;
 			String def = "<pp>[" + (this.name.equalsIgnoreCase("probation") ? "&fMember<sp>(<failure>P<sp>)" : this.name.equalsIgnoreCase("owner") ? "&4%rank%" : "&f%rank%") + "<pp>]<reset> <reset>";
 			
-			boolean perTheme = rankConf.getBoolean("Theme-Specific", true);
+			boolean perTheme = rankYml.getBoolean("Theme-Specific", true);
 			
-			YamlConfig themeYml = perTheme ? new YamlConfig(Fukkit.getInstance(), writeToPath, "ranks", defaultFromPath + "ranks.yml") : null;
+			YamlConfig themeYml = perTheme ? new YamlConfig(ConfigHelper.plugin_path_absolute + File.separator + writeToPath, "ranks", defaultFromPath + "ranks.yml") : null;
 			
 			if (perTheme) {
 				
-				if (themeYml.getConfig().getString("Ranks." + this.name) == null) {
-					themeYml.getConfig().set("Ranks." + this.name, def);
+				if (themeYml.getString("Ranks." + this.name) == null) {
+					themeYml.set("Ranks." + this.name, def);
 					themeYml.save();
 				}
 				
 			}
 			
-			String rank = perTheme ? themeYml.getConfig().getString("Ranks." + this.name, def) : rankConf.getString("Ranks." + this.name + ".Display", def);
+			String rank = perTheme ? themeYml.getString("Ranks." + this.name, def) : rankYml.getString("Ranks." + this.name + ".Display", def);
 			
 			this.displays.put(new BiCell<String, String>() {
 

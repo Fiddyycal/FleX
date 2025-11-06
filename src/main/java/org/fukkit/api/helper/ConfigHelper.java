@@ -36,14 +36,14 @@ public class ConfigHelper {
 	
 	public static final String plugin_path = Fukkit.getPlugin().getDataFolder().getPath();
 	public static final String plugin_path_absolute = Fukkit.getPlugin().getDataFolder().getAbsolutePath();
-
+	
 	public static final String flex_path = world_container_path_absolute + separator + "flex";
 	public static final String world_backups_path = flex_path + separator + "backups";
-
+	
 	public static final String flow_path = flex_path + separator + "data" + separator + "flow";
 	
 	public static FileConfiguration getConfig(Configuration configType) {
-		return ((YamlConfig)Fukkit.getResourceHandler().getYaml(configType)).getConfig();
+		return ((YamlConfig)Fukkit.getResourceHandler().getYaml(configType)).asFileConfiguration();
 	}
 
 }

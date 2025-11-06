@@ -615,17 +615,24 @@ public class PlayerListeners extends FleXEventListener {
 	@EventHandler(priority = EventPriority.HIGH)
 	public void event(PlayerDeathEvent event) {
 		
-		if (event.getEntity().hasMetadata("disguising"))
-			event.setDeathMessage(null);
-		
-		FleXPlayer player = Fukkit.getPlayerExact(event.getEntity());
+		Player player = event.getEntity();
 		
 		if (player == null)
 			return;
 		
+		if (player.hasMetadata("disguising")) {
+			event.setDeathMessage(null);
+			return;
+		}
+		
+		FleXPlayer fp = Fukkit.getPlayerExact(event.getEntity());
+		
+		if (fp == null)
+			return;
+		
 		Fukkit.getEventFactory().call(new FleXPlayerDeathEvent(
 				
-				player,
+				fp,
 				event.getDrops(),
 				event.getDroppedExp(),
 				event.getNewExp(),

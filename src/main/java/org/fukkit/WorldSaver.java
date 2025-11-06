@@ -1,13 +1,20 @@
 package org.fukkit;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.World;
 import org.fukkit.world.FleXWorld;
 
 import io.flex.FleX.Task;
 import io.flex.commons.Severity;
 import io.flex.commons.console.Console;
+import io.flex.commons.utils.FileUtils;
+
+import static org.fukkit.api.helper.ConfigHelper.plugin_path_absolute;
+
+import static java.io.File.separator;
 
 public class WorldSaver extends FukkitRunnable {
 
@@ -35,14 +42,16 @@ public class WorldSaver extends FukkitRunnable {
 				Task.print("AutoSave", "Auto-saving level " + name + "...");
 				
 				try {
-					/*  TODO RE-DO ALL OF THIS.
-					String writeToPath = "network";
-					String containerPath = plugin_path_absolute + separator + writeToPath + separator + "worlds" + separator + name;
 					
-					FileUtils.copy(new File(world_container_path_absolute + separator + world.getName()), new File(containerPath), "puid.dat", "uid.dat", "session.lock");
+					World w = world.getWorld();
 					
-					*/
+					String writeToPath = "network" + separator + "worlds" + separator + name;
+					String containerPath = plugin_path_absolute + separator + writeToPath;
+					
+					FileUtils.copy(w.getWorldFolder(), new File(containerPath), "puid.dat", "uid.dat", "session.lock");
+					
 					Task.print("AutoSave", "Save complete.");
+					
 				} catch (Exception e) {
 					
 					Task.error("AutoSave", "There was a problem auto-saving level " + name + ".");

@@ -7,12 +7,6 @@ public class RandomNumberGenerator {
 	public static final Random RANDOM = new Random();
 	
 	public int getInt(int min, int max, int... neglect) {
-		
-    	if (min < Integer.MIN_VALUE)
-    		min = Integer.MIN_VALUE;
-    	
-    	if (max > Integer.MAX_VALUE)
-    		max = Integer.MAX_VALUE;
     	
     	if (min > max)
     		throw new UnsupportedOperationException("Bound error: Minimum cannot be more than maximum.");
@@ -27,12 +21,6 @@ public class RandomNumberGenerator {
     }
     
 	public double getDouble(double min, double max, double... neglect) {
-		
-    	if (min < Double.MIN_VALUE)
-    		min = Double.MIN_VALUE;
-    	
-    	if (max > Double.MAX_VALUE)
-    		max = Double.MAX_VALUE;
     	
     	if (min > max)
     		throw new UnsupportedOperationException("Bound error: Minimum cannot be more than maximum.");

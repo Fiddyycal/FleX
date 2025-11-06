@@ -49,7 +49,7 @@ public class ThemeCache extends LinkedCache<Theme, String> {
 		YamlConfig conf = Fukkit.getResourceHandler().getYaml(Configuration.THEMES);
 		File themes = conf.getParentFile();
 		
-		FileConfiguration config = conf.getConfig();
+		FileConfiguration config = conf.asFileConfiguration();
 		
 		if (!config.contains("Default")) {
 			config.set("Default", "");
@@ -86,9 +86,7 @@ public class ThemeCache extends LinkedCache<Theme, String> {
 		
 		YamlConfig conf = Fukkit.getResourceHandler().getYaml(Configuration.THEMES);
 		
-		FileConfiguration config = conf.getConfig();
-		
-		String theme = config.getString("Default", "Default");
+		String theme = conf.getString("Default", "Default");
 		
 		if (this.defaultTheme == null)
 			this.defaultTheme = this.get(theme);
@@ -102,16 +100,13 @@ public class ThemeCache extends LinkedCache<Theme, String> {
 	
 	private void preload(String name) {
 		
-		String writeTo = "themes" + separator + name;
+		String writeTo = ConfigHelper.plugin_path_absolute + separator + "themes" + separator + name;
 		String defaultFrom = ConfigHelper.defaults + writeTo + separator;
 		
-		new YamlConfig(Fukkit.getInstance(), writeTo, "theme", defaultFrom + "theme.yml");
+		new YamlConfig(writeTo, "theme", defaultFrom + "theme.yml");
 		
 		Arrays.stream(Language.values()).forEach(l -> {
-			
-			new YamlConfig(Fukkit.getInstance(), writeTo + separator + "lang", l + ".yml",
-					ConfigHelper.assets + "themes" + separator + "lang" + separator + l + ".yml");
-			
+			new YamlConfig(writeTo + separator + "lang", l + ".yml", ConfigHelper.assets + "themes" + separator + "lang" + separator + l + ".yml");
 		});
 		
 	}

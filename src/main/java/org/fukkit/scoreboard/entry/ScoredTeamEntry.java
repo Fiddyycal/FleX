@@ -87,5 +87,9 @@ public class ScoredTeamEntry extends TeamEntry {
 	public void setScore(Cell<Integer> score) {
 		this.auto = score;
 	}
+	
+	public boolean isAutoScore() {
+		return this.auto != null;
+	}
 
 }

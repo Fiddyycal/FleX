@@ -85,7 +85,7 @@ public final class Fukkit extends JavaPlugin {
 		
 		StopWatch timer = new StopWatch();
 		
-		Task.print(FleX.FLEX);
+		Task.print("", FleX.FLEX);
 		
 		Fukkit.fukkit = this;
 		
@@ -123,10 +123,7 @@ public final class Fukkit extends JavaPlugin {
 	    
 		try {
 			
-			Task.enableDebugMode((resourceHandler = (ResourceHandler) Class.forName("org.fukkit.handlers.ResourceHandler").newInstance())
-					
-					.getYaml(Configuration.ENGINE)
-					.getConfig().getBoolean("Debug", true));
+			Task.enableDebugMode((resourceHandler = (ResourceHandler) Class.forName("org.fukkit.handlers.ResourceHandler").newInstance()).getYaml(Configuration.ENGINE).getBoolean("Debug", true));
 			
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 			e.printStackTrace();

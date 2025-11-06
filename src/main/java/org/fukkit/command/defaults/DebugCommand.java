@@ -390,7 +390,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		boolean same = fp != null && fp.getUniqueId().equals(player.getUniqueId());
 		
-		sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Printing information about the world " + (same ? "you are" : player.getDisplayName(fp == null ? Memory.THEME_CACHE.getDefaultTheme() : fp.getTheme(), true) + " is") + " in...");
+		sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Printing information about the world " + (same ? "you are" : player.getDisplayName(fp == null ? Memory.THEME_CACHE.getDefaultTheme() : fp.getTheme(), true) + ChatColor.GRAY + " is") + ChatColor.GRAY + " in...");
 
 		if (!silent)
 			sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.RED + ChatColor.BOLD + "Hide sensitive information using the " + ChatColor.AQUA + ChatColor.BOLD + "-h" + ChatColor.RED + ChatColor.BOLD + " flag.");
@@ -509,7 +509,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		if (!silent)
 			sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.RED + ChatColor.BOLD + "Hide sensitive information using the " + ChatColor.AQUA + ChatColor.BOLD + "-h" + ChatColor.RED + ChatColor.BOLD + " flag.");
 		
-		sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Printing information about " + bot.getDisplayName(fp == null ? Memory.THEME_CACHE.getDefaultTheme() : fp.getTheme(), true) + "...");
+		sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Printing information about " + bot.getDisplayName(fp == null ? Memory.THEME_CACHE.getDefaultTheme() : fp.getTheme(), true) + ChatColor.GRAY + "...");
 		
 		BukkitUtils.runLater(() -> {
 			
@@ -581,7 +581,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		boolean same = fp != null && fp.getUniqueId().equals(player.getUniqueId());
 		boolean v1_9 = Fukkit.getServerHandler().getServerVersion().ordinal() > ServerVersion.v1_8_R3.ordinal();
 		
-		sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Printing information about the item" + (v1_9 ? "s " : " ") + (same ? "you are" : player.getDisplayName(fp == null ? Memory.THEME_CACHE.getDefaultTheme() : fp.getTheme(), true) + " is") + " holding...");
+		sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Printing information about the item" + (v1_9 ? "s " : " ") + (same ? "you are" : player.getDisplayName(fp == null ? Memory.THEME_CACHE.getDefaultTheme() : fp.getTheme(), true) + ChatColor.GRAY + " is") + ChatColor.GRAY + " holding...");
 
 		if (!silent)
 			sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.RED + ChatColor.BOLD + "Hide sensitive information using the " + ChatColor.AQUA + ChatColor.BOLD + "-h" + ChatColor.RED + ChatColor.BOLD + " flag.");

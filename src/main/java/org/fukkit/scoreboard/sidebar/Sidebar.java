@@ -25,7 +25,7 @@ import io.flex.FleX.Task;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.StringUtils;
 
-public class Sidebar implements FleXScoreboard {
+public abstract class Sidebar implements FleXScoreboard {
 
 	private FleXPlayer player;
 	
@@ -43,8 +43,12 @@ public class Sidebar implements FleXScoreboard {
 	
 	private BukkitRunnable task;
 	
-	@SuppressWarnings("deprecation")
 	public Sidebar(FleXPlayer player, String title, ScoredTeamEntry... entries) {
+		this(player, title, 20L, entries);
+	}
+	
+	@SuppressWarnings("deprecation")
+	public Sidebar(FleXPlayer player, String title, long updateTicks, ScoredTeamEntry... entries) {
 		
 		this.player = player;
 		
@@ -57,7 +61,7 @@ public class Sidebar implements FleXScoreboard {
 		
 		this.title = FormatUtils.format(title);
 		
-		if (entries.length > 15)
+		if (entries != null && entries.length > 15)
 			entries = Arrays.copyOfRange(entries, 0, 15);
 		
 		this.objective = this.scoreboard.getObjective(this.id);
@@ -65,7 +69,7 @@ public class Sidebar implements FleXScoreboard {
 		if (this.objective == null)
 			this.objective = this.scoreboard.registerNewObjective(this.id, "dummy");
 		
-		if (entries != null)
+		if (entries != null && entries.length > 0)
 			try {
 				this.setTeamEntries(entries);
 			} catch (InvocationTargetException e) {
@@ -75,7 +79,8 @@ public class Sidebar implements FleXScoreboard {
 		this.objective.setDisplayName(this.title);
 		this.objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 		
-		this.setIntervals(20L);
+		if (updateTicks > 0)
+			this.setIntervals(updateTicks);
 		
 	}
 	
@@ -88,21 +93,23 @@ public class Sidebar implements FleXScoreboard {
 	}
 	
 	public TeamEntry getTeamEntry(Team team) {
-		for (TeamEntry entry : this.entries) {
-			if (entry.getTeam() == team) {
+		
+		for (TeamEntry entry : this.entries)
+			if (entry.getTeam() == team)
 				return entry;
-			}
-		}
+		
 		return null;
+		
 	}
 	
 	public ScoredTeamEntry getTeamEntry(int score) {
-		for (ScoredTeamEntry entry : this.entries) {
-			if (entry.getScore() == score) {
+		
+		for (ScoredTeamEntry entry : this.entries)
+			if (entry.getScore() == score)
 				return entry;
-			}
-		}
+				
 		return null;
+		
 	}
 	
 	@Override
@@ -205,7 +212,7 @@ public class Sidebar implements FleXScoreboard {
 	}
 	
 	@Override
-	public void onTick() {
+	public final void onTick() {
 		
 		if (this.player instanceof FleXBot || this.player == null || this.player.getPlayer() == null || !this.player.isOnline()) {
 			
@@ -214,19 +221,25 @@ public class Sidebar implements FleXScoreboard {
 			
 		}
 		
-		this.entries.stream().forEach(e -> {
-			
-        	if (e.isUnregistered()) {
-        		
-        		this.clear();
-        		return;
-        		
-        	}
-        	
-			if (e.getImpute() != null || e.getAttribute() != null)
-				e.update();
-			
-		});
+		if (this.entries != null)
+			this.entries.stream().forEach(e -> {
+				
+	        	if (e.isUnregistered()) {
+	        		
+	        		this.clear();
+	        		return;
+	        		
+	        	}
+	        	
+				if (e.getImpute() != null || e.getAttribute() != null)
+					e.update();
+				
+				if (e.isAutoScore())
+					this.objective.getScore(e.getTeam().getEntries().iterator().next()).setScore(e.getScore());
+				
+			});
+		
+		this.onUpdate();
 		
 	}
 	
@@ -296,5 +309,7 @@ public class Sidebar implements FleXScoreboard {
 			});
 		
 	}
+	
+	public abstract void onUpdate();
 	
 }

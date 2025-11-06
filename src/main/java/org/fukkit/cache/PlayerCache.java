@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
@@ -17,36 +18,83 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
 import org.fukkit.PlayerState;
+import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.FleXEventListener;
+import org.fukkit.event.player.PlayerMicroCacheUpdateEvent;
 import org.fukkit.reward.Rank;
+import org.fukkit.theme.Theme;
 import org.fukkit.utils.BukkitUtils;
+
+import com.google.common.base.Objects;
 
 import io.flex.FleX.Task;
 import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.socket.Data;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.utils.CollectionUtils;
 
 import net.md_5.fungee.ProtocolVersion;
+import net.md_5.fungee.event.AsyncDataReceivedEvent;
 
 public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 
 	/**
 	 * 
 	 * This is where all bungeecord related information is stored as a player is logging in.
-	 * It's also how FleXPlayer objects are able to load ranks and names on the main thread without blocking.
+	 * It's also how FleXPlayer objects are able to load ranks, names and other important objects on the main thread without blocking.
 	 *
 	 */
-	public static class PlayerCacheMeta extends FleXEventListener {
+	public static class PlayerCacheMeta {
+		
+		public static final String CACHE_BRIDGE_KEY = "PLAYER_CACHE_META";
+		
+		public enum PlayerCacheMetaType {
+			
+		    NAME(o -> o),
+		    RANK(o -> o != null ? (o instanceof String ? (String)o : ((Rank)o).getName()) : null),
+		    THEME(o -> o != null ? o instanceof String ? (String)o : ((Theme)o).getName() : null),
+		    DOMAIN(o -> o),
+		    VERSION(o -> {
+		    	
+		        if (o instanceof ProtocolVersion)
+		            return ((ProtocolVersion) o).toRecommendedProtocol();
+		        
+		        else if (o instanceof Number)
+		            return ((Number)o).intValue();
+		        
+		        else if (o instanceof String)
+		            return Integer.parseInt((String)o);
+		        
+		        return -1;
+		        
+		    });
+			
+		    private final Function<Object, ?> cachedValue;
+		    
+		    PlayerCacheMetaType(Function<Object, ?> cachedValue) {
+		        this.cachedValue = cachedValue;
+		    }
+		    
+		    @SuppressWarnings("unchecked")
+		    public <R> R cachedValueOf(Object obj) {
+		        return (R) this.cachedValue.apply(obj);
+		    }
+		    
+		}
 		
 		private UUID uuid;
-		private String name, rank, domain;
-		
-		private ProtocolVersion version = ProtocolVersion.UNSPECIFIED;
+		private String name, rank, theme, domain;
+		private int version = -1;
 		
 		public PlayerCacheMeta(UUID uniqueId) {
 			this.uuid = uniqueId;
+		}
+		
+		public UUID getUniquId() {
+			return uuid;
 		}
 		
 		public String getName() {
@@ -58,31 +106,123 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 		}
 		
 		public ProtocolVersion getVersion() {
-			return this.version;
+			return ProtocolVersion.fromProtocol(this.version);
 		}
 		
 		public String getDomain() {
 			return this.domain;
 		}
 		
+		public Theme getTheme() {
+			return Memory.THEME_CACHE.getOrDefault(this.theme, Memory.THEME_CACHE.getDefaultTheme());
+		}
+		
 		public void setName(String name) {
-			this.name = name;
-			micro_cache.put(this.uuid, this);
+			this.update(PlayerCacheMetaType.NAME, name);
 		}
 		
 		public void setRank(Rank rank) {
-			this.rank = rank != null ? rank.getName() : null;
-			micro_cache.put(this.uuid, this);
+			this.update(PlayerCacheMetaType.RANK, rank);
+		}
+		
+		public void setTheme(Theme theme) {
+			this.update(PlayerCacheMetaType.THEME, theme);
 		}
 		
 		public void setVersion(ProtocolVersion version) {
-			this.version = version;
-			micro_cache.put(this.uuid, this);
+			this.update(PlayerCacheMetaType.VERSION, version);
 		}
 		
 		public void setDomain(String domain) {
-			this.domain = domain;
+			this.update(PlayerCacheMetaType.DOMAIN, domain);
+		}
+		
+		public void update(PlayerCacheMetaType type, Object obj) {
+			
+			if (this.uuid == null)
+				throw new IllegalStateException("uuid cannot be null.");
+			
+			/**
+			 * Each null condition makes sure PlayerMicroCacheUpdateEvent isn't recursively called.
+			 */
+			switch (type) {
+			case NAME:
+				
+				String name = type.cachedValueOf(obj);
+				
+				if (Objects.equal(this.name, name))
+					return;
+				
+				this.name = name;
+				break;
+				
+			case RANK:
+				
+				String rank = type.cachedValueOf(obj);
+				
+				if (Objects.equal(this.rank, rank))
+					return;
+				
+				this.rank = rank;
+				break;
+				
+			case THEME:
+				
+				String theme = type.cachedValueOf(obj);
+				
+				if (Objects.equal(this.theme, theme))
+					return;
+				
+				this.theme = theme;
+				break;
+				
+			case DOMAIN:
+				
+				String domain = type.cachedValueOf(obj);
+				
+				if (Objects.equal(this.domain, domain))
+					return;
+				
+				this.domain = domain;
+				break;
+				
+			case VERSION:
+				
+				int check = type.cachedValueOf(obj);
+				
+				if (this.version == check)
+					return;
+				
+				this.version = check;
+				break;
+				
+			default:
+				return;
+			}
+			
 			micro_cache.put(this.uuid, this);
+			
+			Fukkit.getEventFactory().call(new PlayerMicroCacheUpdateEvent(this, type, obj));
+			
+		}
+		
+		// This is so new meta data doesn't spam other servers with update events.
+		public static PlayerCacheMeta cache(SQLRowWrapper row) {
+			
+			String uid = row.getString("uuid");
+			
+			UUID uuid = UUID.fromString(uid);
+			
+			PlayerCacheMeta meta = new PlayerCacheMeta(uuid);
+			
+			String name = row.getString("name");
+			String rank = row.getString("rank");
+			
+			meta.setName(name);
+			meta.setRank(Memory.RANK_CACHE.getOrDefault(rank, Memory.RANK_CACHE.getDefaultRank()));
+			
+			return meta;
+			
 		}
 		
 	}
@@ -123,6 +263,32 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 				
 			}
 			
+			@EventHandler
+			public void event(AsyncDataReceivedEvent event) {
+				
+				Data data = event.getData();
+				
+				if (!data.getKey().equalsIgnoreCase(PlayerCacheMeta.CACHE_BRIDGE_KEY))
+					return;
+				
+				Map<String, String> map = CollectionUtils.toMap(data.getValue());
+				
+				String uid = map.get("uuid");
+				
+				if (uid == null)
+					return;
+				
+				UUID uuid = UUID.fromString(map.get("uuid"));
+				
+				if (uuid == null)
+					return;
+				
+				PlayerCacheMeta meta = getCachedAttributes(uuid);
+				
+				map.forEach((k, v) -> meta.update(PlayerCacheMeta.PlayerCacheMetaType.valueOf(k), v));
+				
+			}
+			
 		};
 		
 	}
@@ -147,7 +313,8 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 	public boolean add(FleXHumanEntity... args) {
 		
 		for (FleXHumanEntity entity : args)
-			getCachedAttributes(entity.getUniqueId()).setRank(entity.getRank());
+			if (entity instanceof FleXBot == false)
+				getCachedAttributes(entity.getUniqueId()).setRank(entity.getRank());
 		
 		return super.add(args);
 		
@@ -282,18 +449,9 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 				
 				try {
 					
-					String uid = row.getString("uuid");
-					String name = row.getString("name");
-					String rank = row.getString("rank");
+					PlayerCacheMeta meta = PlayerCacheMeta.cache(row);
 					
-					UUID uuid = UUID.fromString(uid);
-					
-					Task.print("Players", "Caching " + rank + " \"" + name + "\" (" + uid.substring(0, 8) + "...) [" + (i++) + "/" + amount + "]");
-					
-					PlayerCacheMeta meta = getCachedAttributes(uuid);
-					
-					meta.setName(name);
-					meta.setRank(Memory.RANK_CACHE.getOrDefault(rank, Memory.RANK_CACHE.getDefaultRank()));
+					Task.print("Players", "Cached " + meta.getRank().getName() + " \"" + meta.getName() + "\" (" + meta.getUniquId().toString().substring(0, 8) + "...) [" + (i++) + "/" + amount + "]");
 					
 				} catch (Exception e) {
 					e.printStackTrace();

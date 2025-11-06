@@ -5,7 +5,7 @@ import org.bukkit.event.HandlerList;
 
 import io.flex.commons.socket.Data;
 
-public class AsyncDataEvent extends Event {
+public class DataEvent extends Event {
 
 	private static HandlerList handlers = new HandlerList();
 	
@@ -20,9 +20,9 @@ public class AsyncDataEvent extends Event {
 		return handlers;
 	}
 	
-	public AsyncDataEvent(Data data) {
+	public DataEvent(Data data, boolean async) {
 		
-		super(true);
+		super(async);
 		
 		this.data = data;
 		

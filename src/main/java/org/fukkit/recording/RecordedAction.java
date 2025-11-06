@@ -6,13 +6,13 @@ public enum RecordedAction {
 	
 	CROUCH, UNCROUCH,
 	
-	START_CONSUME, CONSUME,
+	USE_ITEM, STOP_USE_ITEM, CONSUME, STOP_CONSUME,
 	
 	SLEEP, WAKE,
 	
 	EQUIP_HAND, EQUIP_OFF_HAND, EQUIP_ARMOR,
 	
-	START_LAUNCH_PROJECTILE, LAUNCH_PROJECTILE,
+	LAUNCH_PROJECTILE,
 	
 	SWING_ARM, INTERACT,
 	
@@ -23,7 +23,7 @@ public enum RecordedAction {
 	DROP, PICKUP;
 	
 	public boolean isAnimation() {
-		return (this != DROP) && (this != PICKUP) && (this != LAUNCH_PROJECTILE) && (this != CONSUME) && (this != IDLE) && (this != NONE);
+		return (this != DROP) && (this != PICKUP) && (this != LAUNCH_PROJECTILE) && (this != IDLE) && (this != NONE);
 	}
 
 }

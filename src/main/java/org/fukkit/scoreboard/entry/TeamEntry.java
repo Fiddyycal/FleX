@@ -97,14 +97,14 @@ public class TeamEntry implements CharSequence, Cloneable {
 	
 	public void update() throws IllegalStateException {
 		
-		this.prefix = this.lastPrefix + (this.impute != null ? this.impute.a() : "");
-		this.suffix = this.lastSuffix + (this.attribute != null ? this.attribute.a() : "");
-		
-		if (this.team != null) {
-			this.team.setPrefix(FormatUtils.format(StringUtils.shorten(this.prefix, 0, 16)));
-			this.team.setSuffix(FormatUtils.format(StringUtils.shorten(this.suffix, 0, 16)));
-		}
-		
+	    this.prefix = this.lastPrefix + (this.impute != null ? this.impute.a() : "");
+	    this.suffix = this.lastSuffix + (this.attribute != null ? this.attribute.a() : "");
+	    
+	    if (this.team != null) {
+	        this.team.setPrefix(FormatUtils.format(StringUtils.shorten(this.prefix, 0, 16)));
+	        this.team.setSuffix(FormatUtils.format(StringUtils.shorten(this.suffix, 0, 16)));
+	    }
+	    
 	}
 	
 	private String[] generate(String line) {

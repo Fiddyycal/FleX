@@ -6,6 +6,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
+import io.flex.commons.Nullable;
 import io.flex.commons.utils.ArrayUtils;
 
 import static java.io.File.separator;
@@ -71,36 +72,33 @@ public class FleX {
 		
 		private static boolean debug = false;
 		
-		public static <T> void debug(T output) {
-			if (debug) System.out.println("[Debug] " + output);
+		public static void debug(@Nullable String prefix, @Nullable String... output) {
+			if (debug) {
+				
+				if (output == null || output.length == 0)
+					System.out.println("[Debug] " + prefix);
+					
+				Arrays.stream(output).forEach(op -> System.out.println((prefix != null ? "[" + prefix + "] " : "") + op));
+				
+			}
 		}
 		
-		@SafeVarargs
-		public static <T> void debug(String prefix, T... output) {
-			if (debug) Arrays.stream(output).forEach(op -> System.out.println("[Debug/" + prefix + "] " + op));
+		public static void error(@Nullable String prefix, @Nullable String... output) {
+			
+			if (output == null || output.length == 0)
+				System.err.println(prefix);
+			
+			else Arrays.stream(output).forEach(op -> System.err.println((prefix != null ? "[" + prefix + "] " : "") + op));
+			
 		}
 		
-		public static <T> void error(T output) {
-			System.err.println(output);
-		}
-
-		@SafeVarargs
-		public static <T> void error(String prefix, T... output) {
-			Arrays.stream(output).forEach(op -> System.err.println("[" + prefix + "] " + op));
-		}
-		
-		@SafeVarargs
-		public static <T> void print(T... output) {
-			Arrays.stream(output).forEach(op -> {
-				System.out.println(op);
-			});
-		}
-
-		@SafeVarargs
-		public static <T> void print(String prefix, T... output) {
-			Arrays.stream(output).forEach(op -> {
-				System.out.println("[" + prefix + "] " + op);
-			});
+		public static void print(@Nullable String prefix, @Nullable String... output) {
+			
+			if (output == null || output.length == 0)
+				System.out.println(prefix);
+			
+			else Arrays.stream(output).forEach(op -> System.out.println((prefix != null ? "[" + prefix + "] " : "") + op));
+			
 		}
 		
 		public static <T extends Throwable> T throw_(T exception) {
