@@ -16,24 +16,20 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
-import org.fukkit.clickable.Clickable;
 import org.fukkit.clickable.Menu;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.item.UniqueItem;
-import org.fukkit.utils.BukkitUtils;
 
 import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
 import io.flex.commons.cache.Cacheable;
 import io.flex.commons.utils.ClassUtils;
 
-public abstract class ExecutableButton extends UniqueItem implements Button, Serializable, Cacheable {
+public abstract class ExecutableButton extends UniqueItem implements UniqueButton, Serializable, Cacheable {
 	
 	private static final long serialVersionUID = 8721156523715764987L;
 	
-	private static long debugged = System.currentTimeMillis();
-	
-	private Set<Clickable> clickables = new HashSet<Clickable>();
+	private Set<Inventory> holders = new HashSet<Inventory>();
 	
 	private boolean intractable, droppable;
 	
@@ -67,36 +63,6 @@ public abstract class ExecutableButton extends UniqueItem implements Button, Ser
 		
 	}
 	
-	@Override
-	public Set<? extends Clickable> getClickables() {
-		
-		if (this instanceof PointlessButton || this instanceof FacelessButton)
-			return null;
-		
-		// Some sub classes, like UniqueItem, access this method before the class is fully instantiated.
-		if (this.clickables == null)
-			this.clickables = new HashSet<Clickable>();
-		
-		if (this.clickables.isEmpty())
-			BukkitUtils.runLater(() -> {
-				
-				// If still empty after initially creating the buttons for clickables.
-				if (this.clickables.isEmpty()) {
-					
-					Task.error("Clickable", "Potential Memory leak, please review:");
-					Task.error("Clickable", "This ExecutableButton is not bound to any clickables.");
-					Task.error("Clickable", "UniqueId: " + this.getUniqueId());
-					Task.error("Clickable", "Item: " + this.getType());
-					Task.error("Clickable", "Meta: " + (this.hasItemMeta() ? (this.getItemMeta().hasDisplayName() ? this.getItemMeta().getDisplayName() : "NULL_DISPLAY") : null));
-					
-				}
-				
-			});
-		
-		return this.clickables;
-		
-	}
-	
 	public boolean isIntractable() {
 		return this.intractable;
 	}
@@ -106,28 +72,8 @@ public abstract class ExecutableButton extends UniqueItem implements Button, Ser
 	}
 	
 	@Override
-	public void bind(Clickable clickable) {
-		
-		if (this instanceof PointlessButton || this instanceof FacelessButton)
-			return;
-		
-		this.clickables.add(clickable);
-		
-	}
-	
-	@Override
-	public void unbind(Clickable clickable) {
-		this.clickables.remove(clickable);
-	}
-	
-	@Override
-	public boolean isLinked() {
-		return !this.clickables.isEmpty();
-	}
-	
-	@Override
-	public boolean isLinked(Clickable clickable) {
-		return this.clickables.contains(clickable);
+	public Set<Inventory> getHolders() {
+		return this.holders;
 	}
 	
 	@Override
@@ -139,25 +85,25 @@ public abstract class ExecutableButton extends UniqueItem implements Button, Ser
 		if (!force && this.unchanged())
 			return;
 		
-		Set<? extends Clickable> clickables = this.getClickables();
+		Set<Inventory> holders = this.holders;
 		
-		if (clickables.isEmpty())
+		if (holders == null || holders.isEmpty())
 			return;
 		
-		clickables.forEach(c -> {
+		holders.forEach(inv -> {
 			
 			UUID uuid = this.getUniqueId();
 			
-			if (c instanceof Menu) {
+			if (inv instanceof Menu) {
 				
-				Entry<Integer, Button> button = c.getButtons().entrySet().stream().filter(e -> e.getValue() == this).findFirst().orElse(null);
+				Entry<Integer, Button> button = ((Menu)inv).getButtons().entrySet().stream().filter(e -> e.getValue() == this).findFirst().orElse(null);
 				
 				if (button == null)
 					return;
 				
 				int slot = button.getKey();
 				
-				ItemStack item = c.getContents()[slot];
+				ItemStack item = inv.getContents()[slot];
 				
 				if (item == null)
 					return;
@@ -175,21 +121,12 @@ public abstract class ExecutableButton extends UniqueItem implements Button, Ser
 					copy(item, this);
 			    	
 					try {
-						c.setItem(slot, item);
+						inv.setItem(slot, item);
 					} catch (NullPointerException e) {}
 					
 				}
 				
-				if (c.getViewers().isEmpty() && System.currentTimeMillis() >= debugged + 10000) {
-					
-					Task.debug("Clickable",
-							
-							"Without any viewers for clickable \'" + c.getClass().getCanonicalName() + "\' Minecraft limits updates to 100 ticks (5 seconds).",
-							"This can be countered by using GuiCache#getByPlayer(), but is discouraged as it uses significantly more cpu by item matching all players.");
-					
-					debugged = System.currentTimeMillis();
-					
-				} else c.getViewers().stream().filter(p -> p instanceof FleXPlayer).forEach(p -> {
+				inv.getViewers().stream().filter(p -> p instanceof FleXPlayer).forEach(p -> {
 					((FleXPlayer)p).getPlayer().updateInventory();
 				});
 				

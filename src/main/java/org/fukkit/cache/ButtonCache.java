@@ -7,11 +7,11 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
-import org.fukkit.clickable.button.ExecutableButton;
+import org.fukkit.clickable.button.UniqueButton;
 
 import io.flex.commons.cache.LinkedCache;
 
-public class ButtonCache extends LinkedCache<ExecutableButton, UUID> {
+public class ButtonCache extends LinkedCache<UniqueButton, UUID> {
 
 	private static final long serialVersionUID = -71037563061932004L;
 
@@ -19,7 +19,7 @@ public class ButtonCache extends LinkedCache<ExecutableButton, UUID> {
 		super((button, uid) -> button.getUniqueId().equals(uid));
 	}
 	
-	public ExecutableButton getByItem(ItemStack itemStack) {
+	public UniqueButton getByItem(ItemStack itemStack) {
 		
 		removeNull();
 		
@@ -29,13 +29,13 @@ public class ButtonCache extends LinkedCache<ExecutableButton, UUID> {
 	
 	private static void removeNull() {
 		
-		Iterator<ExecutableButton> iterator = Memory.BUTTON_CACHE.iterator();
+		Iterator<UniqueButton> iterator = Memory.BUTTON_CACHE.iterator();
 		
 		while(iterator.hasNext()) {
 			
-			ExecutableButton button = iterator.next();
+			UniqueButton button = iterator.next();
 			
-			if (button.asItemStack() == null || button.getType() == Material.AIR)
+			if (button.asItemStack() == null || button.asItemStack().getType() == Material.AIR)
 				iterator.remove();
 				
 		}

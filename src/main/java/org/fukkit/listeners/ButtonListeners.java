@@ -18,11 +18,10 @@ import org.bukkit.inventory.ItemStack;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
 import org.fukkit.api.helper.EventHelper;
-import org.fukkit.api.helper.PlayerHelper;
-import org.fukkit.clickable.Clickable;
 import org.fukkit.clickable.Loadout;
 import org.fukkit.clickable.Menu;
 import org.fukkit.clickable.button.ExecutableButton;
+import org.fukkit.clickable.button.UniqueButton;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.FleXEventListener;
@@ -31,7 +30,6 @@ import org.fukkit.event.player.PlayerGuiClickEvent;
 import org.fukkit.event.player.PlayerGuiCloseEvent;
 import org.fukkit.event.player.PlayerGuiOpenEvent;
 import org.fukkit.event.player.PlayerLoadoutClickEvent;
-import org.fukkit.item.LoadoutItem;
 import org.fukkit.utils.BukkitUtils;
 
 public class ButtonListeners extends FleXEventListener {
@@ -97,7 +95,6 @@ public class ButtonListeners extends FleXEventListener {
 	}
 	
 	@EventHandler
-	@SuppressWarnings("deprecation")
 	public void event(InventoryClickEvent event) {
 		
 		HumanEntity entity = event.getWhoClicked();
@@ -137,7 +134,12 @@ public class ButtonListeners extends FleXEventListener {
 		if (item == null || item.getType() == Material.AIR)
 			return;
 		
-		ExecutableButton button = Memory.BUTTON_CACHE.getByItem(item);
+		UniqueButton butt = Memory.BUTTON_CACHE.getByItem(item);
+		
+		if (butt instanceof ExecutableButton == false)
+			return;
+		
+		ExecutableButton button = (ExecutableButton) butt;
 		
 		FleXPlayer player = Fukkit.getPlayerExact((Player)entity);
 		
@@ -150,17 +152,16 @@ public class ButtonListeners extends FleXEventListener {
 		if (menu != null)
 			clickEvent = new PlayerGuiClickEvent(player, menu, button, action, false);
 		
-		if (button != null && clickEvent == null) {
+		else {
 			
-			if (button instanceof LoadoutItem) {
+			if (button != null) {
 				
-				Clickable clickable = button.getClickables().stream().findFirst().orElse(null);
+				Loadout lo = player.getLoadout();
 				
-				if (clickable != null && clickable instanceof Loadout)
-					clickEvent = new PlayerLoadoutClickEvent(player, (Loadout) clickable, button, action, false);
+				if (lo != null && lo.hasButton(button))
+					clickEvent = new PlayerLoadoutClickEvent(player, lo, button, action, false);
 				
-				if (clickable == null || clickEvent == null)
-					clickEvent = new PlayerButtonExecuteEvent(player, button, action, false);
+				else clickEvent = new PlayerButtonExecuteEvent(player, button, action, false);
 				
 			}
 			
@@ -199,7 +200,12 @@ public class ButtonListeners extends FleXEventListener {
 		
 		ItemStack item = event.getItem();
 		
-		ExecutableButton button = Memory.BUTTON_CACHE.getByItem(item);
+		UniqueButton butt = Memory.BUTTON_CACHE.getByItem(item);
+		
+		if (butt instanceof ExecutableButton == false)
+			return;
+		
+		ExecutableButton button = (ExecutableButton) butt;
 		
 		if (button != null) {
 			
@@ -249,7 +255,12 @@ public class ButtonListeners extends FleXEventListener {
 		
 		ItemStack item = event.getItemDrop().getItemStack();
 		
-		ExecutableButton button = Memory.BUTTON_CACHE.getByItem(item);
+		UniqueButton butt = Memory.BUTTON_CACHE.getByItem(item);
+		
+		if (butt instanceof ExecutableButton == false)
+			return;
+		
+		ExecutableButton button = (ExecutableButton) butt;
 		
 		if (button != null) {
 

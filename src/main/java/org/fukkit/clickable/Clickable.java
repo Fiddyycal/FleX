@@ -1,7 +1,9 @@
 package org.fukkit.clickable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -19,14 +21,15 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.metadata.Metadatable;
 import org.bukkit.plugin.Plugin;
 import org.fukkit.Fukkit;
-import org.fukkit.Memory;
 import org.fukkit.clickable.button.Button;
 import org.fukkit.clickable.button.ExecutableButton;
+import org.fukkit.clickable.button.UniqueButton;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.item.Item;
 import org.fukkit.item.UniqueItem;
 
 import io.flex.commons.cache.Cacheable;
+import io.flex.commons.utils.ArrayUtils;
 
 public abstract class Clickable implements Inventory, Cacheable, Metadatable {
 	
@@ -99,7 +102,8 @@ public abstract class Clickable implements Inventory, Cacheable, Metadatable {
 		this.inventory.setItem(i, button.asItemStack());
 		this.buttons.put(i, button);
 		
-		button.bind(this);
+		if (button instanceof UniqueButton)
+			((UniqueButton)button).getHolders().add(this);
 		
 	}
 	
@@ -114,12 +118,21 @@ public abstract class Clickable implements Inventory, Cacheable, Metadatable {
 			
 			this.buttons.put(slot, button);
 			
-			button.bind(this);
+			if (button instanceof UniqueButton)
+				((UniqueButton)button).getHolders().add(this);
 			
 		}
 		
-		else if (this.buttons.containsKey(slot))
+		else if (this.buttons.containsKey(slot)) {
+			
+			Button b = this.buttons.get(slot);
+			
 			this.buttons.remove(slot);
+			
+			if (b instanceof UniqueButton)
+				((UniqueButton)b).getHolders().remove(this);
+			
+		}
 		
 	}
 	
@@ -134,10 +147,8 @@ public abstract class Clickable implements Inventory, Cacheable, Metadatable {
 		
 		this.buttons.remove(slot);
 		
-		button.unbind(this);
-		
-		if (button instanceof ExecutableButton)
-			Memory.BUTTON_CACHE.remove((ExecutableButton)button);
+		if (button instanceof UniqueButton)
+			((UniqueButton)button).getHolders().remove(this);
 		
 	}
 	
@@ -180,6 +191,10 @@ public abstract class Clickable implements Inventory, Cacheable, Metadatable {
 		
 	}
 	
+	public boolean hasButton(Button button) {
+		return this.buttons.containsValue(button);
+	}
+	
 	@Override
 	public List<MetadataValue> getMetadata(String metadataKey) {
 		return this.metadata.get(metadataKey);
@@ -215,9 +230,25 @@ public abstract class Clickable implements Inventory, Cacheable, Metadatable {
 		return this.metadata.containsKey(metadataKey);
 	}
 	
+	@Override
 	public void clear() {
-		for (int i : this.buttons.keySet())
-			this.removeButton(i);
+		this.clear(-1);
+	}
+	
+	public void clear(Integer... exclude) {
+		
+		for (Integer slot : new HashSet<Integer>(this.buttons.keySet())) {
+			
+			if (slot < 0)
+				continue;
+			
+			if (ArrayUtils.contains(exclude, (Integer)slot))
+				continue;
+			
+			this.removeButton(slot);
+			
+		}
+		
 	}
 	
 	public Inventory asBukkitInventory() {

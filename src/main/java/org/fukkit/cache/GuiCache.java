@@ -143,7 +143,11 @@ public class GuiCache extends LinkedCache<Menu, Inventory> {
 	}
 	
 	public Menu getByPlayer(FleXPlayer player) {
+		return this.stream().filter(gui -> player.getPlayer().getOpenInventory() == gui.asBukkitInventory()).findFirst().orElse(null);
+	}
+	/*
+	public Menu getByPlayer(FleXPlayer player) {
 		return this.stream().filter(gui -> player.getPlayer().getOpenInventory().getTitle().equals(gui.getTitle())).findFirst().orElse(null);
 	}
-
+*/
 }

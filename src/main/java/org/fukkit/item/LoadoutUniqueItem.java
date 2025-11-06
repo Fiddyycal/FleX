@@ -7,18 +7,14 @@ import java.util.UUID;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.fukkit.clickable.Clickable;
-import org.fukkit.clickable.Loadout;
-import org.fukkit.clickable.button.Button;
-import org.fukkit.utils.BukkitUtils;
-
-import io.flex.FleX.Task;
+import org.fukkit.clickable.button.UniqueButton;
 import io.flex.commons.Nullable;
 
-public class LoadoutUniqueItem extends UniqueItem implements Button {
+public class LoadoutUniqueItem extends UniqueItem implements UniqueButton {
 	
-	private Set<Loadout> loadouts = new HashSet<Loadout>();
+	private Set<Inventory> holders = new HashSet<Inventory>();
 	
 	public LoadoutUniqueItem(Material material) {
 		this(material, null);
@@ -65,6 +61,11 @@ public class LoadoutUniqueItem extends UniqueItem implements Button {
 				item.getEnchantments(),
 				item.hasItemMeta() && item.getItemMeta().hasLore() ? item.getItemMeta().getLore().toArray(new String[item.getItemMeta().getLore().size()]) : null);
 		
+	}
+	
+	@Override
+	public Set<Inventory> getHolders() {
+		return (this.holders != null ? this.holders : (this.holders = new HashSet<Inventory>()));
 	}
 
 }

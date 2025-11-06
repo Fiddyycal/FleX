@@ -64,6 +64,9 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 		
 		if (replay) {
 			
+			if (!container.exists())
+				throw new UnsupportedOperationException("container does not exist");
+			
 			if (!container.isDirectory())
 				throw new UnsupportedOperationException("container must be a directory");
 			

@@ -274,7 +274,7 @@ public class Item extends ItemStack implements Cloneable {
     }
 	
 	public void update() {
-		this.update(true);
+		this.update(false);
 	}
     
 	@Overridden
