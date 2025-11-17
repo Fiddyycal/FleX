@@ -2,6 +2,10 @@ package io.flex.commons.emoji;
 
 public enum Emoji {
 	
+	// NOT MIENCRAFT COMPATIBLE
+	BOW("🏹"),
+	
+	// COMPATIBLE EVERYWHERE
 	HEART("❤"),
 	BULLET("•"),
 	MARK_REGISTERED_TRADE("©"),
@@ -11,7 +15,7 @@ public enum Emoji {
 	BOX_DRAWINGS_LIGHT_UP_AND_RIGHT("└"),
 	BOX_DRAWINGS_LIGHT_VERTICAL_AND_RIGHT("├"),
 	BOX_DRAWINGS_LIGHT_HORIZONTAL("─"),
-	CROSSED_SWORDS("⚔"),
+	CROSSED_SWORDS("⚔️"),
 	BLACK_SUN_WITH_RAYS("☀"),
 	FOUR_POINTED_WHITE_STAR("✧"),
 	SIX_POINTED_BLACK_STAR("✶"),
@@ -36,6 +40,10 @@ public enum Emoji {
 	
 	private Emoji(String unicode) {
 		this.unicode = unicode;
+	}
+	
+	public boolean isMinecraftCompatible() {
+		return this != BOW;
 	}
 	
 	@Override

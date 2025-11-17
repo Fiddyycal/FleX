@@ -4,7 +4,6 @@ import org.fukkit.cache.BadgeCache;
 import org.fukkit.cache.ButtonCache;
 import org.fukkit.cache.CommandCache;
 import org.fukkit.cache.GuiCache;
-import org.fukkit.cache.NameCache;
 import org.fukkit.cache.SkinCache;
 import org.fukkit.cache.PlayerCache;
 import org.fukkit.cache.RankCache;
@@ -19,7 +18,6 @@ public interface Memory {
 	GuiCache GUI_CACHE = new GuiCache();
 	RankCache RANK_CACHE = new RankCache();
 	SkinCache SKIN_CACHE = new SkinCache();
-	NameCache NAME_CACHE = new NameCache();
 	BadgeCache BADGE_CACHE = new BadgeCache();
 	WorldCache WORLD_CACHE = new WorldCache();
 	ThemeCache THEME_CACHE = new ThemeCache();
@@ -37,7 +35,6 @@ public interface Memory {
 		BADGE_CACHE.load();
 		RANK_CACHE.load();
 		SKIN_CACHE.load();
-		NAME_CACHE.load();
 		BAN_CACHE.load();
 		
 		/* After everything has loaded. */

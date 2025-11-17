@@ -3,6 +3,7 @@ package org.fukkit.recording;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -105,6 +106,20 @@ public class Replay extends Recording {
 		
 		if (row == null)
 			return null;
+		
+		if (row.getString("state").equals(RecordingState.ERROR.name())) {
+			
+			String error;
+			
+			try {
+				error = new String((byte[]) row.getByteArray("data"), StandardCharsets.UTF_8);
+			} catch (Exception e) {
+				error = "No further information";
+			}
+			
+			throw new IOException("error uploading recording: " + error);
+			
+		}
 		
 		if (!row.getString("state").equals(RecordingState.COMPLETE.name()))
 			throw new IOException("recording is not complete");

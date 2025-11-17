@@ -28,14 +28,14 @@ public class VersionUtils {
 				if (string.startsWith("LEGACY_"))
 					continue;
 				
-				material = Material.valueOf(string);
+				material = Material.valueOf(string.toUpperCase());
 				
 			} catch (NoSuchElementException | IllegalArgumentException e) {}
 		
 		if (material == null)
 			for (String string : values)
 				try {
-					material = Material.valueOf("LEGACY_" + string);
+					material = Material.valueOf(("LEGACY_" + string).toUpperCase());
 				} catch (NoSuchElementException | IllegalArgumentException e) {}
 		
 		if (material == null)

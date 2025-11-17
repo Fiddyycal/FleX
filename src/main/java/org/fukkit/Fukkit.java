@@ -85,7 +85,7 @@ public final class Fukkit extends JavaPlugin {
 		
 		StopWatch timer = new StopWatch();
 		
-		Task.print("", FleX.FLEX);
+		Task.print(null, FleX.FLEX);
 		
 		Fukkit.fukkit = this;
 		
@@ -392,7 +392,7 @@ public final class Fukkit extends JavaPlugin {
 	 * @return FleXPlayer object from cache, create new one if player exists but is offline.
 	 */
 	public static FleXPlayer getPlayer(String name) {
-		return (FleXPlayer) Memory.PLAYER_CACHE.getByName(name);
+		return (FleXPlayer) (StringUtils.isUUID(name) ? Memory.PLAYER_CACHE.getByUniqueId(UUID.fromString(name)) : Memory.PLAYER_CACHE.getByName(name));
 	}
 	
 	/**

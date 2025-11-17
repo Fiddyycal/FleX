@@ -202,14 +202,25 @@ public class FlowLineEnforcementHandler {
 		
 		Set<SQLRowWrapper> rows = base.getRows("flex_recording", SQLCondition.where("context").is(context.toString()));
 		
-		for (SQLRowWrapper r : rows) {
-			
-			if (r.getString("state").equals(RecordingState.STAGED.name()))
-				return true;
-			
-		}
-		
-		return false;
+		boolean error = false;
+	    boolean complete = false;
+
+	    for (SQLRowWrapper r : rows) {
+	    	
+	        String state = r.getString("state");
+	        
+	        if (RecordingState.STAGED.name().equals(state))
+	            return true;
+	        
+	        if (RecordingState.ERROR.name().equals(state))
+	        	error = true;
+	        
+	        else if (RecordingState.COMPLETE.name().equals(state))
+	        	complete = true;
+	        
+	    }
+	    
+	    return error && !complete;
 		
 	}
 	

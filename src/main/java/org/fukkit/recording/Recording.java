@@ -1,6 +1,7 @@
 package org.fukkit.recording;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -319,7 +320,17 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 					row.set("duration", this.tick * (double) TICK_RATE / 20.0);
 					row.set("state", RecordingState.COMPLETE.name());
 					row.set("data", Files.readAllBytes(file.toPath()));
-					row.update();
+					
+					try {
+						row.update();
+					} catch (Exception e) {
+						
+						row.set("state", RecordingState.ERROR.name());
+						row.set("data", e.getMessage().getBytes(StandardCharsets.UTF_8));
+						
+						row.update();
+						
+					}
 					
 				}
 				

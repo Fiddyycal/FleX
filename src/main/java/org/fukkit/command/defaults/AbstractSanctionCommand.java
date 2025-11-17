@@ -2,10 +2,12 @@ package org.fukkit.command.defaults;
 
 import org.bukkit.command.CommandSender;
 import org.fukkit.Fukkit;
+import org.fukkit.Memory;
 import org.fukkit.clickable.Menu;
 import org.fukkit.command.FleXCommandAdapter;
 import org.fukkit.command.GlobalCommand;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.reward.Rank;
 import org.fukkit.theme.ThemeMessage;
 
 import io.flex.commons.file.Variable;
@@ -42,7 +44,11 @@ public abstract class AbstractSanctionCommand extends FleXCommandAdapter {
 			return false;
 		}
 		
-		if (!((FleXPlayer)sender).getName().equals("Fiddycal")) {
+		Rank dev = Memory.RANK_CACHE.get("Developer");
+		
+		boolean developer = dev != null && ((FleXPlayer)sender).getRank() == dev;
+		
+		if (!developer) {
 			
 			if (((FleXPlayer)sender) == fp) {
 				((FleXPlayer)sender).sendMessage((report ? ThemeMessage.REPORT_FAILURE_SELF : ThemeMessage.PUNISHMENT_FAILURE_SELF).format(((FleXPlayer)sender).getTheme(), ((FleXPlayer)sender).getLanguage(), new Variable<String>("%punishment%", this.command)));

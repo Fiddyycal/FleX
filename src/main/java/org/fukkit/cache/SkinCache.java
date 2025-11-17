@@ -1,20 +1,22 @@
 package org.fukkit.cache;
 
-import static java.io.File.separator;
-
 import java.awt.image.BufferedImage;
-import java.io.File;
+
+import java.sql.SQLException;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.fukkit.Fukkit;
 import org.fukkit.disguise.FleXSkin;
 import org.fukkit.scoreboard.playerlist.tab.FleXImageSkin;
 
 import io.flex.FleX.Task;
 import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.sql.SQLRowWrapper;
 import io.flex.commons.utils.NumUtils;
 
 public class SkinCache extends LinkedCache<FleXSkin, BufferedImage> {
@@ -27,7 +29,9 @@ public class SkinCache extends LinkedCache<FleXSkin, BufferedImage> {
 	ICON_LIGHTNING_GRAY = null,// = new FleXImageSkin(TabUtils.face("lightning_gray.png")),
 	ICON_LIGHTNING_WHITE = null,// = new FleXImageSkin(TabUtils.face("lightning_white.png")),
 	ICON_LIGHTNING_OFFRED = null;// = new FleXImageSkin(TabUtils.face("lightning_offred.png"));
-
+	
+	private static final List<String> names = new ArrayList<String>();
+	
 	public SkinCache() {
 		super((s, i) -> s instanceof FleXImageSkin && i == ((FleXImageSkin)s).getImage());
 	}
@@ -42,46 +46,54 @@ public class SkinCache extends LinkedCache<FleXSkin, BufferedImage> {
 		return list.get(NumUtils.getRng().getInt(0, list.size()-1));
 	}
 	
+	public String getRandomName() {
+		return names.get(NumUtils.getRng().getInt(0, names.size()-1));
+	}
+	
 	@Override
 	public boolean load() {
 		
-		Task.print("Disguise", "Pre-loading skins for efficient disguising...");
+		// TODO load names and skins from files if database table is empty.
+		//Task.print("Disguise", "Uploading skins and names on file...");
+		
+		Task.print("Disguise", "Pre-loading skins and names for efficient disguising...");
 		
 		this.add(FleXSkin.DEFAULT);
 		
-		File skins = new File("flex" + separator + "data" + separator + "local" + separator + "disguises" + separator + "skins");
-		
-		if (!skins.exists())
-			skins.mkdirs();
-		
-		if (skins.list().length > 0) {
+		try {
 			
-			for (File data : skins.listFiles()) {
+			int skip = NumUtils.getRng().getInt(10000, 30000);
+			int limit = 5000;
+			
+			Set<SQLRowWrapper> rows = Fukkit.getConnectionHandler().getDatabase().result(
+					
+					"WITH ranked AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY signed ORDER BY name ASC) AS rn FROM flex_disguises) " +
+					"SELECT name, signature, value, signed FROM ranked WHERE (signed = TRUE) OR (signed = FALSE AND rn > " + skip + ") ORDER BY signed DESC, name ASC LIMIT " + limit);
+			
+			for (SQLRowWrapper row : rows) {
 				
-				UUID uid = null;
+				String name = row.getString("name");
+				String value = row.getString("value");
+				String signature = row.getString("signature");
 				
-				try {
-					uid = UUID.fromString(data.getName().replace(".yml", ""));
-				} catch (IllegalArgumentException e) {
+				if (name == null)
 					continue;
-				}
 				
-				YamlConfiguration conf = YamlConfiguration.loadConfiguration(data);
+				if (!names.contains(name))
+					names.add(name);
 				
-				Task.print("Disguise", "Pre-loading skin from player " + conf.getString("Name") + "...");
-				
-				String value = conf.getString("Skin.value");
-				String signature = conf.getString("Skin.signature");
-				
-				this.add(Fukkit.getImplementation().createSkin(uid.toString(), value, signature));
+				if (value != null && signature != null)
+					this.add(Fukkit.getImplementation().createSkin(name, value, signature));
 				
 			}
 			
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		
 		Task.print("Disguise", "Done!");
 		return true;
 		
 	}
-
+	
 }

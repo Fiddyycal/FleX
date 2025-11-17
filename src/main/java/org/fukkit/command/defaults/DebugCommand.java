@@ -487,7 +487,7 @@ public class DebugCommand extends FleXCommandAdapter {
 			sender.sendMessage(ChatColor.GRAY + "Visibility: " + ChatColor.RESET + player.getVisibility().name());
 			sender.sendMessage(ChatColor.GRAY + "Currency: " + ChatColor.RESET + player.getCurrency());
 			sender.sendMessage(ChatColor.GRAY + "Version: " + ChatColor.RESET + player.getVersion() + " (" + player.getVersion().toRecommendedProtocol() + ")");
-			sender.sendMessage(ChatColor.GRAY + "Rank: " + ChatColor.RESET + player.getRank().getName());
+			sender.sendMessage(ChatColor.GRAY + "Rank,Mask: " + ChatColor.RESET + player.getRank().getName() + "," + (player.isMasked() ? player.getMask() : "None"));
 			sender.sendMessage(ChatColor.GRAY + "Theme: " + ChatColor.RESET + player.getTheme().getName());
 			sender.sendMessage(ChatColor.GRAY + "Skin: " + ChatColor.RESET + player.getSkin().getValue().substring(0, 6));
 			sender.sendMessage(ChatColor.GRAY + "IP: " + ChatColor.RESET + (silent ? ChatColor.MAGIC : "") + ip);

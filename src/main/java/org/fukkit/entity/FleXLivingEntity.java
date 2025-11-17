@@ -8,8 +8,6 @@ public interface FleXLivingEntity extends FleXEntity {
 	
 	public Entity getNearestEntityInSight(int range);
 	
-	public double getHealth();
-	
     public boolean isOnGround();
 	
 }

@@ -23,7 +23,7 @@ public class CraftRecorded implements Recordable {
 	
 	private CraftRecorded(UUID uuid, @Nullable String name, @Nullable FleXSkin skin, LinkedHashMap<Long, Frame> frames) {
 		
-		name = name != null ? name : Memory.NAME_CACHE.getRandom();
+		name = name != null ? name : Memory.SKIN_CACHE.getRandomName();
 		skin = skin != null ? skin : Memory.SKIN_CACHE.getRandom();
 		
 		this.uuid = uuid;

@@ -135,7 +135,7 @@ public class SQLDatabase implements Serializable {
 	 * @throws SQLException
 	 */
 	public SQLRowWrapper getRow(String table, @Nullable SQLCondition<?>... conditions) throws SQLException {
-		return this.getRows(table, conditions).stream().findFirst().orElse(null);
+		return this.getRows(table, 1, conditions).stream().findFirst().orElse(null);
 	}
 	
 	/**
@@ -144,6 +144,15 @@ public class SQLDatabase implements Serializable {
 	 * @throws SQLException
 	 */
 	public Set<SQLRowWrapper> getRows(String table, @Nullable SQLCondition<?>... conditions) throws SQLException {
+		return this.getRows(table, -1, conditions);
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public Set<SQLRowWrapper> getRows(String table, int limit, @Nullable SQLCondition<?>... conditions) throws SQLException {
 
 		StringBuilder query = new StringBuilder("SELECT * FROM " + IDENTIFIER_QUOTE + table + IDENTIFIER_QUOTE);
 		
@@ -170,6 +179,9 @@ public class SQLDatabase implements Serializable {
 			        }
 			    }
 			}
+			
+			if (limit > 0)
+				query.append(" LIMIT " + limit);
 			
 			statement = connection.getDriverConnection().prepareStatement(query.toString(), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			

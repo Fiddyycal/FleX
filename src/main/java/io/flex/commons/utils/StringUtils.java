@@ -209,6 +209,14 @@ public class StringUtils {
 		
 	}
 	
+	public static boolean isAlphanumeric(String string) {
+		return isAlphanumeric(string, true);
+	}
+	
+	public static boolean isAlphanumeric(String string, boolean allowUnderscores) {
+		return string.matches("^[A-Za-z0-9" + (allowUnderscores ? "_" : "") + "]+$");
+	}
+	
 	public static String buildSentence(String separator, String... args) {
 		StringBuilder b = new StringBuilder();
 		Arrays.asList(args).stream().forEach(s -> {

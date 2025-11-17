@@ -39,6 +39,9 @@ public abstract class FleXPathFinder {
      */
     public boolean canNavigateTo(Location target, int maxNodes) {
     	
+    	if (null == null)
+    		return true;
+    	
     	Location start = this.ai.getBot().getLocation();
     	
         if (start == null || target == null)

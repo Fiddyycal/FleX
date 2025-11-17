@@ -162,9 +162,7 @@ public class NameBar implements FleXScoreboard {
 		if (this.entry.getImpute() != null || this.entry.getAttribute() != null)
 			this.entry.update();
 		
-		Bukkit.getOnlinePlayers().forEach(p -> {
-			
-			FleXPlayer fp = Fukkit.getPlayerExact(p);
+		Fukkit.getOnlinePlayers().forEach(fp -> {
 			
 			if (!fp.isOnline())
 				return;

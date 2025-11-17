@@ -79,51 +79,56 @@ public class ConnectionHandler {
 		
 		try {
 			
-			LinkedHashMap<String, SQLDataType> user_columns = new LinkedHashMap<String, SQLDataType>();
+			LinkedHashMap<String, SQLDataType> columns = new LinkedHashMap<String, SQLDataType>();
 			
-			user_columns.put("uuid", SQLDataType.VARCHAR);
-			user_columns.put("name", SQLDataType.VARCHAR);
-			user_columns.put("version", SQLDataType.INT);
-			user_columns.put("domain", SQLDataType.VARCHAR);
-			user_columns.put("currency", SQLDataType.BIGINT);
-			user_columns.put("play_time", SQLDataType.BIGINT);
-			user_columns.put("last_seen", SQLDataType.BIGINT);
-			user_columns.put("rank", SQLDataType.VARCHAR);
-			user_columns.put("badge", SQLDataType.VARCHAR);
-			user_columns.put("theme", SQLDataType.VARCHAR);
-			user_columns.put("language", SQLDataType.VARCHAR);
-			user_columns.put("skin", SQLDataType.TEXT);
+			columns.put("uuid", SQLDataType.VARCHAR);
+			columns.put("name", SQLDataType.VARCHAR);
+			columns.put("version", SQLDataType.INT);
+			columns.put("domain", SQLDataType.VARCHAR);
+			columns.put("currency", SQLDataType.BIGINT);
+			columns.put("play_time", SQLDataType.BIGINT);
+			columns.put("last_seen", SQLDataType.BIGINT);
+			columns.put("rank", SQLDataType.VARCHAR);
+			columns.put("badge", SQLDataType.VARCHAR);
+			columns.put("theme", SQLDataType.VARCHAR);
+			columns.put("language", SQLDataType.VARCHAR);
+			columns.put("skin", SQLDataType.TEXT);
 			
-			this.database.createTable("flex_user", "uuid", user_columns);
+			this.database.createTable("flex_user", "uuid", columns);
 			
-			LinkedHashMap<String, SQLDataType> punishment_columns = new LinkedHashMap<String, SQLDataType>();
+			columns.clear();
+			columns.put("id", SQLDataType.BIGINT);
+			columns.put("uuid", SQLDataType.VARCHAR);
+			columns.put("by", SQLDataType.VARCHAR);
+			columns.put("time", SQLDataType.BIGINT);
+			columns.put("until", SQLDataType.BIGINT);
+			columns.put("type", SQLDataType.VARCHAR);
+			columns.put("reason", SQLDataType.VARCHAR);
+			columns.put("evidence", SQLDataType.VARCHAR);
+			columns.put("ip", SQLDataType.BOOLEAN);
+			columns.put("silent", SQLDataType.BOOLEAN);
+			columns.put("pardoned", SQLDataType.BOOLEAN);
 			
-			punishment_columns.put("id", SQLDataType.BIGINT);
-			punishment_columns.put("uuid", SQLDataType.VARCHAR);
-			punishment_columns.put("by", SQLDataType.VARCHAR);
-			punishment_columns.put("time", SQLDataType.BIGINT);
-			punishment_columns.put("until", SQLDataType.BIGINT);
-			punishment_columns.put("type", SQLDataType.VARCHAR);
-			punishment_columns.put("reason", SQLDataType.VARCHAR);
-			punishment_columns.put("evidence", SQLDataType.VARCHAR);
-			punishment_columns.put("ip", SQLDataType.BOOLEAN);
-			punishment_columns.put("silent", SQLDataType.BOOLEAN);
-			punishment_columns.put("pardoned", SQLDataType.BOOLEAN);
+			this.database.createTable("flex_punishment", "id", columns);
 			
-			this.database.createTable("flex_punishment", "id", punishment_columns);
+			columns.clear();
+			columns.put("name", SQLDataType.VARCHAR);
+			columns.put("signature", SQLDataType.TEXT);
+			columns.put("value", SQLDataType.TEXT);
 			
-			LinkedHashMap<String, SQLDataType> recording_columns = new LinkedHashMap<String, SQLDataType>();
+			this.database.createTable("flex_disguises", columns);
 			
-			recording_columns.put("uuid", SQLDataType.VARCHAR);
-			recording_columns.put("context", SQLDataType.VARCHAR);
-			recording_columns.put("time", SQLDataType.VARCHAR);
-			recording_columns.put("duration", SQLDataType.INTEGER);
-			recording_columns.put("state", SQLDataType.VARCHAR);
-			recording_columns.put("world", SQLDataType.VARCHAR);
-			recording_columns.put("players", SQLDataType.VARCHAR);
-			recording_columns.put("data", SQLDataType.BLOB);
+			columns.clear();
+			columns.put("uuid", SQLDataType.VARCHAR);
+			columns.put("context", SQLDataType.VARCHAR);
+			columns.put("time", SQLDataType.VARCHAR);
+			columns.put("duration", SQLDataType.INTEGER);
+			columns.put("state", SQLDataType.VARCHAR);
+			columns.put("world", SQLDataType.VARCHAR);
+			columns.put("players", SQLDataType.VARCHAR);
+			columns.put("data", SQLDataType.BLOB);
 			
-			this.database.createTable("flex_recording", recording_columns);
+			this.database.createTable("flex_recording", columns);
 			
 			try {
 				this.database.execute("ALTER TABLE flex_recording MODIFY COLUMN data LONGBLOB");
@@ -146,12 +151,12 @@ public class ConnectionHandler {
 	    	
 		}
 		
-		String bukkit = String.valueOf(Bukkit.getPort());
+		int p = Bukkit.getPort();
+        
+		if (p > 35535)
+			throw new UnsupportedOperationException("Server ports cannot exceed 35535 due to data port allocation rules, please change the server port to continue.");
 		
-		if (bukkit.startsWith("1"))
-			throw new UnsupportedOperationException("FleX does not support server ports beginning with 1, please change the server port to continue.");
-		
-		int data = Integer.valueOf("1" + bukkit.substring(1, bukkit.length()));
+		int data = p + 35535;
 		
 		try {
 			

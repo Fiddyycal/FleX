@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -135,9 +136,18 @@ public abstract class DataServer extends Thread {
 	    while (true) {
 	    	try {
 	        	
-	            Socket client = this.server.accept();
-	            
-	            new Thread(() -> this.handleClient(client)).start();
+	    		try {
+	    			
+		            Socket client = this.server.accept();
+		            
+		            new Thread(() -> this.handleClient(client)).start();
+		            
+				} catch (SocketException e) {
+					
+					if (!e.getMessage().equals("Socket is closed"))
+						e.printStackTrace();
+					
+				}
 	            
 	        } catch (IOException e) {
 	            e.printStackTrace();
@@ -367,7 +377,7 @@ public abstract class DataServer extends Thread {
         } finally {
             
             if (response == null || !response.equalsIgnoreCase("true"))
-            	Task.error("Socket: " + port, "Unable to send data " + data.getKey() + "::" + data.getValue() + ": no futher information.");
+            	Task.error("Socket: " + port, "Unable to send data " + data.getKey() + "::" + data.getValue() + ": " + (response != null ? "response returned " + response : "No further information") + ".");
 			
         	try {
         		
@@ -389,6 +399,9 @@ public abstract class DataServer extends Thread {
     }
 	
 	protected static Socket attemptConnection(String ip, int port) {
+		
+		if (ip == null)
+			throw new NullPointerException("ip cannot be null");
 		
 		debug("Sockets", "Attempting to connect to " + ip + ":" + port + "...");
 		

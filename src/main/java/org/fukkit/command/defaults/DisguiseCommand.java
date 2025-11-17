@@ -81,7 +81,7 @@ public class DisguiseCommand extends FleXCommandAdapter {
 		if (generate)
 			player.sendMessage(ThemeMessage.DISGUISE_PREDISGUISE.format(theme, lang, variables));
 		
-		String name = flipped ? "Grumm" : generate ? Memory.NAME_CACHE.getRandom() : args[0];
+		String name = flipped ? "Grumm" : generate ? Memory.SKIN_CACHE.getRandomName() : args[0];
 		
 		FleXSkin skin = null;
 		FleXSkin random = null;
