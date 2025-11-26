@@ -85,7 +85,7 @@ public class OverwatchReplay extends Replay {
 	}
 	
 	public FleXPlayer getSuspect() {
-		return suspect;
+		return this.suspect;
 	}
 	
 	public void setAnonymous(boolean anonymous) {
