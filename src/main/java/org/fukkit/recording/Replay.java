@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -46,7 +47,7 @@ public class Replay extends Recording {
 	
 	private ReplayListeners listener;
 	
-	protected Replay(File container) throws SQLException {
+	public Replay(File container) throws SQLException {
 		
 		super(container, null);
 		
@@ -88,7 +89,7 @@ public class Replay extends Recording {
 		String name = container.getName();
 		
 		if (container.exists())
-			throw new UnsupportedOperationException("file \"" + name + "\" already exists at destination path");
+			throw new FileAlreadyExistsException("file \"" + name + "\" already exists at destination path");
 		
 		SQLCondition<?>[] conditions = context != null ? new SQLCondition<?>[] {
 			
@@ -374,8 +375,10 @@ public class Replay extends Recording {
 	@Override
 	public void destroy() {
 		
-		WorldUtils.unloadWorld(this.world, false);
-		FileUtils.delete(this.world.getWorldFolder());
+		if (this.world != null) {
+			WorldUtils.unloadWorld(this.world, false);
+			FileUtils.delete(this.world.getWorldFolder());
+		}
 		
 		if (this.watchers != null)
 			this.watchers.clear();

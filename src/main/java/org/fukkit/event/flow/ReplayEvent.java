@@ -19,7 +19,7 @@ public class ReplayEvent extends RecordingEvent {
 	
 	@Override
 	public Replay getRecording() {
-		return (Replay) this.getRecording();
+		return (Replay) super.getRecording();
 	}
 
 }

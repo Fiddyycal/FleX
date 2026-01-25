@@ -15,4 +15,6 @@ public interface Recordable {
 	
 	public FleXPlayer toPlayer();
 	
+	public boolean isBot();
+	
 }

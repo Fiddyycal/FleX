@@ -247,11 +247,18 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 		
 		this.pause = false;
 		
-		SQLRowWrapper row = this.getRow();
+		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		
-		row.set("time", System.currentTimeMillis());
-		row.set("state", RecordingState.RECORDING.name());
-		row.update();
+		// Need to re-retrieve row to get past a small bug...
+		SQLRowWrapper row = base.getRow("flex_recording", SQLCondition.where("uuid").is(this.name), SQLCondition.where("context").is(this.context.toString()));
+		
+		if (row != null) {
+			
+			row.set("time", System.currentTimeMillis());
+			row.set("state", RecordingState.RECORDING.name());
+			row.update();
+			
+		}
 		
 		if (this.listener == null)
 			this.listener = new RecordingListeners(this);
@@ -266,6 +273,9 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 	
 	public void end(@Nullable String reason) {
 		
+		if (Bukkit.isPrimaryThread())
+			throw new IllegalStateException("end must be called asynchronously.");
+			
 		this.cancel();
 		
 		this.pause = true;
@@ -291,9 +301,13 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 			
 			if (end) {
 				
-				try {
-					FileUtils.copy(this.world.getWorldFolder(), this.data.getParentFile());
-				} catch (Exception ignore) {}
+				// TODO Make an option for copying the whole world, null != null means this is disablerd right now because world files are large and I don't want the server to crash atm.
+				// At the moment, if the recording is made on a MAP then the Path will point to the map is playback mode.
+				if (null != null) {
+					try {
+						FileUtils.copy(this.world.getWorldFolder(), this.data.getParentFile());
+					} catch (Exception ignore) {}
+				}
 				
 				this.data.setTag("Path", this.world.getWorldFolder().getAbsolutePath());
 				this.data.setTag("Length", this.tick);
@@ -370,6 +384,7 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 		
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		SQLRowWrapper row = null;
+		
 		Set<SQLRowWrapper> rows = base.getRows("flex_recording", SQLCondition.where("context").is(this.context.toString()));
 		
 		for (SQLRowWrapper r : rows) {

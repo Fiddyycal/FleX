@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.fukkit.Fukkit;
+import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXPlayer;
 
 public class CraftRecordable implements Recordable {
@@ -13,7 +14,9 @@ public class CraftRecordable implements Recordable {
 	
 	private String name;
 	
-	private Map<Long, Frame> frames = new LinkedHashMap<Long, Frame>() ;
+	private Map<Long, Frame> frames = new LinkedHashMap<Long, Frame>();
+	
+	private boolean bot = false;
 
 	private CraftRecordable(UUID uuid, String name) {
 		this.uuid = uuid;
@@ -37,11 +40,22 @@ public class CraftRecordable implements Recordable {
 	
 	@Override
 	public FleXPlayer toPlayer() {
-		return Fukkit.getPlayer(this.uuid);
+		return Fukkit.getCachedPlayer(this.uuid);
 	}
 	
 	public static CraftRecordable of(FleXPlayer player) {
-		return new CraftRecordable(player.getUniqueId(), player.getName());
+		
+		CraftRecordable rec = new CraftRecordable(player.getUniqueId(), player.getName());
+		
+		rec.bot = player instanceof FleXBot;
+		
+		return rec;
+		
+	}
+
+	@Override
+	public boolean isBot() {
+		return this.bot;
 	}
 	
 }

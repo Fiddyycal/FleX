@@ -104,7 +104,7 @@ public class SQLDatabase implements Serializable {
 				connection.open();
 				return connection;
 			}
-				
+			
 		}
 		/*
 		Task.print("SQL",

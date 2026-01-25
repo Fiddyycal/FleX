@@ -304,6 +304,7 @@ public class FlowCommand extends FleXCommandAdapter {
 					OverwatchReplay replay = OverwatchReplay.download(report);
 					
 					if (replay != null)
+						
 						BukkitUtils.mainThread(() -> {
 							try {
 								

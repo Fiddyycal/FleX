@@ -19,7 +19,9 @@ public class CraftRecorded implements Recordable {
 	
 	private Map<Long, Frame> frames = new LinkedHashMap<Long, Frame>();
 	
-	private FleXBot bot;
+	private FleXBot actor;
+	
+	private boolean bot = false;
 	
 	private CraftRecorded(UUID uuid, @Nullable String name, @Nullable FleXSkin skin, LinkedHashMap<Long, Frame> frames) {
 		
@@ -32,9 +34,9 @@ public class CraftRecorded implements Recordable {
 		
 		this.name = name;
 		
-		this.bot = Fukkit.getPlayerFactory().createFukkitBot(name, skin);
+		this.actor = Fukkit.getPlayerFactory().createFukkitBot(name, skin);
 		
-		this.bot.getAI().setGravity(false);
+		this.actor.getAI().setGravity(false);
 		
 	}
 
@@ -55,15 +57,26 @@ public class CraftRecorded implements Recordable {
 	
 	@Override
 	public FleXPlayer toPlayer() {
-		return this.bot != null ? this.bot : Fukkit.getPlayer(this.uuid);
+		return this.actor != null ? this.actor : Fukkit.getPlayer(this.uuid);
 	}
 	
 	public FleXBot getActor() {
+		return this.actor;
+	}
+	
+	@Override
+	public boolean isBot() {
 		return this.bot;
 	}
 	
 	public static CraftRecorded of(@Nullable FleXPlayer player, LinkedHashMap<Long, Frame> frames) {
-		return new CraftRecorded(player != null ? player.getUniqueId() : UUID.randomUUID(), player != null ? player.getName() : null, player != null ? player.getSkin() : null, frames);
+		
+		CraftRecorded rec = new CraftRecorded(player != null ? player.getUniqueId() : UUID.randomUUID(), player != null ? player.getName() : null, player != null ? player.getSkin() : null, frames);
+		
+		rec.bot = player == null;
+		
+		return rec;
+		
 	}
 	
 }

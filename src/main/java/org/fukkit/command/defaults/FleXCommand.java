@@ -21,14 +21,18 @@ public class FleXCommand extends FleXCommandAdapter {
 			return false;
 		}
 		
-		FleXPlayer fp = args.length > 0 ? Fukkit.getPlayer(args[0]) : ((FleXPlayer)sender);
+		Fukkit.getPlayerAsync(args.length > 0 ? args[0] : sender.getName(), fp -> {
+			
+			if (fp == null) {
+				this.playerNotFound(sender, args[0]);
+				return;
+			}
+			
+			((FleXPlayer)sender).openMenu(new FleXPanel(((FleXPlayer)sender), (FleXPlayer)fp, false), false);
+			return;
+			
+		});
 		
-		if (fp == null) {
-			this.playerNotFound(sender, args[0]);
-			return false;
-		}
-		
-		((FleXPlayer)sender).openMenu(new FleXPanel(((FleXPlayer)sender), fp, false), false);
 		return true;
 		
 	}

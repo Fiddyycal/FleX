@@ -5,7 +5,6 @@ import static org.fukkit.utils.FormatUtils.format;
 import java.util.UUID;
 import java.util.function.Function;
 
-import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.DisplaySlot;

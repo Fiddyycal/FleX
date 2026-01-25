@@ -10,7 +10,7 @@ public class FleXPlayerLoadEvent extends FleXPlayerEvent {
 		
 		super(player, false);
 		
-		this.offline = offline;
+		this.offline = offline || !player.isOnline();
 		
 	}
 	

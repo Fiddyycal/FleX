@@ -24,7 +24,7 @@ public class GuiCache extends LinkedCache<Menu, Inventory> {
 	//Arrays.asList(gui.asBukkitInventory().getContents()).equals(Arrays.asList(inv.getContents()))
 	
 	public GuiCache() {
-		super((gui, inv) -> gui.asBukkitInventory() == inv);
+		super((gui, inv) -> gui.asBukkitInventory() == (inv) || gui.asBukkitInventory().equals(inv));
 	}
 
 	/**

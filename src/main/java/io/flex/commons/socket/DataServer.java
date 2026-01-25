@@ -7,9 +7,11 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import io.flex.FleX;
 import io.flex.FleX.Task;
@@ -132,25 +134,31 @@ public abstract class DataServer extends Thread {
 		
 	    if (this.port <= -1)
     		return;
+	    
+	    ExecutorService pool = Executors.newCachedThreadPool(r -> {
+	    	
+	        Thread t = new Thread(r, "DataServer-worker");
+	        
+	        t.setDaemon(true);
+	        
+	        return t;
+	        
+	    });
 
-	    while (true) {
-	    	try {
+	    while (!this.server.isClosed()) {
+	        try {
 	        	
-	    		try {
-	    			
-		            Socket client = this.server.accept();
-		            
-		            new Thread(() -> this.handleClient(client)).start();
-		            
-				} catch (SocketException e) {
-					
-					if (!e.getMessage().equals("Socket is closed"))
-						e.printStackTrace();
-					
-				}
+	            Socket client = this.server.accept();
+	            
+	            pool.execute(() -> handleClient(client));
 	            
 	        } catch (IOException e) {
-	            e.printStackTrace();
+	        	
+	            if (this.server.isClosed())
+	                break;
+	            
+	            Task.error("Socket", "Accept failed: " + e.getMessage());
+	            
 	        }
 	    }
 	    
@@ -164,17 +172,20 @@ public abstract class DataServer extends Thread {
         BufferedReader in = null;
 	    
         try {
+        	
+        	// Timeout after 3 seconds
+        	client.setSoTimeout(3000);
 					
 			out = new PrintWriter(client.getOutputStream(), true);
 	        in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 	        
-	        debug("Socket: " + port, "Socket connected.");
-
 	        String command = in.readLine();
+	        
+	        debug("Socket: " + port, "Socket connected.");
 	        
 	        if (command == null) {
 	        	
-	            Task.error("Socket: " + port, "Closing connection: Unable to resolve command: Command cannot be null.");
+	            Task.error("Socket: " + port, "Closing connection: Command cannot be null.");
 	            return;
 	            
 	        }
@@ -184,7 +195,7 @@ public abstract class DataServer extends Thread {
 	        try {
 	            cmd = DataCommand.valueOf(command);
 	        } catch (IllegalArgumentException e) {
-	            Task.error("Socket: " + port, "Closing connection: Unable to resolve command " + command + ".");
+	            Task.error("Socket: " + port, "Closing connection: Unable to resolve command \"" + command + "\".");
 	            return;
 	        }
 	        
@@ -213,6 +224,8 @@ public abstract class DataServer extends Thread {
 	            	
 	            }
 	            
+		        debug("Socket: " + port, (cmd == DataCommand.PUBLISH_DATA ? "Publishing data" : "Sending data") + " key \"" + key + "\" with value \"" + value + "\".");
+		        
 	            this.onDataReceive(new Data(key, value, port), cmd);
 	            
 	            // Sending receipt.
@@ -226,6 +239,8 @@ public abstract class DataServer extends Thread {
 		            throw new UnsupportedOperationException("Data command \"" + cmd.name() + "\" cannot be used here, this socket is a listener only.");
 	        	
 	            Data data = memory.getOrDefault(key, new Data(key, null, port));
+	        	
+		        debug("Socket: " + port, "Resolved request key \"" + data.getKey() + "\" and returning value \"" + data.getValue() + "\" to sender.");
 	            
 	            out.println(DataCommand.RETURN_DATA.name());
 	            out.println(data.getValue());
@@ -234,6 +249,10 @@ public abstract class DataServer extends Thread {
 
 	        if (cmd == DataCommand.RETURN_DATA)
 	            throw new UnsupportedOperationException("Data command \"" + cmd.name() + "\" cannot be used here, please revise.");
+	        
+        } catch (SocketTimeoutException e) {
+        	
+        	debug("Socket: " + port, "Closing connection: Read time out.");
 	        
 	    } catch (IOException e) {
 	    	
@@ -407,10 +426,9 @@ public abstract class DataServer extends Thread {
 		
 		try {
 			
-            Socket socket = new Socket(ip, port);
-            
-            // Wait 5 seconds.
-            socket.setSoTimeout(5000);
+			Socket socket = new Socket();
+		    
+		    socket.connect(new InetSocketAddress(ip, port), /*5 second timeout*/5000);
             
     		debug("Sockets", "Connection successful.");
             
