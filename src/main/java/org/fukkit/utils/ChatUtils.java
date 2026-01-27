@@ -139,7 +139,7 @@ public class ChatUtils {
 				JsonBuffer buff = new JsonBuffer().append(new JsonComponent(m))
 						
 						.replace("%interactable%", new ChatJsonInteractableBuffer(player, p))
-						.replace("%display%", new ChatJsonDisplayBuffer(player, p, event.getPrefix(), event.getSuffix()));
+						.replace("%display%", new ChatJsonDisplayBuffer(player, p, receiveEvent.getPrefix(), receiveEvent.getSuffix()));
 				
 				p.sendJsonMessage(buff);
 				

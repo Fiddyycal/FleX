@@ -26,32 +26,35 @@ public class CollectionUtils {
 	
 	public static Map<String, String> toMap(String s) {
 		
-		Map<String, String> map = new LinkedHashMap<String, String>();
-		
-		if (s == null)
-			return map;
-		
-		if (s.startsWith("{"))
-			s = s.substring(1, s.length());
-		
-		if (s.endsWith("}"))
-			s = s.substring(0, s.length() - 1);
-		
-		if (s.length() == 0 || !s.contains("="))
-			return map;
-		
-		String[] pairs = s.split(", ");
-		
-		for (int i = 0 ; i < pairs.length; i++) {
-			
-		    String[] pair = pairs[i].split("=");
-		    
-		    map.put(pair[0], pair[1]);
-		    
-		}
-		
-		return map;
-		
+	    Map<String, String> map = new LinkedHashMap<>();
+	    
+	    if (s == null)
+	        return map;
+	    
+	    if (s.startsWith("{"))
+	        s = s.substring(1);
+	    
+	    if (s.endsWith("}"))
+	        s = s.substring(0, s.length() - 1);
+	    
+	    if (s.isEmpty())
+	        return map;
+	    
+	    String[] pairs = s.split(", (?=[^\\]]*(?:\\[|$))");
+	    
+	    for (String entry : pairs) {
+	    	
+	        String[] pair = entry.split("=", 2);
+	        
+	        if (pair.length != 2)
+	            continue;
+	        
+	        map.put(pair[0], pair[1]);
+	        
+	    }
+	    
+	    return map;
+	    
 	}
 	
 	public static Collection<String> toCollection(String s) {

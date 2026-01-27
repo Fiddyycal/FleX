@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import io.flex.FleX;
 import io.flex.FleX.Task;
@@ -27,6 +29,8 @@ public abstract class DataServer extends Thread {
 	private int port;
 	
 	private ServerSocket server;
+	
+	private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 	
 	public DataServer(int port) throws IOException {
 		
@@ -207,12 +211,18 @@ public abstract class DataServer extends Thread {
 	            return;
 	            
 	        }
-
+	        
 	        if (cmd == DataCommand.SEND_DATA || cmd == DataCommand.PUBLISH_DATA) {
 	        	
 	            String value = in.readLine().replace("\\n", "\n");
 	            
+		        debug("Socket: " + port, (cmd == DataCommand.PUBLISH_DATA ? "Publishing data" : "Recieved data") + " key \"" + key + "\" with value \"" + value + "\".");
+	            
+	            Data data = new Data(key, value, port);
+	            
 	            if (cmd == DataCommand.PUBLISH_DATA) {
+	            	
+	            	long deleteMs = Long.parseLong(in.readLine());
 		        	
 		        	if (this instanceof RelayDataServer)
 			            throw new UnsupportedOperationException("Data command \"" + cmd.name() + "\" cannot be used here, this socket is a listener only.");
@@ -220,13 +230,23 @@ public abstract class DataServer extends Thread {
 	            	if (value == null)
 		                memory.remove(key);
 		            
-		            else memory.put(key, new Data(key, value, port));
+		            else {
+		            	
+		            	memory.put(key, data);
+		            	
+		            	if (deleteMs > 0) {
+		            		
+		    		        debug("Socket: " + port, "Key '" + key + "' will be deleted from memory after " + deleteMs + " milliseconds.");
+		    		        
+		            		this.scheduler.schedule(() -> memory.remove(key), deleteMs, TimeUnit.MILLISECONDS);
+		            		
+		            	}
+		            	
+		            }
 	            	
 	            }
-	            
-		        debug("Socket: " + port, (cmd == DataCommand.PUBLISH_DATA ? "Publishing data" : "Sending data") + " key \"" + key + "\" with value \"" + value + "\".");
 		        
-	            this.onDataReceive(new Data(key, value, port), cmd);
+	            this.onDataReceive(data, cmd);
 	            
 	            // Sending receipt.
 	            out.println(true);
@@ -298,6 +318,10 @@ public abstract class DataServer extends Thread {
     public abstract void onDataReceive(Data data, DataCommand command);
 	
 	public void setData(Data data, String ip, int port) {
+		this.setData(data, ip, port, -1);
+	}
+	
+	public void setData(Data data, String ip, int port, long deleteAfter) {
 		
         Socket client = attemptConnection(ip, port);
         
@@ -316,6 +340,7 @@ public abstract class DataServer extends Thread {
             out.println(DataCommand.PUBLISH_DATA.name());
             out.println(data.getKey());
             out.println(data.getValue());
+            out.println(deleteAfter);
             
             debug("Socket: " + port, "Setting data: " + DataCommand.PUBLISH_DATA + "::" + data.getKey() + "::" + data.getValue());
             

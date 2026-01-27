@@ -8,7 +8,7 @@ import org.fukkit.entity.FleXPlayer;
 
 public class FleXPlayerAsyncChatEvent extends FleXPlayerEvent implements Cancellable {
 	
-	private String message, server, prefix, suffix;
+	private String message, server;
 	
 	private Set<FleXPlayer> recipients, mentions;
 	
@@ -40,14 +40,6 @@ public class FleXPlayerAsyncChatEvent extends FleXPlayerEvent implements Cancell
 		return this.message;
 	}
 	
-	public String getPrefix() {
-		return this.prefix;
-	}
-	
-	public String getSuffix() {
-		return this.suffix;
-	}
-	
 	public Set<FleXPlayer> getRecipients() {
 		return this.recipients;
 	}
@@ -63,13 +55,5 @@ public class FleXPlayerAsyncChatEvent extends FleXPlayerEvent implements Cancell
 	public void setMessage(String message) {
 		this.message = message;
 	}
-
-	public void setPrefix(String prefix) {
-		this.prefix = prefix;
-	}
 	
-	public void setSuffix(String suffix) {
-		this.suffix = suffix;
-	}
-
 }

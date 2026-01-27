@@ -7,7 +7,7 @@ public class FleXPlayerAsyncChatReceiveEvent extends FleXPlayerEvent implements 
 	
 	private FleXPlayer recipient;
 	
-	private String message = null;
+	private String message = null, prefix, suffix;
 	
 	private boolean cancel = false;
 	
@@ -25,8 +25,24 @@ public class FleXPlayerAsyncChatReceiveEvent extends FleXPlayerEvent implements 
 		return this.recipient;
 	}
 	
+	public String getPrefix() {
+		return this.prefix;
+	}
+	
+	public String getSuffix() {
+		return this.suffix;
+	}
+	
 	public String getMessage() {
 		return this.message;
+	}
+
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
+	}
+	
+	public void setSuffix(String suffix) {
+		this.suffix = suffix;
 	}
 
 	@Override

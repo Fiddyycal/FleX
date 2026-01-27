@@ -97,7 +97,8 @@ public class ButtonListeners extends FleXEventListener {
 	@EventHandler
 	public void event(InventoryClickEvent event) {
 		
-		System.out.println("test 1");
+		if (event.getClick() == ClickType.CREATIVE)
+		    return;
 		
 		HumanEntity entity = event.getWhoClicked();
 		
@@ -118,16 +119,12 @@ public class ButtonListeners extends FleXEventListener {
 			
 		} else clicked = entity.getOpenInventory().getTopInventory();
 		
-		System.out.println("test 2");
-		
 		ClickType click = event.getClick();
 		
 		ItemStack item = event.getCurrentItem();
 		
 		if ((item == null || item.getType() == Material.AIR) && click == ClickType.NUMBER_KEY && event.getAction() == InventoryAction.HOTBAR_SWAP)
 			item = clicked.getItem(event.getHotbarButton());
-		
-		System.out.println("test 3");
 		
 		/**
 		 * @bandaid
@@ -139,8 +136,6 @@ public class ButtonListeners extends FleXEventListener {
 		
 		if (item == null || item.getType() == Material.AIR)
 			return;
-		
-		System.out.println("test 4");
 		
 		UniqueButton butt = Memory.BUTTON_CACHE.getByItem(item);
 		
@@ -175,8 +170,6 @@ public class ButtonListeners extends FleXEventListener {
 			
 		}
 		
-		System.out.println("test 5");
-		
 		if (clickEvent != null) {
 			
 			EventHelper.callEvent(clickEvent);
@@ -185,8 +178,6 @@ public class ButtonListeners extends FleXEventListener {
 				return;
 			
 		}
-		
-		System.out.println("test 6");
 		
 		if (button != null) {
 			
@@ -199,8 +190,6 @@ public class ButtonListeners extends FleXEventListener {
 		
 		if (menu == null)
 			return;
-		
-		System.out.println("test 7");
 		
 		event.setCancelled(true);
 		

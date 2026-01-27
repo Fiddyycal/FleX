@@ -27,10 +27,14 @@ public class DataHelper {
 	}
 
 	public static void set(String key, Object value, String ip, int port) {
+		set(key, value, ip, port, -1);
+	}
+
+	public static void set(String key, Object value, String ip, int port, long deleteMs) {
 
 		DataServer server = NetworkUtils.isProxy() ? FungeeCord.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
 		
-		server.setData(new Data(key, String.valueOf(value), server.getPort()), ip, port);
+		server.setData(new Data(key, String.valueOf(value), server.getPort()), ip, port, deleteMs);
 		
 	}
 
@@ -43,12 +47,16 @@ public class DataHelper {
 	}
 
 	public static void set(String key, Object value) {
+		set(key, value, -1);
+	}
 
+	public static void set(String key, Object value, long deleteMs) {
+		
 		DataServer server = NetworkUtils.isProxy() ? FungeeCord.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
 		
 		String ip = NetworkUtils.isProxy() ? FleX.LOCALHOST_IP : RelayDataServer.DEFAULT_WRITABLE_IP;
 		
-		server.setData(new Data(key, String.valueOf(value), server.getPort()), ip, DataServer.DEFAULT_WRITABLE_PORT);
+		server.setData(new Data(key, String.valueOf(value), server.getPort()), ip, DataServer.DEFAULT_WRITABLE_PORT, deleteMs);
 		
 	}
 	
