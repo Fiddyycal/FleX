@@ -1,5 +1,6 @@
 package org.fukkit.event.player;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.Cancellable;
 import org.fukkit.entity.FleXPlayer;
 
@@ -11,7 +12,7 @@ public class FleXPlayerMessageReceiveEvent extends FleXPlayerEvent implements Ca
 	
 	public FleXPlayerMessageReceiveEvent(final FleXPlayer player, String message) {
 		
-		super(player, false);
+		super(player, !Bukkit.isPrimaryThread());
 		
 		this.message = message;
 		

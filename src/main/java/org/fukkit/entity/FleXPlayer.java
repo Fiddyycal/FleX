@@ -129,12 +129,12 @@ public interface FleXPlayer extends FleXHumanEntity {
 	public void sendActionbar(String display);
 	
 	public void sendTitle(String title);
-
-    public void sendTitle(String title, String subtitle);
-
+	
+    public void sendTitle(String title, @Nullable String subtitle);
+    
     public void sendTitle(String title, int fadeIn, int screenTime, int fadeOut);
     
-    public void sendTitle(String title, String subtitle, int fadeIn, int screenTime, int fadeOut);
+    public void sendTitle(String title, @Nullable String subtitle, int fadeIn, int screenTime, int fadeOut);
     
 	public void sendParticle(Location location, Effect effect, int id, int data);
 	

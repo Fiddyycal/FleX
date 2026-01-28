@@ -149,7 +149,7 @@ public class ChatUtils {
 				
 				if (mentions.stream().anyMatch(f -> f.getUniqueId().equals(p.getUniqueId()))) {
 					
-					FleXPlayerMentionEvent mentionEvent = new FleXPlayerMentionEvent(player, p, false);
+					FleXPlayerMentionEvent mentionEvent = new FleXPlayerMentionEvent(player, p);
 					
 					Fukkit.getEventFactory().call(mentionEvent);
 					

@@ -1,5 +1,6 @@
 package org.fukkit.event.player;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.utils.VersionUtils;
@@ -10,9 +11,9 @@ public class FleXPlayerMentionEvent extends FleXPlayerEvent {
 	
 	private Sound sound = null;
 	
-	public FleXPlayerMentionEvent(final FleXPlayer player, FleXPlayer mentioned, boolean async) {
+	public FleXPlayerMentionEvent(final FleXPlayer player, FleXPlayer mentioned) {
 		
-		super(player, async);
+		super(player, !Bukkit.isPrimaryThread());
 		
 		this.mentioned = mentioned;
 		

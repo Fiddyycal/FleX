@@ -7,7 +7,6 @@ import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.fukkit.Fukkit;
 import org.fukkit.FukkitRunnable;
@@ -20,6 +19,7 @@ import org.fukkit.command.GlobalCommand;
 import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
+import org.fukkit.event.player.FleXPlayerDebugEvent;
 import org.fukkit.handlers.ServerHandler;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
@@ -275,6 +275,17 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
 				return;
+			
+			if (sender instanceof FleXPlayer) {
+				
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				
+				if (event.isCancelled())
+					return;
+
+				Fukkit.getEventFactory().call(event);
+				
+			}
 
 			sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Printing information about the network...");
 
@@ -354,6 +365,17 @@ public class DebugCommand extends FleXCommandAdapter {
 			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
 				return;
 			
+			if (sender instanceof FleXPlayer) {
+				
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				
+				if (event.isCancelled())
+					return;
+
+				Fukkit.getEventFactory().call(event);
+				
+			}
+			
     		int o = 0;
     		
     		for (FleXPlayer player : Fukkit.getServerHandler().getOnlinePlayersUnsafe())
@@ -404,6 +426,17 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
 				return;
+			
+			if (sender instanceof FleXPlayer) {
+				
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				
+				if (event.isCancelled())
+					return;
+
+				Fukkit.getEventFactory().call(event);
+				
+			}
 			
 			String spawn = world.getSpawnLocation().getBlockX() + "," + world.getSpawnLocation().getBlockY() + "," + world.getSpawnLocation().getBlockZ();
 			
@@ -468,6 +501,17 @@ public class DebugCommand extends FleXCommandAdapter {
 			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
 				return;
 			
+			if (sender instanceof FleXPlayer) {
+				
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				
+				if (event.isCancelled())
+					return;
+
+				Fukkit.getEventFactory().call(event);
+				
+			}
+			
 			int id = player.getEntity() != null && player.getEntity().isValid() ? player.getEntity().getEntityId() : -1;
 			
 			String name = player.getEntity() != null && player.getEntity().isValid() ? player.getPlayer().getName() : player.getName();
@@ -516,6 +560,17 @@ public class DebugCommand extends FleXCommandAdapter {
 			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
 				return;
 			
+			if (sender instanceof FleXPlayer) {
+				
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				
+				if (event.isCancelled())
+					return;
+
+				Fukkit.getEventFactory().call(event);
+				
+			}
+			
 			int id = bot.getEntity() != null && bot.getEntity().isValid() ? bot.getEntity().getEntityId() : -1;
 			
 			String name = bot.getEntity() != null && bot.getEntity().isValid() ? bot.getPlayer().getName() : bot.getName();
@@ -546,6 +601,20 @@ public class DebugCommand extends FleXCommandAdapter {
 			sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.RED + ChatColor.BOLD + "Hide sensitive information using the " + ChatColor.AQUA + ChatColor.BOLD + "-h" + ChatColor.RED + ChatColor.BOLD + " flag.");
 		
 		BukkitUtils.runLater(() -> {
+
+			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
+				return;
+			
+			if (sender instanceof FleXPlayer) {
+				
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				
+				if (event.isCancelled())
+					return;
+
+				Fukkit.getEventFactory().call(event);
+				
+			}
 			
 			/**
 			 * TODO:
@@ -556,7 +625,7 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 		BukkitUtils.runLater(() -> {
 			
-			if (sender == null || (sender instanceof FleXPlayer && !((Player)sender).isOnline()))
+			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
 				return;
 			
 			/**
@@ -593,9 +662,20 @@ public class DebugCommand extends FleXCommandAdapter {
 		String serialized = ItemUtils.serialize(item);
 		
 		BukkitUtils.runLater(() -> {
-
+			
 			if (sender == null || (sender instanceof FleXPlayer && !((FleXPlayer)sender).isOnline()))
 				return;
+			
+			if (sender instanceof FleXPlayer) {
+				
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				
+				if (event.isCancelled())
+					return;
+
+				Fukkit.getEventFactory().call(event);
+				
+			}
 			
 			if (v1_9)
 				sender.sendMessage(ChatColor.GRAY + "Main Hand:");

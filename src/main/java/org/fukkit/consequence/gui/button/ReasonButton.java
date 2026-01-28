@@ -68,6 +68,29 @@ public class ReasonButton extends ExecutableButton {
 				
 				PunishmentType type = menu.getConsequenceType();
 				
+			    if (type == PunishmentType.REPORT) {
+			    	
+			    	Set<Report> reports = new LinkedHashSet<Report>();
+					
+					try {
+						reports = Report.download(SQLCondition.where("uuid").is(this.threatened.getUniqueId()), SQLCondition.where("by").is(player.getUniqueId()), SQLCondition.where("pardoned").is(false));
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+					
+					if (!reports.isEmpty()) {
+						
+						// TODO config message for this
+						player.sendMessage(player.getTheme().format("<error><failure>You have already reported " + this.threatened.getDisplayName(player.getTheme()) + "<reset> <failure>for that<pp>."));
+						player.sendMessage(player.getTheme().format("<error><pc>Reporting multiple times may slow the punishment process<pp>."));
+						
+						player.closeMenu();
+						return;
+						
+					}
+			    	
+			    }
+				
 				Consequence consequence = new Consequence(this.threatened, player, this.reason, menu.hasMetadata("punishment_ip"), menu.hasMetadata("punishment_silent")) {
 					
 					@Override
@@ -76,25 +99,6 @@ public class ReasonButton extends ExecutableButton {
 				    }
 					
 			    };
-				
-			    Set<Report> reports = new LinkedHashSet<Report>();
-				
-				try {
-					reports = Report.download(SQLCondition.where("uuid").is(this.threatened.getUniqueId()), SQLCondition.where("by").is(player.getUniqueId()), SQLCondition.where("pardoned").is(false));
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				
-				if (!reports.isEmpty()) {
-					
-					// TODO config message for this
-					player.sendMessage(player.getTheme().format("<error><failure>You have already reported " + this.threatened.getDisplayName(player.getTheme()) + "<reset> <failure>for that<pp>."));
-					player.sendMessage(player.getTheme().format("<error><pc>Reporting multiple times may slow the punishment process<pp>."));
-					
-					player.closeMenu();
-					return;
-					
-				}
 			    
 				FleXPreConsequenceEvent event = new FleXPreConsequenceEvent(consequence, true);
 				

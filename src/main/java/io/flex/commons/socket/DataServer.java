@@ -45,7 +45,7 @@ public abstract class DataServer extends Thread {
 		this.server.bind(new InetSocketAddress(FleX.LOCALHOST_IP, port));
 		
     	Task.print("Sockets", "This socket is reachable via " + FleX.LOCALHOST_IP + ".");
-    	Task.print("Sockets", "If you are not using docker or some kind of firewall, it is highly recommended that you use point-to-point authentication keys before transfers to provent data spoofing.");
+    	Task.print("Sockets", "If you are not using docker or some kind of firewall, it is highly recommended that you use point-to-point authentication keys before transfers to prevent data spoofing.");
     	
 	}
 	
@@ -454,6 +454,9 @@ public abstract class DataServer extends Thread {
 			Socket socket = new Socket();
 		    
 		    socket.connect(new InetSocketAddress(ip, port), /*5 second timeout*/5000);
+		    
+        	// Timeout after 3 seconds
+		    //socket.setSoTimeout(3000);
             
     		debug("Sockets", "Connection successful.");
             
