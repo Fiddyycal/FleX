@@ -111,6 +111,22 @@ public class ButtonListeners extends FleXEventListener {
 			
 			Inventory inv = event.getInventory();
 			
+			if (event.getCursor() != null) {
+				
+				UniqueButton butt = Memory.BUTTON_CACHE.getByItem(event.getCursor());
+				
+				if (butt instanceof ExecutableButton == false)
+					return;
+				
+				ExecutableButton button = (ExecutableButton) butt;
+				
+				if (!button.isDroppable()) {
+					event.setCancelled(true);
+					return;
+				}
+				
+			}
+			
 			if (!(inv.getClass().getName().contains("Custom") || (inv.getType() == InventoryType.CHEST && inv.getHolder() == null)))
 				return;
 			
@@ -123,7 +139,7 @@ public class ButtonListeners extends FleXEventListener {
 		
 		ItemStack item = event.getCurrentItem();
 		
-		if ((item == null || item.getType() == Material.AIR) && click == ClickType.NUMBER_KEY && event.getAction() == InventoryAction.HOTBAR_SWAP)
+		if ((item == null || item.getType() == Material.AIR) && click == ClickType.NUMBER_KEY && (event.getAction() == InventoryAction.HOTBAR_SWAP || event.getAction() == InventoryAction.SWAP_WITH_CURSOR || event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY))
 			item = clicked.getItem(event.getHotbarButton());
 		
 		/**
@@ -181,17 +197,19 @@ public class ButtonListeners extends FleXEventListener {
 		
 		if (button != null) {
 			
-			clickEvent.setExecuted(button.exec(player, action, menu != null ? menu : clicked));
+			boolean exec = button.exec(player, action, menu != null ? menu : clicked);
 			
-			if (button.isDroppable())
+			clickEvent.setExecuted(exec);
+			
+			if (exec && action.isClick() && button.isIntractable())
 				return;
 			
+			if (exec && action.isDrop() && button.isDroppable())
+				return;
+			
+			event.setCancelled(true);
+			
 		}
-		
-		if (menu == null)
-			return;
-		
-		event.setCancelled(true);
 		
 	}
 	

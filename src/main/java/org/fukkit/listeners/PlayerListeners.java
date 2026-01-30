@@ -8,34 +8,27 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.event.player.PlayerFishEvent.State;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.util.Vector;
@@ -49,7 +42,6 @@ import org.fukkit.Memory.Setting;
 import org.fukkit.ai.AIDriver;
 import org.fukkit.api.helper.PlayerHelper;
 import org.fukkit.clickable.button.ButtonAction;
-import org.fukkit.combat.CombatFactory;
 import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
@@ -645,120 +637,6 @@ public class PlayerListeners extends FleXEventListener {
 		
 	}
 	
-	@EventHandler(priority = EventPriority.LOW)
-    public void event(InventoryClickEvent event) {
-		
-		if (event.isCancelled())
-			return;
-		
-    	HumanEntity player = event.getWhoClicked();
-    	
-    	if (player.getGameMode() == GameMode.CREATIVE)
-    		return;
-		
-    	if (player.hasMetadata("mode.build"))
-    		return;
-    	
-    	FleXPlayer fp = PlayerHelper.getPlayerSafe(player.getUniqueId());
-    	
-    	if (!fp.getState().isImpervious())
-    		return;
-    	
-    	event.setCancelled(true);
-        
-    }
-	
-	@EventHandler(priority = EventPriority.HIGH)
-    public void event(PlayerDropItemEvent event) {
-		
-		if (event.isCancelled())
-			return;
-		
-    	Player player = event.getPlayer();
-    	
-    	if (player.getGameMode() == GameMode.CREATIVE)
-    		return;
-		
-    	if (player.hasMetadata("mode.build"))
-    		return;
-    	
-    	FleXPlayer fp = PlayerHelper.getPlayerSafe(player.getUniqueId());
-    	
-    	if (fp.getState().isImpervious())
-    		event.setCancelled(true);
-    	
-    }
-	
-	@EventHandler(priority = EventPriority.HIGH)
-    public void event(PlayerPickupItemEvent event) {
-		
-		if (event.isCancelled())
-			return;
-		
-    	Player player = event.getPlayer();
-    	
-    	if (player.getGameMode() == GameMode.CREATIVE)
-    		return;
-		
-    	if (player.hasMetadata("mode.build"))
-    		return;
-    	
-    	FleXPlayer fp = PlayerHelper.getPlayerSafe(player.getUniqueId());
-    	
-    	if (fp.getState().isImpervious()) {
-    		event.setCancelled(true);
-    		return;
-    	}
-    	
-    	FleXWorld fw = fp.getWorld();
-		
-    	if (fw == null)
-    		return;
-    	
-    	boolean blocks = (boolean)fw.getSetting(WorldSetting.BLOCK_BREAK) || (boolean)fw.getSetting(WorldSetting.BLOCK_PLACE);
-    	boolean pvpe = (boolean)fw.getSetting(WorldSetting.DAMAGE_PVP) || (boolean)fw.getSetting(WorldSetting.DAMAGE_PVE);
-    	
-    	event.setCancelled(!(blocks || pvpe));
-        
-    }
-	
-	@EventHandler(priority = EventPriority.HIGH)
-    public void event(PlayerInteractEvent event) {
-		
-		if (event.isCancelled())
-			return;
-		
-    	Player player = event.getPlayer();
-    	
-    	if (player.getGameMode() == GameMode.CREATIVE)
-    		return;
-		
-    	if (player.hasMetadata("mode.build"))
-    		return;
-    	
-    	FleXPlayer fp = PlayerHelper.getPlayerSafe(player.getUniqueId());
-    	
-    	if (fp == null)
-    		return;
-    	
-    	if (fp.getState().isImpervious()) {
-    		event.setCancelled(true);
-    		return;
-    	}
-    	
-    	FleXWorld fw = fp.getWorld();
-		
-    	if (fw == null)
-    		return;
-    	
-    	boolean block = event.getClickedBlock() != null;
-    	boolean bBreak = block && event.getAction() == Action.LEFT_CLICK_BLOCK;
-    	boolean bPlace = block && event.getAction() == Action.RIGHT_CLICK_BLOCK;
-    	
-    	event.setCancelled((bBreak && !(boolean)fw.getSetting(WorldSetting.BLOCK_BREAK)) || (bPlace && !(boolean)fw.getSetting(WorldSetting.BLOCK_PLACE)));
-    	
-	}
-	
 	@EventHandler(priority = EventPriority.HIGH)
     public void event(VehicleEnterEvent event) {
 		
@@ -826,38 +704,19 @@ public class PlayerListeners extends FleXEventListener {
     	
     }
 	
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void event(PlayerVelocityEvent event) {
+	@EventHandler(priority = EventPriority.LOW)
+	public void event(PlayerPickupItemEvent event) {
 		
-		// TODO, intergrate new knockback
-		if (null == null)
-			return;
-		
-		Player player = event.getPlayer();
-		FleXPlayer fp = Fukkit.getPlayerExact(player);
-		
-		if (fp.getState() == PlayerState.CONNECTING) {
-	    	event.setCancelled(true);
-	    	return;
-		}
-		
-		CombatFactory combat = Fukkit.getCombatFactory();
-		
-		if (!combat.isEnabled())
-			return;
-		
-		if (combat.isLegacy())
-			return;
-		
-	    if (player.getLastDamageCause() == null)
-	    	return;
-	    
-	    if (player.getLastDamageCause() instanceof EntityDamageByEntityEvent == false)
-	    	return;
-	    
-	    if (((EntityDamageByEntityEvent) player.getLastDamageCause()).getDamager() instanceof LivingEntity)
-	    	event.setCancelled(true);
-	    
+    	FleXPlayer player = Fukkit.getPlayerExact(event.getPlayer());
+    	
+    	if (player == null)
+    		return;
+    	
+    	if (!player.getState().isImpervious())
+    		return;
+    	
+    	event.setCancelled(true);
+    	
 	}
 	
 	@EventHandler(priority = EventPriority.LOW)

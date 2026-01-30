@@ -2,6 +2,7 @@ package org.fukkit.entity;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.bukkit.Effect;
@@ -58,6 +59,8 @@ public interface FleXPlayer extends FleXHumanEntity {
 	public String getDomain();
 	
 	public NameTag getNameTag(FleXPlayer viewer);
+	
+	public Set<NameTag> getNameTags();
 	
 	public NameBar getSubNameTag();
 	

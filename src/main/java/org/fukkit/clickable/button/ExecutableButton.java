@@ -53,7 +53,7 @@ public abstract class ExecutableButton extends UniqueItem implements UniqueButto
 		
 		super(material, name, amount, damage, enchantments, lore);
 		
-		this.intractable = ClassUtils.getSuperAnnotation(this.getClass(), Intractable.class) != null;
+		this.intractable = ClassUtils.getSuperAnnotation(this.getClass(), Interactable.class) != null;
 		this.droppable = ClassUtils.getSuperAnnotation(this.getClass(), Droppable.class) != null;
 		
 		if (this instanceof PointlessButton || this instanceof FacelessButton)

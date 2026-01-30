@@ -51,11 +51,13 @@ public class Head extends UniqueItem {
 	public void setOwner(FleXPlayer player) {
 		
 		SkullMeta meta = (SkullMeta) this.getItemMeta();
+		
 		try {
 			meta.setOwnerProfile(player.getPlayer().getPlayerProfile());
 		} catch (NoSuchMethodError | Exception e) {
 			this.setOwner(player.getName());
 		}
+		
 		this.setItemMeta(meta);
 		
 	}
