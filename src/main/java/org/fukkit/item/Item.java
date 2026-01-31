@@ -117,7 +117,7 @@ public class Item extends ItemStack implements Cloneable {
 		
 	}
 
-	public void setLore(String... lore) {
+	public void setLore(@Nullable String... lore) {
 		
 		ItemMeta meta = super.getItemMeta();
 		
@@ -126,9 +126,10 @@ public class Item extends ItemStack implements Cloneable {
 			
 		List<String> lines = new ArrayList<String>();
 		
-		for (String line : lore)
-			if (line != null)
-				lines.add(FormatUtils.format(line));
+		if (lore != null && lore.length > 0)
+			for (String line : lore)
+				if (line != null)
+					lines.add(FormatUtils.format(line));
 		
 		meta.setLore(lines);
 		

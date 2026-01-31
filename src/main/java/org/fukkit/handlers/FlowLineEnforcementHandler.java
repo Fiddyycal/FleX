@@ -15,12 +15,14 @@ import org.fukkit.ai.AIDriver;
 import org.fukkit.api.helper.ConfigHelper;
 import org.fukkit.config.Configuration;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.fle.CriticalHitListeners;
+import org.fukkit.fle.ServerMonitor;
+import org.fukkit.fle.listeners.AutoClickerListeners;
+import org.fukkit.fle.listeners.CommandLogListeners;
+import org.fukkit.fle.listeners.CriticalHitListeners;
 import org.fukkit.recording.RecordingContext;
 import org.fukkit.recording.RecordingState;
 import org.fukkit.recording.Replay;
 import org.fukkit.utils.WorldUtils;
-import org.fukkit.fle.CommandLogListeners;
 
 import io.flex.FleX;
 import io.flex.commons.file.DataFile;
@@ -46,8 +48,11 @@ public class FlowLineEnforcementHandler {
 		
 		this.driver = Fukkit.getBridgeHandler().isCitizensEnabled() ? AIDriver.CITIZENS : AIDriver.FLEX;
 		
+		ServerMonitor.start();
+		
 		new CriticalHitListeners();
 		new CommandLogListeners();
+		new AutoClickerListeners();
 		
 		registered = true;
 		

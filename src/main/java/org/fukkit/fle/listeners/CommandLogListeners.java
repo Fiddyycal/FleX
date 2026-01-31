@@ -1,4 +1,4 @@
-package org.fukkit.fle;
+package org.fukkit.fle.listeners;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
