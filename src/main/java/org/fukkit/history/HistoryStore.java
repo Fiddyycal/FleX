@@ -7,7 +7,7 @@ import org.fukkit.history.variance.BadgeHistory;
 import org.fukkit.history.variance.ChatCommandHistory;
 import org.fukkit.history.variance.ConnectionHistory;
 import org.fukkit.history.variance.DisguiseHistory;
-import org.fukkit.history.variance.IpHistory;
+import org.fukkit.history.variance.IPHistory;
 import org.fukkit.history.variance.NameHistory;
 import org.fukkit.history.variance.PunishmentHistory;
 import org.fukkit.history.variance.RankHistory;
@@ -22,7 +22,7 @@ public class HistoryStore {
 	
 	private DisguiseHistory disguises;
 	
-	private IpHistory ips;
+	private IPHistory ips;
 	
 	private NameHistory names;
 	
@@ -40,7 +40,7 @@ public class HistoryStore {
 		
 		this.disguises = new DisguiseHistory(player);
 		
-		this.ips = new IpHistory(player);
+		this.ips = new IPHistory(player);
 		
 		this.names = new NameHistory(player);
 		
@@ -66,7 +66,7 @@ public class HistoryStore {
 		return this.disguises;
 	}
 	
-	public IpHistory getIps() {
+	public IPHistory getIps() {
 		return this.ips;
 	}
 	

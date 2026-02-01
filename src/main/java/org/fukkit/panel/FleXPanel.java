@@ -3,10 +3,11 @@ package org.fukkit.panel;
 import org.fukkit.clickable.Menu;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.panel.button.BanButton;
+import org.fukkit.panel.button.IPHistoryButton;
 import org.fukkit.panel.button.KickButton;
 import org.fukkit.panel.button.MetricsButton;
 import org.fukkit.panel.button.MuteButton;
-import org.fukkit.panel.button.ReportButton;
+import org.fukkit.panel.button.ReportHistoryButton;
 import org.fukkit.panel.button.chat.ChatHistoryButton;
 import org.fukkit.theme.Theme;
 
@@ -24,7 +25,8 @@ public class FleXPanel extends Menu {
 		other.getHistoryAsync(history -> {
 			
 			this.addButton(new ChatHistoryButton(theme, lang, other));
-			this.addButton(new ReportButton(theme, lang, other));
+			this.addButton(new IPHistoryButton(theme, lang, other));
+			this.addButton(new ReportHistoryButton(theme, lang, other));
 			this.addButton(new BanButton(theme, lang, other));
 			this.addButton(new MuteButton(theme, lang, other));
 			this.addButton(new KickButton(theme, lang, other));

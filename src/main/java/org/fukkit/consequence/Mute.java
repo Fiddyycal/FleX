@@ -104,7 +104,7 @@ public class Mute extends Punishment {
 		
 		player.sendMessage(new String[] {
 				
-				theme.format("<engine><severe>&lYou have been " + (perm ? "permanently" : "temporarily") + " muted."),
+				theme.format("<engine><severe>&lYou have been " + (perm ? "permanently" : "temporarily") + " muted<pp>."),
 				theme.format("<engine><lore>Reason<sp>:" + Theme.reset + " <pc>" + this.reason),
 				theme.format("<engine><lore>Offence<sp>:" + Theme.reset + " <pc>" + this.reason.getCategory()),
 				theme.format("<engine><lore>Evidence<sp>:" + Theme.reset + " <pc>" + (this.evidence != null && this.evidence.length != 0 ? this.evidence[0] : "None")),
@@ -117,7 +117,7 @@ public class Mute extends Punishment {
 		
 		JsonBuffer buffer = new JsonBuffer();
 		
-		buffer = buffer.append(new JsonComponent(theme.format("<engine><lore>Was this mute mishandled<pp>?\\s<lore>Dispute it ")));
+		buffer = buffer.append(new JsonComponent(theme.format("<engine><lore>Was this mute unjustified<pp>?\\s<lore>Dispute it ")));
 		buffer = buffer.append(new JsonComponent(theme.format("<clickable>here"))
 				
 				.onHover(theme.format("Dispute your active <interactable>mute<pp>."))

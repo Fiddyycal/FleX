@@ -17,8 +17,8 @@ import org.fukkit.config.Configuration;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.fle.ServerMonitor;
 import org.fukkit.fle.listeners.AutoClickerListeners;
-import org.fukkit.fle.listeners.CommandLogListeners;
 import org.fukkit.fle.listeners.CriticalHitListeners;
+import org.fukkit.fle.listeners.HistoryListeners;
 import org.fukkit.recording.RecordingContext;
 import org.fukkit.recording.RecordingState;
 import org.fukkit.recording.Replay;
@@ -50,8 +50,8 @@ public class FlowLineEnforcementHandler {
 		
 		ServerMonitor.start();
 		
+		new HistoryListeners();
 		new CriticalHitListeners();
-		new CommandLogListeners();
 		new AutoClickerListeners();
 		
 		registered = true;

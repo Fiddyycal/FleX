@@ -14,7 +14,7 @@ import org.fukkit.history.variance.BadgeHistory;
 import org.fukkit.history.variance.ChatCommandHistory;
 import org.fukkit.history.variance.ConnectionHistory;
 import org.fukkit.history.variance.DisguiseHistory;
-import org.fukkit.history.variance.IpHistory;
+import org.fukkit.history.variance.IPHistory;
 import org.fukkit.history.variance.NameHistory;
 import org.fukkit.history.variance.RankHistory;
 
@@ -139,7 +139,7 @@ public class ConnectionHandler {
 			this.createHistoryTable(ChatCommandHistory.TABLE_NAME);
 			this.createHistoryTable(ConnectionHistory.TABLE_NAME);
 			this.createHistoryTable(DisguiseHistory.TABLE_NAME);
-			this.createHistoryTable(IpHistory.TABLE_NAME);
+			this.createHistoryTable(IPHistory.TABLE_NAME);
 			this.createHistoryTable(NameHistory.TABLE_NAME);
 			this.createHistoryTable(RankHistory.TABLE_NAME);
 			

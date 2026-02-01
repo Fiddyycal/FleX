@@ -51,8 +51,11 @@ public class MetricsButton extends ExecutableButton {
 		AutoClickerDetector acd = profile.getAutoClickDetector();
 		
 		lore.add("");
-		lore.add(theme.format("<spc>Anti-cheat data<pp>:"));
-		lore.add(theme.format("<pc>Higest CPS<pp>:\\s<sc>" + (profile == null ? 0 : acd.getHighestCps())));
+		lore.add(theme.format("<tc>Anti-cheat data logged and provided by <spc>FloW<pp>."));
+		
+		lore.add("");
+		lore.add(theme.format("<spc>Auto-clicker detector<pp>:"));
+		lore.add(theme.format("<pc>Highest CPS<pp>:\\s<sc>" + (profile == null ? 0 : acd.getHighestCps())));
 		lore.add(theme.format("<pc>Current CPS<pp>:\\s<sc>" + (profile == null ? 0 : acd.getCps())));
 		lore.add(theme.format("<pc>Avarage CPS<pp>:\\s<sc>" + (profile == null ? 0 : acd.getAvarage() < 0 ? "Not recorded yet" : acd.getAvarage())));
 		

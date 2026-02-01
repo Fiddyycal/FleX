@@ -46,9 +46,9 @@ public class AdminCommand extends FleXCommandAdapter {
 		
 		if (args.length == 0 || sub_command_cache.get(args[0]) == null) {
 			this.usage(sender,
-
+					
 				"/<command> setrank/giverank/rank/r <player> <rank> [reason]",
-				"/<command> givebadge/badge/b <player> <badge> [reason]",
+				"/<command> givebadge/badge/b add/remove <player> <badge> [reason]",
 				"/<command> database/configuration <name> [-r, -c, -l]",
 				"/<command> say/broadcast/bc <message> [-g]",
 				"/<command> blacklist/bl <player> [reason]",

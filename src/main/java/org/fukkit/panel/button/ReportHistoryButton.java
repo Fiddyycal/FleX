@@ -11,11 +11,11 @@ import org.fukkit.theme.Theme;
 
 import io.flex.commons.file.Language;
 
-public class ReportButton extends AbstractPunishButton {
+public class ReportHistoryButton extends AbstractPunishButton {
 
 	private static final long serialVersionUID = -808233538601808625L;
 
-	public ReportButton(Theme theme, Language language, FleXPlayer other) {
+	public ReportHistoryButton(Theme theme, Language language, FleXPlayer other) {
 		super(Material.NAME_TAG, theme, language, other, PunishmentType.REPORT);
 	}
 
