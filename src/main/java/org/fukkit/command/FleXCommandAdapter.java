@@ -130,7 +130,7 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements Cachea
         IntStream.range(0, this.flags != null ? this.flags.length : 0).forEach(i -> {
         	this.flags[i] = flaggedAnn.flags()[i].startsWith("-") ? flaggedAnn.flags()[i] : "-" + flaggedAnn.flags()[i];
         });
-        
+		
         this.usage = commandAnn.usage() != null && commandAnn.usage().length != 0 ? commandAnn.usage() : new String[]{ "/<command>" };
         
         this.setUsage(this.usage[0]);
@@ -144,9 +144,9 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements Cachea
         
         if (!aliasesList.isEmpty())
         	this.setAliases(aliasesList);
-        
+		
         Fukkit.getCommandFactory().register(this);
-        
+		
         Memory.COMMAND_CACHE.add(this);
         
 	}

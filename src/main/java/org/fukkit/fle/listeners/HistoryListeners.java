@@ -71,7 +71,7 @@ public class HistoryListeners extends FleXEventListener {
 		// If theme or history hasn't loaded yet.
 		event.setCancelled(true);
 		
-		// TODO
+		// TODO message in yml
 		player.sendMessage((theme != null ? theme : Memory.THEME_CACHE.getDefaultTheme()).format("<engine><failure>Loading profile, please wait<pp>..."));
 		return;
 		

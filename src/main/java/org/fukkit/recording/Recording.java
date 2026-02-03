@@ -330,13 +330,17 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 				
 				if (row != null) {
 					
-					row.set("time", System.currentTimeMillis());
-					row.set("duration", this.tick * (double) TICK_RATE / 20.0);
-					row.set("state", RecordingState.COMPLETE.name());
-					row.set("data", Files.readAllBytes(file.toPath()));
-					
 					try {
+						
+						row.set("time", System.currentTimeMillis());
+						row.set("duration", this.tick * (double) TICK_RATE / 20.0);
+						row.set("state", RecordingState.COMPLETE.name());
+						row.set("data", Files.readAllBytes(file.toPath()));
+						
+						row.setIdentifier(this.context != RecordingContext.EMPTY ? "context" : "time");
+						
 						row.update();
+						
 					} catch (Exception e) {
 						
 						row.set("state", RecordingState.ERROR.name());
@@ -401,7 +405,7 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 		
 		if (row == null) {
 			
-			return base.addRow("flex_recording", 
+			return base.addRow("flex_recording", "",
 					
 					SQLMap.of(
 							

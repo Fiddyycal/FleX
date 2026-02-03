@@ -1,8 +1,10 @@
 package org.fukkit.recording;
 
 public class RecordingContext {
-
+	
 	public static final int NONE = 0, REPORT = 1, GAME = 2, OTHER = 3;
+
+	public static final RecordingContext EMPTY = new RecordingContext(NONE, null);
 	
 	private int type;
 	
