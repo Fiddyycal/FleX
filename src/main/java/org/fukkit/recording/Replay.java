@@ -18,11 +18,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Effect;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.FishHook;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -34,7 +33,6 @@ import org.fukkit.event.flow.ReplayEndEvent;
 import org.fukkit.event.flow.ReplayStartEvent;
 import org.fukkit.event.flow.ReplayWatchEvent;
 import org.fukkit.theme.Theme;
-import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.WorldUtils;
 
 import io.flex.commons.Nullable;
@@ -42,6 +40,7 @@ import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLRowWrapper;
 import io.flex.commons.utils.FileUtils;
+import io.flex.commons.utils.NumUtils;
 
 public class Replay extends Recording {
 	
@@ -170,6 +169,9 @@ public class Replay extends Recording {
 	
 	public void addWatcher(FleXPlayer player) {
 		
+		if (player instanceof FleXBot)
+			return;
+		
 		ReplayWatchEvent event = new ReplayWatchEvent(this, player);
 		
 		Fukkit.getEventFactory().call(event);
@@ -211,6 +213,9 @@ public class Replay extends Recording {
 				return;
 			}
 			
+			if (this.tick % 3 == 0)
+				this.world.playEffect(watcher.getLocation().clone().add(NumUtils.getRng().getDouble(-0.3, 0.3), 1, NumUtils.getRng().getDouble(-0.3, 0.3)), Effect.MOBSPAWNER_FLAMES, 0);
+			
 		}
 		
 		if (this.pause)
@@ -247,7 +252,10 @@ public class Replay extends Recording {
 				if (actions != null && actions.length > 0) {
 					for (RecordedAction action : actions) {
 						
-						if (action != RecordedAction.NONE)
+						if (action == RecordedAction.NONE)
+							continue;
+						
+						if (action == RecordedAction.MOVE)
 							continue;
 						
 						if (action == RecordedAction.EQUIP_HAND) {
@@ -291,27 +299,6 @@ public class Replay extends Recording {
 									e.remove();
 							
 							continue;
-							
-						}
-						
-						if (action == RecordedAction.USE_ITEM) {
-							
-							ItemStack item = frame.getItem();
-							
-							if (item == null)
-								continue;
-							
-							Material type = item.getType();
-							
-							if (type == Material.FISHING_ROD)
-								((CraftRecorded)recordable).hook = bot.getPlayer().launchProjectile(FishHook.class);
-							
-						}
-						
-						if (action == RecordedAction.STOP_USE_ITEM) {
-							
-							if (((CraftRecorded)recordable).hook != null)
-								((CraftRecorded)recordable).hook.remove();
 							
 						}
 						
@@ -442,14 +429,14 @@ public class Replay extends Recording {
 		
 		List<FleXPlayer> all = new ArrayList<FleXPlayer>(this.watchers);
 		
-		BukkitUtils.runLater(() -> {
-			for (FleXPlayer watcher : all) {
-				
-				if (watcher != null && watcher.isOnline())
+		for (FleXPlayer watcher : all) {
+			
+			if (watcher != null && watcher.isOnline())
+				try {
 					watcher.kick("The stage has closed: " + parse);
-					
-			}
-		});
+				} catch (IllegalStateException ignore) {}
+				
+		}
 		
 		this.destroy();
 		
@@ -491,6 +478,18 @@ public class Replay extends Recording {
 
 	@Override
 	public void onComplete() {
+		
+		this.getRecorded().forEach((k, v) -> {
+			
+			if (k.equals(Recordable.SYSTEM_UID))
+				return;
+			
+			v.setHelmet(null);
+			v.setChestplate(null);
+			v.setLeggings(null);
+			v.setBoots(null);
+			
+		});
 		
 		for (FleXPlayer watcher : this.watchers) {
 			
