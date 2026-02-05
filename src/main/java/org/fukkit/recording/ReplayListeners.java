@@ -1,6 +1,8 @@
 package org.fukkit.recording;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -10,9 +12,12 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.FleXEventListener;
@@ -20,6 +25,7 @@ import org.fukkit.event.flow.ReplayStartEvent;
 import org.fukkit.event.player.FleXPlayerAsyncChatEvent;
 import org.fukkit.theme.Theme;
 
+@SuppressWarnings("deprecation")
 public class ReplayListeners extends FleXEventListener {
 
 	private Replay replay;
@@ -29,7 +35,29 @@ public class ReplayListeners extends FleXEventListener {
 	}
 	
 	@EventHandler
+	public void event(EntitySpawnEvent event) {
+		
+		World world = event.getLocation().getWorld();
+		
+		if (!this.replay.getWorld().getUID().equals(world.getUID()))
+			return;
+		
+		event.setCancelled(true);
+		
+	}
+	
+	@EventHandler
 	public void event(PlayerDropItemEvent event) {
+		
+		if (!this.replay.isWatching(event.getPlayer()))
+			return;
+		
+		event.setCancelled(true);
+		
+	}
+	
+	@EventHandler
+	public void event(PlayerPickupItemEvent event) {
 		
 		if (!this.replay.isWatching(event.getPlayer()))
 			return;
@@ -102,13 +130,9 @@ public class ReplayListeners extends FleXEventListener {
 		if (clicked == null)
 			return;
 		
-		System.out.println("test 1: " + clicked.getName());
-		
 		// Unique id's do not work here because Entity uuid is different from Bot uuid.
 		if (!this.replay.getRecorded().values().stream().anyMatch(r -> r.getName().equals(clicked.getName())))
 			return;
-		
-		System.out.println("test 2");
 		
 		Entity entity = event.getPlayer();
 		
@@ -127,6 +151,18 @@ public class ReplayListeners extends FleXEventListener {
 	}
 	
 	@EventHandler
+	public void event(PlayerDeathEvent event) {
+		
+		Player player = event.getEntity();
+		
+		if (this.replay.isWatching(player)) {
+			player.kickPlayer(ChatColor.RED + "You died in a replay?");
+			return;
+		}
+		
+	}
+	
+	@EventHandler
 	public void event(EntityDamageEvent event) {
 		
 		Entity entity = event.getEntity();
@@ -135,8 +171,6 @@ public class ReplayListeners extends FleXEventListener {
 	    	event.setCancelled(true);
 			return;
 		}
-		
-		System.out.println("CAUSE: " + event.getCause());
 		
 		if (event.getCause() != DamageCause.CUSTOM) {
 			if (this.replay.getRecorded().values().stream().anyMatch(r -> r.getName().equalsIgnoreCase(entity.getName()))) {

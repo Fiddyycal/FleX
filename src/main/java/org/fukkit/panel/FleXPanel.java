@@ -7,6 +7,7 @@ import org.fukkit.panel.button.IPHistoryButton;
 import org.fukkit.panel.button.KickButton;
 import org.fukkit.panel.button.MetricsButton;
 import org.fukkit.panel.button.MuteButton;
+import org.fukkit.panel.button.ReplaysButton;
 import org.fukkit.panel.button.ReportHistoryButton;
 import org.fukkit.panel.button.chat.ChatHistoryButton;
 import org.fukkit.theme.Theme;
@@ -31,6 +32,7 @@ public class FleXPanel extends Menu {
 			this.addButton(new MuteButton(theme, lang, other));
 			this.addButton(new KickButton(theme, lang, other));
 			this.addButton(new MetricsButton(theme, lang, other));
+			this.addButton(new ReplaysButton(theme, lang, other));
 			
 		}, () -> {
 			

@@ -126,6 +126,8 @@ public abstract class Punishment extends Consequence {
 	}
 	
 	public void setEvidence(String... evidence) throws SQLException {
+
+		System.out.println("test 3");
 		
 		SQLDatabase connection = Fukkit.getConnectionHandler().getDatabase();
 		SQLRowWrapper row = connection.getRow("flex_punishment", SQLCondition.where("id").is(this.reference));

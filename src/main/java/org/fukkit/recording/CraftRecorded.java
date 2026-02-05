@@ -4,6 +4,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.GameMode;
+import org.bukkit.entity.FishHook;
+import org.bukkit.inventory.ItemStack;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
 import org.fukkit.disguise.FleXSkin;
@@ -13,7 +16,7 @@ import org.fukkit.entity.FleXPlayer;
 import io.flex.commons.Nullable;
 
 public class CraftRecorded implements Recordable {
-
+	
 	private UUID uuid;
 	private String name;
 	
@@ -22,6 +25,8 @@ public class CraftRecorded implements Recordable {
 	private FleXBot actor;
 	
 	private boolean bot = false;
+	
+	public FishHook hook;
 	
 	private CraftRecorded(UUID uuid, @Nullable String name, @Nullable FleXSkin skin, LinkedHashMap<Long, Frame> frames) {
 		
@@ -36,6 +41,7 @@ public class CraftRecorded implements Recordable {
 		
 		this.actor = Fukkit.getPlayerFactory().createFukkitBot(name, skin);
 		
+		this.actor.getAI().setGameMode(GameMode.CREATIVE);
 		this.actor.getAI().setGravity(false);
 		
 	}
@@ -71,12 +77,52 @@ public class CraftRecorded implements Recordable {
 	
 	public static CraftRecorded of(@Nullable FleXPlayer player, LinkedHashMap<Long, Frame> frames) {
 		
-		CraftRecorded rec = new CraftRecorded(player != null ? player.getUniqueId() : UUID.randomUUID(), player != null ? player.getName() : null, player != null ? player.getSkin() : null, frames);
+		CraftRecorded rec = new CraftRecorded(player != null ? player.getUniqueId() : UUID.randomUUID(), player != null ? player.getName() : null, player != null ? new PlaceholderFleXSkin(player.getUniqueId()) : null, frames);
 		
 		rec.bot = player == null;
 		
 		return rec;
 		
+	}
+
+	@Override
+	public ItemStack getHelmet() {
+		return this.actor.getHelmet();
+	}
+
+	@Override
+	public ItemStack getChestplate() {
+		return this.actor.getChestplate();
+	}
+
+	@Override
+	public ItemStack getLeggings() {
+		return this.actor.getLeggings();
+	}
+
+	@Override
+	public ItemStack getBoots() {
+		return this.actor.getBoots();
+	}
+
+	@Override
+	public void setHelmet(ItemStack helmet) {
+		this.actor.setHelmet(helmet);
+	}
+
+	@Override
+	public void setChestplate(ItemStack chestplate) {
+		this.actor.setChestplate(chestplate);
+	}
+
+	@Override
+	public void setLeggings(ItemStack leggings) {
+		this.actor.setLeggings(leggings);
+	}
+
+	@Override
+	public void setBoots(ItemStack boots) {
+		this.actor.setBoots(boots);
 	}
 	
 }

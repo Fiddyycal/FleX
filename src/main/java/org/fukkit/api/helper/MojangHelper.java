@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import org.fukkit.Fukkit;
 import org.fukkit.disguise.FleXSkin;
+import org.fukkit.disguise.FleXSkin.SkinSource;
 import org.fukkit.entity.FleXPlayer;
 
 @SuppressWarnings("deprecation")
@@ -99,7 +100,7 @@ public class MojangHelper {
             String value = property.get("value").getAsString();
             String signature = property.get("signature").getAsString();
         	
-            skin = Fukkit.getImplementation().createSkin(uuid.toString(), value, signature);
+            skin = Fukkit.getImplementation().createSkin(uuid.toString(), value, signature, SkinSource.MOJANG_API);
         	
         } catch (IOException e) {
             
@@ -151,7 +152,7 @@ public class MojangHelper {
 			
 			Task.error("Mojang API", "Skin not found, returning default skin signature.");
 			
-        	return Fukkit.getImplementation().createSkin(String.valueOf(new char[]{ String.valueOf(3 + 2).charAt(0), 79, 99, 97, 108 }), DEFAULT_VALUE, DEFAULT_SIGNATURE);
+        	return FleXSkin.DEFAULT;
         	
 		}
     	

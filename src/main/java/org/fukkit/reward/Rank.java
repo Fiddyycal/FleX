@@ -1,5 +1,6 @@
 package org.fukkit.reward;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -48,17 +49,6 @@ public class Rank extends FleXEventListener implements Cacheable {
 		this.abbreviation = yml.getString("Ranks."  + name + ".Abbreviation", name.length() >= 3 ? name.substring(0, 3) : name);
 		
 		this.weight = yml.getLong("Ranks." + name + ".Weight", 1);
-	    
-		yml.getStringList("Ranks." + this.name + ".Inherit").stream().forEach(i -> {
-	    	
-			Rank inherit = Memory.RANK_CACHE.get(i);
-			
-	    	if (inherit != null)
-		    	this.inherited.add(inherit);
-	    	
-	    	else Task.error("Rank", "Unable to inherit the permissions from " + i + " for " + this.name + ": no further information.");
-	    	
-	    });
 		
 		this.permissions.addAll(yml.getStringList("Ranks." + this.name + ".Permissions"));
 		
@@ -66,6 +56,7 @@ public class Rank extends FleXEventListener implements Cacheable {
 		
 		BukkitUtils.runLater(() -> {
 			this.loadDisplays();
+			this.inheritPermissions();
 		});
 		
 	}
@@ -116,10 +107,27 @@ public class Rank extends FleXEventListener implements Cacheable {
 		return this.staff;
 	}
 	
+	private Set<String> cached;
+	private int size = -1;
+
 	public Set<String> asNodes() {
-		Set<String> permissions = new HashSet<String>(this.permissions);
-		this.inherited.stream().forEach(i -> permissions.addAll(i.asNodes()));
-		return permissions;
+		
+	    int size = this.permissions.size();
+	    
+	    if (this.cached == null || this.size != size) {
+	    	
+	        Set<String> result = new HashSet<String>(this.permissions);
+	        
+	        for (Rank i : this.inherited)
+	            result.addAll(i.asNodes());
+	        
+	        this.cached = Collections.unmodifiableSet(result);
+	        this.size = size;
+	        
+	    }
+	    
+	    return this.cached;
+	    
 	}
 	
 	private void loadDisplays() {
@@ -169,6 +177,23 @@ public class Rank extends FleXEventListener implements Cacheable {
 			}, rank.replace("%rank%", this.name));
 			
 		}
+		
+	}
+	
+	private void inheritPermissions() {
+
+		YamlConfig yml = Fukkit.getResourceHandler().getYaml(Configuration.RANKS);
+		
+		yml.getStringList("Ranks." + this.name + ".Inherit").stream().forEach(i -> {
+	    	
+			Rank inherit = Memory.RANK_CACHE.get(i);
+			
+	    	if (inherit != null)
+		    	this.inherited.add(inherit);
+	    	
+	    	else Task.error("Rank", "Unable to inherit the permissions from " + i + " for " + this.name + ": no further information.");
+	    	
+	    });
 		
 	}
 	

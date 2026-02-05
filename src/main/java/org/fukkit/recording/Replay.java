@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,12 +17,15 @@ import java.util.stream.Collectors;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.WorldType;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.FishHook;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXPlayer;
@@ -29,6 +34,7 @@ import org.fukkit.event.flow.ReplayEndEvent;
 import org.fukkit.event.flow.ReplayStartEvent;
 import org.fukkit.event.flow.ReplayWatchEvent;
 import org.fukkit.theme.Theme;
+import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.WorldUtils;
 
 import io.flex.commons.Nullable;
@@ -84,29 +90,31 @@ public class Replay extends Recording {
 		
 	}
 	
-	public static Replay download(File container, @Nullable RecordingContext context) throws SQLException, IOException {
+	public static Replay download(File destination, @Nullable RecordingContext context) throws SQLException, IOException {
+		return download(destination, context, true);
+	}
+	
+	public static Replay download(File destination, @Nullable RecordingContext context, boolean overwrite) throws SQLException, IOException {
 		
-		String name = container.getName();
+		String name = destination.getName();
 		
-		if (container.exists())
-			throw new FileAlreadyExistsException("file \"" + name + "\" already exists at destination path");
+		boolean exists = destination.exists();
 		
-		SQLCondition<?>[] conditions = context != null ? new SQLCondition<?>[] {
-			
-				SQLCondition.where("uuid").is(name),
-				SQLCondition.where("context").is(context.toString())
-				
-			} : new SQLCondition<?>[] {
-				
-				SQLCondition.where("uuid").is(name)
-				
-			};
+		if (!overwrite && exists)
+			throw new FileAlreadyExistsException("file \"" + name + "\" already exists at destination path, use the overwrite parameter to clear the existing recording");
 		
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
-		SQLRowWrapper row = base.getRow("flex_recording", conditions);
+		
+		Set<SQLRowWrapper> rows = context != null ? base.getRows(name, SQLCondition.where("context").is(context.toString())) : base.getRows("flex_recording");
+		
+		SQLRowWrapper row = rows.stream().filter(r -> r != null && r.getString("uuid") != null && r.getString("uuid").contains(name)).findAny().orElse(null);
 		
 		if (row == null)
 			return null;
+		
+		// Only deletes if row is found.
+		if (overwrite && exists)
+			FileUtils.delete(destination);
 		
 		if (row.getString("state").equals(RecordingState.ERROR.name())) {
 			
@@ -125,12 +133,12 @@ public class Replay extends Recording {
 		if (!row.getString("state").equals(RecordingState.COMPLETE.name()))
 			throw new IOException("recording is not complete");
 		
-		File recordings = container.getParentFile();
+		File recordings = destination.getParentFile();
 		
 		if (recordings != null)
 			recordings.mkdirs();
 		
-	    File zip = new File(recordings.getAbsolutePath(), container.getName() + ".zip");
+	    File zip = new File(recordings.getAbsolutePath(), destination.getName() + ".zip");
 	    
 	    byte[] data = row.getByteArray("data");
 	    
@@ -138,9 +146,9 @@ public class Replay extends Recording {
 	        fos.write(data);
 	    }
 	    
-	    FileUtils.unzip(zip, recordings.getAbsolutePath());
+	    File unzipped = FileUtils.unzip(zip, recordings.getAbsolutePath());
 	    
-		return new Replay(container);
+		return new Replay(unzipped);
 		
 	}
 	
@@ -186,7 +194,7 @@ public class Replay extends Recording {
 		
 		else player.sendMessage(theme.format("<flow><pc>You are seeing<reset> <sc>" + this.getRecorded().get(this.transcript).toPlayer().getDisplayName(theme, true) + "<pc>'s complete chat log<pp>."));
 		
-		player.sendMessage(theme.format("<flow><pc>View player recieved messages by clicking them<pp>."));
+		player.sendMessage(theme.format("<flow><pc>View player recieved messages by right clicking them<pp>."));
 		
 	}
 
@@ -234,13 +242,86 @@ public class Replay extends Recording {
 				
 				RecordedAction[] actions = frame.getActions();
 				
-				if (actions != null && actions.length > 0)
-					for (RecordedAction action : actions)
-						if (action != RecordedAction.NONE)
-							((CraftRecorded)recordable).getActor().playAction(action);
+				FleXBot bot = ((CraftRecorded)recordable).getActor();
 				
+				if (actions != null && actions.length > 0) {
+					for (RecordedAction action : actions) {
+						
+						if (action != RecordedAction.NONE)
+							continue;
+						
+						if (action == RecordedAction.EQUIP_HAND) {
+							bot.setItemInHand(frame.getItem());
+							continue;
+						}
+						
+						if (action == RecordedAction.EQUIP_HELMET) {
+							bot.setHelmet(frame.getItem());
+							continue;
+						}
+						
+						if (action == RecordedAction.EQUIP_CHESTPLATE) {
+							bot.setChestplate(frame.getItem());
+							continue;
+						}
+						
+						if (action == RecordedAction.EQUIP_LEGGINGS) {
+							bot.setLeggings(frame.getItem());
+							continue;
+						}
+						
+						if (action == RecordedAction.EQUIP_BOOTS) {
+							bot.setBoots(frame.getItem());
+							continue;
+						}
+						
+						if (action == RecordedAction.DROP) {
+							this.world.dropItem(bot.getLocation(), frame.getItem());
+							continue;
+						}
+						
+						if (action == RecordedAction.PICKUP) {
+							
+							ItemStack item = frame.getItem();
+							
+							Collection<Entity> entities = this.world.getNearbyEntities(location, 1, 1, 1);
+							
+							for (Entity e : entities)
+								if (e instanceof Item && ((Item)e).getItemStack().equals(item))
+									e.remove();
+							
+							continue;
+							
+						}
+						
+						if (action == RecordedAction.USE_ITEM) {
+							
+							ItemStack item = frame.getItem();
+							
+							if (item == null)
+								continue;
+							
+							Material type = item.getType();
+							
+							if (type == Material.FISHING_ROD)
+								((CraftRecorded)recordable).hook = bot.getPlayer().launchProjectile(FishHook.class);
+							
+						}
+						
+						if (action == RecordedAction.STOP_USE_ITEM) {
+							
+							if (((CraftRecorded)recordable).hook != null)
+								((CraftRecorded)recordable).hook.remove();
+							
+						}
+						
+						((CraftRecorded)recordable).getActor().playAction(action);
+						
+					}
+				}
+			
 				if (location != null)
-					((CraftRecorded)recordable).getActor().teleport(location);
+					bot.teleport(location);
 				
 				if (this.transcript != null) {
 					
@@ -275,7 +356,6 @@ public class Replay extends Recording {
 	}
 	
 	@Override
-	@SuppressWarnings("deprecation")
 	public void start(World world, int duration, FleXPlayer... watchers) {
 		
 		if (world == null)
@@ -302,9 +382,6 @@ public class Replay extends Recording {
 					
 					if (this.spawn == null)
 						this.spawn = loc;
-					
-					if (world.getWorldType() == WorldType.FLAT)
-						loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY() - 2, loc.getBlockZ()).setType(Material.STONE);
 					
 					FleXBot bot = ((CraftRecorded)recordable).getActor();
 					
@@ -347,26 +424,32 @@ public class Replay extends Recording {
 	@Override
 	public void end(@Nullable String reason) {
 		
-		if (reason == null)
-			reason = "No further information.";
+		if (!Bukkit.isPrimaryThread())
+			throw new IllegalStateException("Replay end must be called synchronously.");
+			
+		String parse = reason == null ? "No further information." : reason;
 		
-		ReplayEndEvent event = new ReplayEndEvent(this, reason);
+		ReplayEndEvent event = new ReplayEndEvent(this, parse);
 		
 		if (event.isCancelled())
 			return;
 		
 		Fukkit.getEventFactory().call(event);
 		
-		System.out.println("Stopping stage: " + reason);
+		System.out.println("Stopping stage: " + parse);
 		
 		this.cancel();
 		
-		for (FleXPlayer watcher : this.watchers) {
-			
-			if (watcher != null && watcher.isOnline())
-				watcher.kick("The stage has closed: " + reason);
+		List<FleXPlayer> all = new ArrayList<FleXPlayer>(this.watchers);
+		
+		BukkitUtils.runLater(() -> {
+			for (FleXPlayer watcher : all) {
 				
-		}
+				if (watcher != null && watcher.isOnline())
+					watcher.kick("The stage has closed: " + parse);
+					
+			}
+		});
 		
 		this.destroy();
 		

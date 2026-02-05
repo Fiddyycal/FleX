@@ -28,11 +28,11 @@ public class AutoClickerDetector {
 	
 	private Map<BiCell<Integer, Integer>, Integer> consistency = new HashMap<BiCell<Integer, Integer>, Integer>();
 	
-	private List<Integer> avarages = new ArrayList<Integer>();
+	private List<Integer> averages = new ArrayList<Integer>();
 	
 	private FlowProfile profile;
 	
-	private int avarage = -1;
+	private int average = -1;
 	
 	public AutoClickerDetector(FlowProfile profile) {
 		
@@ -60,8 +60,8 @@ public class AutoClickerDetector {
 		return this.highestCps;
 	}
 	
-	public int getAvarage() {
-		return this.avarage;
+	public int getAverage() {
+		return this.average;
 	}
 	
 	private long last = System.currentTimeMillis();
@@ -90,22 +90,22 @@ public class AutoClickerDetector {
 	    
 	    if (cps >= 8) {
 	    	
-	    	this.avarages.add(cps);
+	    	this.averages.add(cps);
 	    	
-	    	if (this.avarages.size() > 10)
-	    		this.avarages.remove(0);
+	    	if (this.averages.size() > 10)
+	    		this.averages.remove(0);
 	    	
 	    	int avg = 0;
 	    	
-	    	for (int i = 0; i < this.avarages.size(); i++) {
+	    	for (int i = 0; i < this.averages.size(); i++) {
 				
-	    		int c = this.avarages.get(i);
+	    		int c = this.averages.get(i);
 	    		
 	    		avg = avg + c;
 	    		
 			}
 	    	
-	    	this.avarage = avg / this.avarages.size();
+	    	this.average = avg / this.averages.size();
 	    	
 	    }
 	    
@@ -130,7 +130,7 @@ public class AutoClickerDetector {
 	    		
 	    		int consistencyMax = counter.b();
 	    		
-	    		if (consistency > consistencyMax && this.avarage > 11) {
+	    		if (consistency > consistencyMax && this.average > 11) {
 	    			
 	    			if (notified_of.contains(player.getUniqueId()))
 	    				return;
@@ -148,7 +148,7 @@ public class AutoClickerDetector {
 	    					fp.sendMessage(theme.format("<flow>&4&lSuspicous avtivity detected for " + this.profile.getPlayer().getDisplayName(theme, true) + "<pp>."));
 	    					fp.sendMessage(theme.format("<flow><lore>System Flag<sp>:\\s<pc>High Click/Swing Packet Count"));
 	    					fp.sendMessage(theme.format("<engine><lore>Alert Reason<sp>:\\s<pc>Above " + cps + " CPS unnaturally consistent"));
-	    					fp.sendMessage(theme.format("<engine><lore>Current/Highest" + (this.avarage > 0 ? "/Avarage" : "") + "<sp>:\\s<pc>" + max + "/" + this.highestCps + (this.avarage > 0 ? "/" + this.avarage : "")));
+	    					fp.sendMessage(theme.format("<engine><lore>Current/Highest" + (this.average > 0 ? "/Average" : "") + "<sp>:\\s<pc>" + max + "/" + this.highestCps + (this.average > 0 ? "/" + this.average : "")));
 	    					fp.sendMessage(theme.format("<engine><lore>Severity<sp>:" + Theme.reset + " " + this.severity(consistency, consistencyMax)));
 	    					fp.sendMessage(theme.format("<engine><success>Review this players cps in their user panel<pp>."));
 	    					

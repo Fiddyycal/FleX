@@ -17,6 +17,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
@@ -60,6 +61,9 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 		Objects.requireNonNull(container, "container cannot be null");
 		
 		this.name = container.getName();
+		
+		if (this.name.contains(" "))
+			throw new IllegalArgumentException("name cannot contain any spaces");
 		
 		boolean replay = this instanceof Replay;
 		
@@ -149,6 +153,15 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 		
 		for (Recordable recorded : this.recorded.values()) {
 			
+			Map<Long, Frame> frames = recorded.getFrames();
+			
+			if (recorded.getUniqueId().equals(Recordable.SYSTEM_UID)) {
+				
+				frames.put(this.tick, null);
+				continue;
+				
+			}
+			
 			FleXPlayer player = recorded.toPlayer();
 			
 			if (player == null) {
@@ -157,8 +170,6 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 				continue;
 				
 			}
-			
-			Map<Long, Frame> frames = recorded.getFrames();
 			
 			if (player != null && !player.isOnline()) {
 				
@@ -197,6 +208,71 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 			
 			else frame.addAction(RecordedAction.UNCROUCH);
 			
+			ItemStack helmet = player.getHelmet();
+			ItemStack chestplate = player.getChestplate();
+			ItemStack leggings = player.getLeggings();
+			ItemStack boots = player.getBoots();
+			
+			if (helmet != null) {
+				
+				ItemStack cached = recorded.getHelmet();
+				
+				if (cached == null || !cached.equals(helmet)) {
+					
+					recorded.setHelmet(helmet);
+					
+					frame.addAction(RecordedAction.EQUIP_HELMET);
+					frame.setItem(helmet);
+					
+				}
+				
+			}
+			
+			if (chestplate != null) {
+				
+				ItemStack cached = recorded.getChestplate();
+				
+				if (cached == null || !cached.equals(chestplate)) {
+					
+					recorded.setChestplate(chestplate);
+					
+					frame.addAction(RecordedAction.EQUIP_CHESTPLATE);
+					frame.setItem(chestplate);
+					
+				}
+					
+			}
+			
+			if (leggings != null) {
+				
+				ItemStack cached = recorded.getLeggings();
+				
+				if (cached == null || !cached.equals(leggings)) {
+					
+					recorded.setLeggings(leggings);
+					
+					frame.addAction(RecordedAction.EQUIP_LEGGINGS);
+					frame.setItem(leggings);
+					
+				}
+					
+			}
+			
+			if (boots != null) {
+				
+				ItemStack cached = recorded.getBoots();
+				
+				if (cached == null || !cached.equals(boots)) {
+					
+					recorded.setBoots(boots);
+					
+					frame.addAction(RecordedAction.EQUIP_BOOTS);
+					frame.setItem(boots);
+					
+				}
+					
+			}
+			
 			frames.put(this.tick, frame);
 			
 		}
@@ -234,6 +310,77 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 		if (event.isCancelled())
 			return;
 		
+		this.recorded.put(Recordable.SYSTEM_UID, new Recordable() {
+			
+			private Map<Long, Frame> frames = new HashMap<Long, Frame>();
+			
+			@Override
+			public FleXPlayer toPlayer() {
+				throw new UnsupportedOperationException("cannot cast system to player");
+			}
+			
+			@Override
+			public boolean isBot() {
+				return false;
+			}
+			
+			@Override
+			public UUID getUniqueId() {
+				return Recordable.SYSTEM_UID;
+			}
+			
+			@Override
+			public String getName() {
+				return "SYSTEM";
+			}
+			
+			@Override
+			public Map<Long, Frame> getFrames() {
+				return this.frames;
+			}
+
+			@Override
+			public ItemStack getHelmet() {
+				throw new UnsupportedOperationException("cannot cast system to player");
+			}
+
+			@Override
+			public ItemStack getChestplate() {
+				throw new UnsupportedOperationException("cannot cast system to player");
+			}
+
+			@Override
+			public ItemStack getLeggings() {
+				throw new UnsupportedOperationException("cannot cast system to player");
+			}
+
+			@Override
+			public ItemStack getBoots() {
+				throw new UnsupportedOperationException("cannot cast system to player");
+			}
+
+			@Override
+			public void setHelmet(ItemStack helmet) {
+				throw new UnsupportedOperationException("cannot cast system to player");
+			}
+
+			@Override
+			public void setChestplate(ItemStack chestplate) {
+				throw new UnsupportedOperationException("cannot cast system to player");
+			}
+
+			@Override
+			public void setLeggings(ItemStack leggings) {
+				throw new UnsupportedOperationException("cannot cast system to player");
+			}
+
+			@Override
+			public void setBoots(ItemStack boots) {
+				throw new UnsupportedOperationException("cannot cast system to player");
+			}
+			
+		});
+		
 		for (FleXPlayer fp : players) {
 			
 			if (fp == null)
@@ -247,9 +394,8 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 		
 		this.pause = false;
 		
+		// Need to re-retrieve row because of some internal data changes...
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
-		
-		// Need to re-retrieve row to get past a small bug...
 		SQLRowWrapper row = base.getRow("flex_recording", SQLCondition.where("uuid").is(this.name), SQLCondition.where("context").is(this.context.toString()));
 		
 		if (row != null) {
@@ -316,7 +462,7 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 				
 				for (Recordable recordable : this.recorded.values()) {
 					
-					String[] frames = recordable.getFrames().values().stream().map(f -> f.toString()).toArray(i -> new String[i]);
+					String[] frames = recordable.getFrames().values().stream().map(f -> f == null ? null : f.toString()).toArray(i -> new String[i]);
 					
 					recorded.put(recordable.getUniqueId(), frames);
 					
@@ -336,8 +482,6 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 						row.set("duration", this.tick * (double) TICK_RATE / 20.0);
 						row.set("state", RecordingState.COMPLETE.name());
 						row.set("data", Files.readAllBytes(file.toPath()));
-						
-						row.setIdentifier(this.context != RecordingContext.EMPTY ? "context" : "time");
 						
 						row.update();
 						
@@ -391,26 +535,17 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 		
 		Set<SQLRowWrapper> rows = base.getRows("flex_recording", SQLCondition.where("context").is(this.context.toString()));
 		
-		for (SQLRowWrapper r : rows) {
-			
-			String id = r.getString("uuid");
-			
-			if (id != null && id.equals(this.name))
-				row = r;
-			
-		}
-		
 		if (row == null)
 			row = rows.stream().findFirst().orElse(null);
 		
 		if (row == null) {
 			
-			return base.addRow("flex_recording", "",
+			return base.addRow("flex_recording", "context",
 					
 					SQLMap.of(
 							
 							SQLMap.entry("uuid", this.name),
-							SQLMap.entry("context", this.context != null ? RecordingContext.NONE : this.context.toString()),
+							SQLMap.entry("context", this.context.toString()),
 							SQLMap.entry("time", System.currentTimeMillis()),
 							SQLMap.entry("duration", 0.0),
 							SQLMap.entry("state", RecordingState.STAGED.name()),

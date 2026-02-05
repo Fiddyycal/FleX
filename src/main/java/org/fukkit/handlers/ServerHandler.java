@@ -178,7 +178,7 @@ public class ServerHandler {
 		Collection<FleXPlayer> players = new HashSet<FleXPlayer>();
 		
 		for (FleXHumanEntity player : Memory.PLAYER_CACHE)
-			if (player instanceof FleXPlayer)
+			if (player instanceof FleXPlayer && player.isOnline())
 				players.add((FleXPlayer)player);
 		
 		return players;

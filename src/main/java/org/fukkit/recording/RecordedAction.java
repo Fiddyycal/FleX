@@ -10,7 +10,10 @@ public enum RecordedAction {
 	
 	SLEEP, WAKE,
 	
-	EQUIP_HAND, EQUIP_OFF_HAND, EQUIP_ARMOR,
+	EQUIP_HAND, EQUIP_OFF_HAND,
+	
+	// I know this is a lot, but it's the best way to know what armour slot if item is null.
+	EQUIP_HELMET, EQUIP_CHESTPLATE, EQUIP_LEGGINGS, EQUIP_BOOTS,
 	
 	LAUNCH_PROJECTILE,
 	

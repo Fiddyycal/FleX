@@ -74,6 +74,8 @@ public class Overwatch extends Recording {
 		
 		try {
 			
+			System.out.println("test 2");
+			
 			// TODO set evidence for all reports that match context critiria
 			this.report.setEvidence(this.name + "/" + this.getData().getName());
 			

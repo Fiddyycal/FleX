@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.fukkit.Fukkit;
 import org.fukkit.disguise.FleXSkin;
+import org.fukkit.disguise.FleXSkin.SkinSource;
 import org.fukkit.scoreboard.playerlist.tab.FleXImageSkin;
 
 import io.flex.FleX.Task;
@@ -83,7 +84,7 @@ public class SkinCache extends LinkedCache<FleXSkin, BufferedImage> {
 					names.add(name);
 				
 				if (value != null && signature != null)
-					this.add(Fukkit.getImplementation().createSkin(name, value, signature));
+					this.add(Fukkit.getImplementation().createSkin(name, value, signature, SkinSource.DATABASE));
 				
 			}
 			

@@ -57,7 +57,7 @@ public class MetricsButton extends ExecutableButton {
 		lore.add(theme.format("<spc>Auto-clicker detector<pp>:"));
 		lore.add(theme.format("<pc>Highest CPS<pp>:\\s<sc>" + (profile == null ? 0 : acd.getHighestCps())));
 		lore.add(theme.format("<pc>Current CPS<pp>:\\s<sc>" + (profile == null ? 0 : acd.getCps())));
-		lore.add(theme.format("<pc>Avarage CPS<pp>:\\s<sc>" + (profile == null ? 0 : acd.getAvarage() < 0 ? "Not recorded yet" : acd.getAvarage())));
+		lore.add(theme.format("<pc>Average CPS<pp>:\\s<sc>" + (profile == null ? 0 : acd.getAverage() < 0 ? "Not recorded yet" : acd.getAverage())));
 		
 		//lore.add(theme.format("<sp>&oLeft Click<pp>:\\s<sc>Show more reports<pp>."));
 		//lore.add(theme.format("<sp>&oRight Click<pp>:\\s<sc>Show reported<pp>."));

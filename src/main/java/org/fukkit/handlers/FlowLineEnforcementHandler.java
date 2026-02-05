@@ -144,43 +144,21 @@ public class FlowLineEnforcementHandler {
 		
 	}
 	
-	public void clear(FleXPlayer player) throws SQLException {
-		
-		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
-		String context = RecordingContext.REPORT + ":" + player.getUniqueId().toString();
-		
-		base.execute("DELETE FROM flex_recording WHERE context = '" + context + "' AND state = '" + RecordingState.STAGED.toString() + "'");
-		base.execute("DELETE FROM flex_recording WHERE context = '" + context + "' AND state = '" + RecordingState.RECORDING.toString() + "'");
-		
-	}
-
 	public void setPending(FleXPlayer player) throws SQLException {
 		
-		SQLRowWrapper row = null;
-		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
 		
-		Set<SQLRowWrapper> rows = base.getRows("flex_recording", SQLCondition.where("context").is(context.toString()));
-		
-		for (SQLRowWrapper r : rows) {
-			
-			String state = r.getString("state");
-			
-			if (state.equals(RecordingState.STAGED.name()) || state.equals(RecordingState.RECORDING.name()))
-				row = r;
-			
-		}
+		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
+		SQLRowWrapper row = this.recordingRow(player);
 		
 		long now = System.currentTimeMillis();
 		
 		// Prevents duplicates.
 		if (row != null) {
-
-			row.set("time", now);
-			row.set("state", RecordingState.STAGED.name());
 			
-			if (row.getString("state").equals(RecordingState.RECORDING.name()))
-				row.set("data", Collections.emptyMap().toString());
+			row.set("time", now);
+			row.set("state", row.getString("state").equals(RecordingState.RECORDING.name()) ? RecordingState.CANCELLED.name() : RecordingState.STAGED.name());
+			row.set("data", Collections.emptyMap().toString());
 			
 			row.update();
 			return;
@@ -202,49 +180,31 @@ public class FlowLineEnforcementHandler {
 	
 	public boolean isPending(FleXPlayer player) throws SQLException {
 		
-		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
+		
+		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		
 		Set<SQLRowWrapper> rows = base.getRows("flex_recording", SQLCondition.where("context").is(context.toString()));
 		
-		boolean error = false;
-	    boolean complete = false;
-
 	    for (SQLRowWrapper r : rows) {
 	    	
 	        String state = r.getString("state");
 	        
-	        if (RecordingState.STAGED.name().equals(state))
+	        // This means the recording stopped half way through
+	        if (state.equals(RecordingState.CANCELLED.name()))
 	            return true;
 	        
-	        if (RecordingState.ERROR.name().equals(state))
-	        	error = true;
-	        
-	        else if (RecordingState.COMPLETE.name().equals(state))
-	        	complete = true;
+	        if (state.equals(RecordingState.STAGED.name()))
+	            return true;
 	        
 	    }
 	    
-	    return error && !complete;
+	    return false;
 		
 	}
 	
 	public boolean isRecording(FleXPlayer player) throws SQLException {
-		
-		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
-		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
-		
-		Set<SQLRowWrapper> rows = base.getRows("flex_recording", SQLCondition.where("context").is(context.toString()));
-		
-		for (SQLRowWrapper r : rows) {
-			
-			if (r.getString("state").equals(RecordingState.RECORDING.name()))
-				return true;
-			
-		}
-		
-		return false;
-		
+	    return this.recordingRow(player) != null;
 	}
 	
 	public boolean isFleEnabled() {
@@ -263,6 +223,23 @@ public class FlowLineEnforcementHandler {
 		
 		return this.isFleEnabled() && this.flow;
 		
+	}
+	
+	private SQLRowWrapper recordingRow(FleXPlayer player) throws SQLException {
+		
+		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
+		
+		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
+		
+		SQLRowWrapper row = base.getRow("flex_recording",
+				
+				SQLCondition.where("state").is(RecordingState.RECORDING.name()),
+				SQLCondition.where("context").is(context.toString())
+				
+		);
+	    
+	    return row;
+	    
 	}
 
 }

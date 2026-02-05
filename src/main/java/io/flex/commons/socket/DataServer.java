@@ -247,7 +247,7 @@ public abstract class DataServer extends Thread {
 	            }
 		        
 	            this.onDataReceive(data, cmd);
-	            
+		        
 	            // Sending receipt.
 	            out.println(true);
 	            
@@ -402,7 +402,7 @@ public abstract class DataServer extends Thread {
             out.println(data.getKey());
             out.println(data.getValue().replace("\n", "\\n"));
             
-            debug("Socket: " + port, "Sending data: " + DataCommand.SEND_DATA + "::" + data.getKey() + "::" + data.getValue());
+            debug("Socket: " + port, "Sending data: " + DataCommand.SEND_DATA + "::" + data.getKey() + "::" + data.getValue() + " to " + ip + ":" + port + ".");
             
             out.flush();
             
@@ -414,7 +414,7 @@ public abstract class DataServer extends Thread {
             
             response = in.readLine();
             
-            debug("Socket: " + port, "Read response.");
+            debug("Socket: " + port, "Read reciept: " + response);
             
         } catch (IOException e) {
             e.printStackTrace();

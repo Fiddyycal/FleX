@@ -4,17 +4,17 @@ import org.fukkit.recording.Replay;
 
 public class ReplayEvent extends RecordingEvent {
 	
-	private static Replay confirm(Replay recording) {
+	private static Replay confirm(Replay replay) {
 		
-		if (recording instanceof Replay)
-			return recording;
+		if (replay instanceof Replay)
+			return replay;
 		
 		throw new ClassCastException("recording must be instance of Replay");
 		
 	}
 	
-	public ReplayEvent(Replay recording) {
-		super(confirm(recording), false);
+	public ReplayEvent(Replay replay) {
+		super(confirm(replay), false);
 	}
 	
 	@Override

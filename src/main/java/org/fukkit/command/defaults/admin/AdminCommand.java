@@ -31,14 +31,14 @@ public class AdminCommand extends FleXCommandAdapter {
 	
 	public AdminCommand() {
 
-		sub_command_cache.add(new RankSubCommand(this));
 		sub_command_cache.add(new BadgeSubCommand(this));
-		sub_command_cache.add(new FreezeSubCommand(this));
-		sub_command_cache.add(new ShutdownSubCommand(this));
-		sub_command_cache.add(new BotSubCommand(this));
-		sub_command_cache.add(new BroadcastSubCommand(this));
-		sub_command_cache.add(new BlacklistAddSubCommand(this));
+		sub_command_cache.add(new RankSubCommand(this));
 		sub_command_cache.add(new DebugSubCommand(this));
+		sub_command_cache.add(new BroadcastSubCommand(this));
+		sub_command_cache.add(new BotSubCommand(this));
+		sub_command_cache.add(new FreezeSubCommand(this));
+		sub_command_cache.add(new ReplaySubCommand(this));
+		sub_command_cache.add(new ShutdownSubCommand(this));
 		
 	}
 	
@@ -46,14 +46,14 @@ public class AdminCommand extends FleXCommandAdapter {
 		
 		if (args.length == 0 || sub_command_cache.get(args[0]) == null) {
 			this.usage(sender,
-					
-				"/<command> setrank/giverank/rank/r <player> <rank> [reason]",
+				
 				"/<command> givebadge/badge/b add/remove <player> <badge> [reason]",
+				"/<command> setrank/giverank/rank/r <player> <rank> [reason]",
 				"/<command> database/configuration <name> [-r, -c, -l]",
 				"/<command> say/broadcast/bc <message> [-g]",
-				"/<command> blacklist/bl <player> [reason]",
 				"/<command> spawn/create/bot <name> [uuid]",
 				"/<command> freeze/frozen/pause [reason]",
+				"/<command> replay/playback/play <uid>",
 				"/<command> shutdown/stop [reason]"
 				
 			);

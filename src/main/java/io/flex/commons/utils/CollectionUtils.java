@@ -59,15 +59,18 @@ public class CollectionUtils {
 	
 	public static Collection<String> toCollection(String s) {
 		
-		if (s == null || s.equals("[]"))
-			return new LinkedList<String>();
-		
-		if (s != null && s.length() > 2 && s.charAt(0) == '[' && s.charAt(s.length() - 1) == ']')
-			s = s.substring(0, s.length() - 1).substring(1);
-		
+	    if (s == null || s.equals("[]"))
+	        return new LinkedList<String>();
+	    
+	    if (s.length() > 2 && s.charAt(0) == '[' && s.charAt(s.length() - 1) == ']')
+	        s = s.substring(1, s.length() - 1);
+	    
+	    // This splits each comma with or without a whitespace
+	    String[] parts = s.split("\\s*,\\s*");
+	    
 		/** Arrays asList method is immutable, new ArrayList makes list mutable. */
-		return new LinkedList<String>(Arrays.asList(s != null ? s.split(", ") : new String[0]));
-		
+	    return new LinkedList<String>(Arrays.asList(parts));
+	    
 	}
 	
 }

@@ -225,36 +225,52 @@ public class FileUtils {
         
     }
 	
-    public static void unzip(File source, String destination) {
-    	try {
-    		
-        	ZipFile zipFile = new ZipFile(source);
+    public static File unzip(File source, String destination) {
+    	
+        File root = null;
+        
+        try (ZipFile zipFile = new ZipFile(source)) {
         	
-    		Enumeration<? extends ZipEntry> entries = zipFile.entries();
-    		
-    		while (entries.hasMoreElements()) {
-    			
-    			ZipEntry entry = entries.nextElement();
-    			File entryDestination = new File(destination, entry.getName());
-    			
-    	        if (entry.isDirectory()) {
-    	            entryDestination.mkdirs();
-    	        
-    	        } else {
-    	        	
-    	            entryDestination.getParentFile().mkdirs();
-    	            
-    	            copy(zipFile.getInputStream(entry), entryDestination);
-    	            
-    	        }
-    	    
-    	    }
-    		
-    	    zipFile.close();
-    	  
-    	} catch (IOException e) {
-			e.printStackTrace();
-		}
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            
+            while (entries.hasMoreElements()) {
+            	
+                ZipEntry entry = entries.nextElement();
+                
+                File entryDestination = new File(destination, entry.getName());
+                
+                if (root == null) {
+                	
+                    String name = entry.getName();
+                    
+                    int slash = name.indexOf('/');
+                    
+                    if (slash != -1)
+                        root = new File(destination, name.substring(0, slash));
+                        
+                    else root = new File(destination);
+                    
+                }
+
+                if (entry.isDirectory())
+                    entryDestination.mkdirs();
+                
+                else {
+                	
+                    entryDestination.getParentFile().mkdirs();
+                    
+                    copy(zipFile.getInputStream(entry), entryDestination);
+                    
+                }
+                
+            }
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        return root;
+        
     }
     
 	public static void unzipResource(String source, String destination) {

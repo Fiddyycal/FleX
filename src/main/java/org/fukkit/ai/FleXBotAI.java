@@ -2,6 +2,7 @@ package org.fukkit.ai;
 
 import java.util.Set;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.fukkit.entity.FleXBot;
@@ -29,6 +30,8 @@ public interface FleXBotAI extends FleXAI {
 	public void setEvaluating(boolean evaluating);
 	
 	public void setGravity(boolean gravity);
+	
+	public void setGameMode(GameMode gamemode);
 	
 	public boolean isAggressive();
 	

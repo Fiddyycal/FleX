@@ -2,26 +2,21 @@ package org.fukkit.recording;
 
 public class RecordingContext {
 	
-	public static final int NONE = 0, REPORT = 1, GAME = 2, OTHER = 3;
-
-	public static final RecordingContext EMPTY = new RecordingContext(NONE, null);
+	public static final int REPORT = 0, GAME = 1, OTHER = 2;
 	
-	private int type;
+	private String metadata;
 	
-	private String context;
-	
-	private RecordingContext(int type, String context) {
-		this.type = type;
-		this.context = context;
+	private RecordingContext(String metadata) {
+		this.metadata = metadata;
 	}
 	
 	@Override
 	public String toString() {
-		return this.type + ":" + this.context;
+		return this.metadata;
 	}
 	
-	public static RecordingContext of(int type, String context) {
-		return new RecordingContext(type, context);
+	public static RecordingContext of(int type, String metadata) {
+		return new RecordingContext(type + ":" + metadata);
 	}
 	
 }

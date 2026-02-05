@@ -4,24 +4,36 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerFishEvent.State;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.FleXEventListener;
 import org.fukkit.event.player.FleXPlayerMessageReceiveEvent;
+import org.fukkit.utils.BukkitUtils;
+import org.fukkit.utils.VersionUtils;
 
 import net.md_5.fungee.server.ServerVersion;
 
+@SuppressWarnings("deprecation")
 public class RecordingListeners extends FleXEventListener {
 
 	private Recording recording;
@@ -53,7 +65,18 @@ public class RecordingListeners extends FleXEventListener {
 		if (!this.recording.isRecording(event.getPlayer()))
 			return;
 		
-		this.editFrame(player, f -> f.setItem(player.getInventory().getItem(event.getNewSlot())));
+		this.editFrame(player, f -> {
+			
+			f.addAction(RecordedAction.EQUIP_HAND);
+			
+			f.setItem(player.getInventory().getItem(event.getNewSlot()));
+			
+			ItemStack item = player.getInventory().getItem(event.getPreviousSlot());
+			
+			if (item != null && item.getType() == Material.FISHING_ROD)
+				f.addAction(RecordedAction.STOP_USE_ITEM);
+			
+		});
 		
 	}
 	
@@ -64,23 +87,111 @@ public class RecordingListeners extends FleXEventListener {
 		
 		if (!this.recording.isRecording(entity))
 			return;
+		
+		Action action = event.getAction();
+		Block block = event.getClickedBlock();
+		
+		boolean container = false;
+		
+		if (action == Action.RIGHT_CLICK_BLOCK) {
+			
+			Material type = block.getType();
+			Material ct = VersionUtils.material("CRAFTING_TABLE", "WORKBENCH", "LEGACY_WORKBENCH");
+			
+			if (type == Material.CHEST || type == Material.ENDER_CHEST || type == Material.FURNACE || type.name().equals("BLAST_FURNACE") || type.name().contains("TABLE") || type == ct)
+				container = true;
+			
+		}
     	
-		if (event.getAction() != Action.LEFT_CLICK_AIR && event.getAction() != Action.LEFT_CLICK_BLOCK)
+		if (!container && action != Action.LEFT_CLICK_AIR && action != Action.LEFT_CLICK_BLOCK)
 			return;
 		
     	this.editFrame(entity, f -> {
     		
     		f.addAction(RecordedAction.SWING_ARM);
     		
-    		if (event.getClickedBlock() != null)
-    			f.setInteractAtLocation(event.getClickedBlock().getLocation());
+    		if (block != null)
+    			f.setInteractAtLocation(block.getLocation());
     		
     	});
 		
 	}
 	
 	@EventHandler
+	public void event(PlayerFishEvent event) {
+		
+		Entity entity = event.getPlayer();
+		
+		if (!this.recording.isRecording(entity))
+			return;
+		
+    	this.editFrame(entity, f -> f.addAction(event.getState() == State.FISHING ? RecordedAction.USE_ITEM : RecordedAction.STOP_USE_ITEM));
+		
+	}
+	
+	@EventHandler
+	public void onItemSwitch(PlayerItemHeldEvent event) {
+		
+		Player player = event.getPlayer();
+		
+		if (!this.recording.isRecording(player))
+			return;
+		
+    	this.editFrame(player, f -> f.setItem(player.getInventory().getItem(event.getNewSlot())));
+    	
+	}
+	
+	@EventHandler
+	public void onItemSwitch(PlayerDropItemEvent event) {
+		
+		Player player = event.getPlayer();
+		
+		if (!this.recording.isRecording(player))
+			return;
+		
+		this.editFrame(player, f -> {
+			
+			f.addAction(RecordedAction.DROP);
+			f.setItem(event.getItemDrop().getItemStack());
+			
+		});
+    	
+	}
+	
+	@EventHandler
+	public void onItemSwitch(PlayerPickupItemEvent event) {
+		
+		Player player = event.getPlayer();
+		
+		if (!this.recording.isRecording(player))
+			return;
+		
+		this.editFrame(player, f -> {
+			
+			f.addAction(RecordedAction.PICKUP);
+			f.setItem(event.getItem().getItemStack());
+			
+		});
+    	
+	}
+	
+	@EventHandler
+	public void onItemSwitch(InventoryClickEvent event) {
+		
+		Player player = (Player) event.getWhoClicked();
+		
+		if (!this.recording.isRecording(player))
+			return;
+		
+		BukkitUtils.runLater(() -> this.editFrame(player, f -> f.setItem(player.getInventory().getItemInHand())));
+    	
+	}
+	
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void event(EntityDamageEvent event) {
+		
+		if (event.isCancelled())
+			return;
 		
 		Entity entity = event.getEntity();
 		
@@ -101,8 +212,11 @@ public class RecordingListeners extends FleXEventListener {
 		
 	}
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void event(EntityDamageByEntityEvent event) {
+		
+		if (event.isCancelled())
+			return;
 		
 		Entity entity = event.getEntity();
 		

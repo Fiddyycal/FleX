@@ -86,29 +86,33 @@ public class Report extends Punishment {
 			e.printStackTrace();
 		}
 		
-		this.getBy().sendMessage(ThemeMessage.REPORT_SUCCESS.format(this.getBy().getTheme(), this.getBy().getLanguage(), ThemeUtils.getNameVariables(this.getPlayer(), this.getBy().getTheme())));
-		
-		if (!Fukkit.getFlowLineEnforcementHandler().isFlowEnabled())
-			return;
-		
-		FleXPlayer player = this.getPlayer();
-		
-		Theme theme = this.getBy().getTheme();
-		
-		if (!player.isOnline() || player.getState() != PlayerState.INGAME) {
+		BukkitUtils.mainThread(() -> {
 			
-			BukkitUtils.asyncThread(() -> {
-				try {
-					Fukkit.getFlowLineEnforcementHandler().setPending(player);
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			});
+			this.getBy().sendMessage(ThemeMessage.REPORT_SUCCESS.format(this.getBy().getTheme(), this.getBy().getLanguage(), ThemeUtils.getNameVariables(this.getPlayer(), this.getBy().getTheme())));
 			
-			// TODO: [FLOW_RECORDING_PENDING]
-			this.getBy().sendMessage(theme.format("<flow><pc>FloW has been staged to monitor<reset> <sc>" + player.getDisplayName(theme) + "<pp>."));
+			if (!Fukkit.getFlowLineEnforcementHandler().isFlowEnabled())
+				return;
 			
-		} else this.watchLikeAFuckinHawk(true);
+			FleXPlayer player = this.getPlayer();
+			
+			Theme theme = this.getBy().getTheme();
+			
+			if (!player.isOnline() || player.getState() != PlayerState.INGAME) {
+				
+				BukkitUtils.asyncThread(() -> {
+					try {
+						Fukkit.getFlowLineEnforcementHandler().setPending(player);
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				});
+				
+				// TODO: [FLOW_RECORDING_PENDING]
+				this.getBy().sendMessage(theme.format("<flow><pc>FloW has been staged to monitor<reset> <sc>" + player.getDisplayName(theme) + "<pp>."));
+				
+			} else this.watchLikeAFuckinHawk(true);
+			
+		});
 		
 	}
 	

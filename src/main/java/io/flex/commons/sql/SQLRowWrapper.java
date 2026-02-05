@@ -20,6 +20,10 @@ public class SQLRowWrapper implements Cacheable {
 	
     private Map<String, Object> entries;
 	
+    public Map<String, Object> getEntries() {
+		return entries;
+	}
+    
 	private SQLCondition<?>[] conditions;
     
     private boolean updated = true;

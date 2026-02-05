@@ -3,16 +3,15 @@ package org.fukkit.event.flow;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.fukkit.consequence.Report;
 import org.fukkit.entity.FleXPlayer;
 
-public class AsyncFleXPlayerOverwatchReplayPreDownloadEvent extends Event implements Cancellable {
+public class AsyncFleXPlayerReplayPreDownloadEvent extends Event implements Cancellable {
 
 	private static HandlerList handlers = new HandlerList();
 	
-	private FleXPlayer player;
+	private String name;
 	
-	private Report report;
+	private FleXPlayer player;
 	
 	private boolean cancel = false;
 	
@@ -25,14 +24,18 @@ public class AsyncFleXPlayerOverwatchReplayPreDownloadEvent extends Event implem
 		return handlers;
 	}
 	
-	public AsyncFleXPlayerOverwatchReplayPreDownloadEvent(FleXPlayer player, Report report) {
+	public AsyncFleXPlayerReplayPreDownloadEvent(FleXPlayer player, String name) {
+		
 		super(true);
+		
+		this.name = name;
+		
 		this.player = player;
-		this.report = report;
+		
 	}
 	
-	public Report getReport() {
-		return this.report;
+	public String getName() {
+		return this.name;
 	}
 	
 	public FleXPlayer getPlayer() {

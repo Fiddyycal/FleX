@@ -413,9 +413,6 @@ public class ConvictionListeners extends FleXEventListener {
 					if (fle.isRecording(player))
 						return;
 					
-					if (!player.getName().equalsIgnoreCase("Fiddycal"))
-						return;
-					
 					for (Report report : reports) {
 						
 						if (ArrayUtils.contains(report.getReason().getRequiredEvidence(), EvidenceType.RECORDING_REFERENCE)) {
@@ -425,7 +422,6 @@ public class ConvictionListeners extends FleXEventListener {
 							
 						}
 					}
-						
 					
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -498,7 +494,7 @@ public class ConvictionListeners extends FleXEventListener {
 				}
 				
 			}
-				
+			
 			fle.setPending(player);
 			return;
 			

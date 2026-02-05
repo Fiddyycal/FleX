@@ -79,7 +79,7 @@ public class OverwatchReplay extends Replay {
 	    }
 	    
 	    FileUtils.unzip(zip, recordings.getAbsolutePath());
-	     
+	    
 		return new OverwatchReplay(container, report.getPlayer());
 		
 	}

@@ -17,7 +17,7 @@ import org.fukkit.command.GlobalCommand;
 import org.fukkit.command.RestrictCommand;
 import org.fukkit.consequence.Report;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.event.flow.AsyncFleXPlayerOverwatchReplayPreDownloadEvent;
+import org.fukkit.event.flow.AsyncFleXPlayerOverwatchPreDownloadEvent;
 import org.fukkit.flow.OverwatchReplay;
 import org.fukkit.handlers.FlowLineEnforcementHandler;
 import org.fukkit.json.JsonBuffer;
@@ -294,7 +294,7 @@ public class FlowCommand extends FleXCommandAdapter {
 			BukkitUtils.asyncThread(() -> {
 				try {
 					
-					AsyncFleXPlayerOverwatchReplayPreDownloadEvent event = new AsyncFleXPlayerOverwatchReplayPreDownloadEvent(player, report);
+					AsyncFleXPlayerOverwatchPreDownloadEvent event = new AsyncFleXPlayerOverwatchPreDownloadEvent(player, report);
 					
 					Fukkit.getEventFactory().call(event);
 					
