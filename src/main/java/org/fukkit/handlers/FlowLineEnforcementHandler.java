@@ -70,7 +70,7 @@ public class FlowLineEnforcementHandler {
 		
 		if (replay.isPlaying()) {
 			
-			replay.addWatcher(player);
+			replay.onJoin(player);
 			return;
 			
 		}

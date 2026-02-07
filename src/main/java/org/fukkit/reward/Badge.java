@@ -74,6 +74,14 @@ public class Badge extends FleXEventListener implements Cacheable {
 		
 	}
 	
+	public String name() {
+		return this.key;
+	}
+	
+	/**
+	 * Changing this to print getName() instead of key, when all warnings are removed change this to return this.name;
+	 */
+	@Deprecated
 	@Override
 	public String toString() {
 		return this.key;

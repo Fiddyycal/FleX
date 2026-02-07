@@ -5,7 +5,7 @@ import org.fukkit.recording.Replay;
 public class ReplayCompleteEvent extends ReplayEvent {
 	
 	public ReplayCompleteEvent(Replay replay) {
-		super(replay);
+		super(replay, false);
 	}
 
 }

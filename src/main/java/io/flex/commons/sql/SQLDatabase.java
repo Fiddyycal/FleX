@@ -7,6 +7,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -173,8 +174,53 @@ public class SQLDatabase implements Serializable {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
+	public SQLRowWrapper getRow(String table, @Nullable String... columns) throws SQLException {
+		return this.queue(() -> this.row(table, columns != null ? Arrays.asList(columns) : null, null));
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
 	public SQLRowWrapper getRow(String table, @Nullable SQLCondition<?>... conditions) throws SQLException {
-		return this.queue(() -> this.row(table, conditions));
+		return this.queue(() -> this.row(table, null, conditions != null ? Arrays.asList(conditions) : null));
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public SQLRowWrapper getRow(String table, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
+		return this.queue(() -> this.row(table, columns, conditions));
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public SQLRowWrapper getRow(String table) throws SQLException {
+		return this.queue(() -> this.row(table, null, null));
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public Set<SQLRowWrapper> getRows(String table) throws SQLException {
+		return this.queue(() -> this.rows(table, -1, null, null));
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public Set<SQLRowWrapper> getRows(String table, @Nullable String... columns) throws SQLException {
+		return this.queue(() -> this.rows(table, -1, columns != null ? Arrays.asList(columns) : null, null));
 	}
 	
 	/**
@@ -183,7 +229,16 @@ public class SQLDatabase implements Serializable {
 	 * @throws SQLException
 	 */
 	public Set<SQLRowWrapper> getRows(String table, @Nullable SQLCondition<?>... conditions) throws SQLException {
-		return this.queue(() -> this.rows(table, -1, conditions));
+		return this.queue(() -> this.rows(table, -1, null, conditions != null ? Arrays.asList(conditions) : null));
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public Set<SQLRowWrapper> getRows(String table, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
+		return this.queue(() -> this.rows(table, -1, columns, conditions));
 	}
 
 	/**
@@ -192,7 +247,16 @@ public class SQLDatabase implements Serializable {
 	 * @throws SQLException
 	 */
 	public Set<SQLRowWrapper> getRows(String table, int limit, @Nullable SQLCondition<?>... conditions) throws SQLException {
-		return this.queue(() -> this.rows(table, limit, conditions));
+		return this.queue(() -> this.rows(table, limit, null, conditions != null ? Arrays.asList(conditions) : null));
+	}
+	
+	/**
+	 * Connection safe, but may still throw SQLException.
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * @throws SQLException
+	 */
+	public Set<SQLRowWrapper> getRows(String table, int limit, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
+		return this.queue(() -> this.rows(table, limit, columns, conditions));
 	}
 	
 	/**
@@ -768,13 +832,19 @@ public class SQLDatabase implements Serializable {
 		
 	}
 	
-	private SQLRowWrapper row(String table, @Nullable SQLCondition<?>... conditions) throws SQLException {
-		return this.rows(table, 1, conditions).stream().findFirst().orElse(null);
+	private SQLRowWrapper row(String table, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
+		return this.rows(table, 1, columns, conditions).stream().findFirst().orElse(null);
 	}
 	
-	private Set<SQLRowWrapper> rows(String table, int limit, @Nullable SQLCondition<?>... conditions) throws SQLException {
-
-		StringBuilder query = new StringBuilder("SELECT * FROM " + IDENTIFIER_QUOTE + table + IDENTIFIER_QUOTE);
+	private Set<SQLRowWrapper> rows(String table, int limit, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
+		
+		StringBuilder select = new StringBuilder();
+		
+		if (columns != null)
+			for (String column : columns)
+				select.append((select.length() > 0 ? "," : "") + IDENTIFIER_QUOTE + column + IDENTIFIER_QUOTE);
+		
+		StringBuilder query = new StringBuilder("SELECT " + (select.length() > 0 ? select.toString() : "*") + " FROM " + IDENTIFIER_QUOTE + table + IDENTIFIER_QUOTE);
 		
 		Set<SQLRowWrapper> rows = new HashSet<SQLRowWrapper>();
 		
@@ -786,7 +856,7 @@ public class SQLDatabase implements Serializable {
 			
 			List<Object> params = new ArrayList<>();
 			
-			if (conditions != null && conditions.length > 0) {
+			if (conditions != null)
 			    for (SQLCondition<?> condition : conditions) {
 			    	
 			        if (condition != null) {
@@ -798,7 +868,6 @@ public class SQLDatabase implements Serializable {
 			            
 			        }
 			    }
-			}
 			
 			if (limit > 0)
 				query.append(" LIMIT " + limit);
@@ -832,8 +901,8 @@ public class SQLDatabase implements Serializable {
 			        
 			    }
 				
-				if (primary == null && (conditions != null && conditions.length > 0))
-					rows.add(new SQLRowWrapper(this, table, entries, conditions));
+				if (primary == null && conditions != null)
+					rows.add(new SQLRowWrapper(this, table, entries, conditions.toArray(new SQLCondition<?>[conditions.size()])));
 				
 				else rows.add(new SQLRowWrapper(this, table, primary, entries));
 				

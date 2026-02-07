@@ -44,6 +44,10 @@ public class FleXPlayerAsyncChatReceiveEvent extends FleXPlayerEvent implements 
 	public void setSuffix(String suffix) {
 		this.suffix = suffix;
 	}
+	
+	public void setMessage(String message) {
+		this.message = message;
+	}
 
 	@Override
 	public void setCancelled(boolean cancel) {

@@ -87,6 +87,7 @@ public class BadgeCache extends LinkedCache<Badge, String> {
 		this.add(new Badge('♬', "DJ", "DJ", Tier.TIER_THREE, "Achieved by playing a song on the networks plug.dj"));
 		this.add(new Badge('♕', "HOST", "Host", Tier.TIER_TWO, "Achieved by hosting an event for the network"));
 		this.add(new Badge('⚔', "STAFF", "Staff", Tier.TIER_TWO, "Achieved by donating time and effort into the network"));
+		this.add(new Badge('⚖', "REFEREE", "Referee", Tier.TIER_TWO, "Achieved by being a clan referee for a full clan battle"));
 		this.add(new Badge('⚒', "DEVELOPMENT", "Development", Tier.TIER_ONE, "Awarded for developing the network"));
 		this.add(new Badge('⚡', "ADMINISTRATION", "Administration", Tier.TIER_ONE, "Awarded for administering the network"));
 		this.add(new Badge('⚜', "OWNERSHIP", "Owner", Tier.TIER_ONE, "Awarded for running the show"));

@@ -142,9 +142,13 @@ public class ReplayListeners extends FleXEventListener {
 		FleXPlayer player = Fukkit.getPlayer(entity.getUniqueId());
 		FleXPlayer transcript = Fukkit.getCachedPlayer(clicked.getUniqueId());
 		
-		this.replay.setTranscript(transcript);
-		
-		player.sendMessage(player.getTheme().format("<flow><pc>You are seeing<reset> <sc>" + transcript.getDisplayName(player.getTheme(), true) + "<pc>'s complete chat log<pp>."));
+		if (transcript != null) {
+			
+			this.replay.setTranscript(player, clicked.getUniqueId());
+			
+			player.sendMessage(player.getTheme().format("<flow><pc>You are seeing<reset> <sc>" + transcript.getDisplayName(player.getTheme(), true) + "<pc>'s complete chat log<pp>."));
+	    	
+		} else player.sendMessage(player.getTheme().format("<flow><pc>You cannot view that players chat log<pp>."));
 		
     	event.setCancelled(true);
 		

@@ -17,12 +17,14 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
@@ -659,6 +661,62 @@ public class PlayerListeners extends FleXEventListener {
     	FleXPlayer fp = PlayerHelper.getPlayerSafe(player.getUniqueId());
     	
     	if (fp.getState().isImpervious()) {
+        	event.setCancelled(true);
+    		return;
+	    }
+    	
+    }
+	
+	@EventHandler(priority = EventPriority.LOW/*This must be low because some plugins might allow spectator state to interact with some things.*/)
+    public void event(PlayerInteractEvent event) {
+		
+		if (event.isCancelled())
+			return;
+		
+		Player entity = event.getPlayer();
+		
+		if (entity instanceof Player == false)
+			return;
+		
+    	Player player = (Player) entity;
+    	
+    	if (player.getGameMode() == GameMode.CREATIVE)
+    		return;
+		
+    	if (player.hasMetadata("mode.build"))
+    		return;
+    	
+    	FleXPlayer fp = PlayerHelper.getPlayerSafe(player.getUniqueId());
+    	
+    	if (fp.getState() == PlayerState.SPECTATING) {
+        	event.setCancelled(true);
+    		return;
+	    }
+    	
+    }
+	
+	@EventHandler
+    public void event(HangingBreakByEntityEvent event) {
+		
+		if (event.isCancelled())
+			return;
+		
+		Entity entity = event.getRemover();
+		
+		if (entity instanceof Player == false)
+			return;
+		
+    	Player player = (Player) entity;
+    	
+    	if (player.getGameMode() == GameMode.CREATIVE)
+    		return;
+		
+    	if (player.hasMetadata("mode.build"))
+    		return;
+    	
+    	FleXPlayer fp = PlayerHelper.getPlayerSafe(player.getUniqueId());
+    	
+    	if (fp.getState() == PlayerState.SPECTATING || fp.getState() == PlayerState.INLOBBY) {
         	event.setCancelled(true);
     		return;
 	    }

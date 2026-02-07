@@ -61,6 +61,15 @@ public enum ProtocolVersion {
 		
 	}
 	
+	public boolean isOnOrBelow(ProtocolVersion version) {
+		
+		int prot = this.protocols[0];
+		int check = version.protocols[0];
+		
+		return version != UNSPECIFIED && (prot <= check || (version.protocols.length > 1 && prot <= version.toLowestProtocol()));
+		
+	}
+	
 	public boolean isAtLeast(ProtocolVersion version) {
 		
 		int prot = this.protocols[0];

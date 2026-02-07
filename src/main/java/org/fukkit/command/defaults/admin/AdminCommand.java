@@ -36,8 +36,8 @@ public class AdminCommand extends FleXCommandAdapter {
 		sub_command_cache.add(new DebugSubCommand(this));
 		sub_command_cache.add(new BroadcastSubCommand(this));
 		sub_command_cache.add(new BotSubCommand(this));
-		sub_command_cache.add(new FreezeSubCommand(this));
 		sub_command_cache.add(new ReplaySubCommand(this));
+		sub_command_cache.add(new FreezeSubCommand(this));
 		sub_command_cache.add(new ShutdownSubCommand(this));
 		
 	}
@@ -52,8 +52,8 @@ public class AdminCommand extends FleXCommandAdapter {
 				"/<command> database/configuration <name> [-r, -c, -l]",
 				"/<command> say/broadcast/bc <message> [-g]",
 				"/<command> spawn/create/bot <name> [uuid]",
+				"/<command> replay/playback/play <uid|list>",
 				"/<command> freeze/frozen/pause [reason]",
-				"/<command> replay/playback/play <uid>",
 				"/<command> shutdown/stop [reason]"
 				
 			);

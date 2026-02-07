@@ -8,31 +8,43 @@ import java.nio.file.FileAlreadyExistsException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Egg;
+import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Snowball;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.flow.ReplayCompleteEvent;
 import org.fukkit.event.flow.ReplayEndEvent;
+import org.fukkit.event.flow.ReplayJoinEvent;
+import org.fukkit.event.flow.ReplayLeaveEvent;
 import org.fukkit.event.flow.ReplayStartEvent;
-import org.fukkit.event.flow.ReplayWatchEvent;
+import org.fukkit.flow.OverwatchReplay;
+import org.fukkit.recording.loadout.ReplayLoadout;
 import org.fukkit.theme.Theme;
+import org.fukkit.utils.VersionUtils;
 import org.fukkit.utils.WorldUtils;
 
 import io.flex.commons.Nullable;
@@ -46,11 +58,15 @@ public class Replay extends Recording {
 	
 	protected Location spawn;
 	
-	private List<FleXPlayer> watchers = new LinkedList<FleXPlayer>();
-	
-	private UUID transcript = null;
+	private Map<FleXPlayer, UUID> watchersAndTranscripts = new LinkedHashMap<FleXPlayer, UUID>();
 	
 	private ReplayListeners listener;
+	
+	private UUID host;
+	
+	private double speed = 1.0;
+	
+	private boolean reverse = false, joined = false;
 	
 	public Replay(File container) throws SQLException {
 		
@@ -152,35 +168,62 @@ public class Replay extends Recording {
 	}
 	
 	public FleXPlayer getHost() {
-		return !this.watchers.isEmpty() ? this.watchers.get(0) : null;
+		return this.host != null ? Fukkit.getPlayer(this.host) : null;
 	}
 	
 	public Set<FleXPlayer> getWatchersUnsafe() {
-		return this.watchers.stream().collect(Collectors.toSet());
+		return this.watchersAndTranscripts.keySet().stream().collect(Collectors.toSet());
+	}
+	
+	public UUID getTranscript(FleXPlayer watcher) {
+		return this.watchersAndTranscripts.get(watcher);
+	}
+	
+	public double getSpeed() {
+		return NumUtils.roundToDecimal(this.speed, 2);
+	}
+	
+	public void setSpeed(double speed) {
+		this.speed = speed;
 	}
 	
 	public boolean isWatching(Entity entity) {
-		return this.watchers.stream().anyMatch(p -> p.getUniqueId().equals(entity.getUniqueId()));
+		return this.watchersAndTranscripts.keySet().stream().anyMatch(p -> p.getUniqueId().equals(entity.getUniqueId()));
 	}
 	
-	public void setTranscript(FleXPlayer player) {
-		this.transcript = player.getUniqueId();
+	public void setTranscript(FleXPlayer watcher, UUID transcript) {
+		this.watchersAndTranscripts.put(watcher, transcript);
 	}
 	
-	public void addWatcher(FleXPlayer player) {
+	public void onJoin(FleXPlayer player) {
+		
+		Objects.requireNonNull(player, "player cannot be null");
 		
 		if (player instanceof FleXBot)
 			return;
 		
-		ReplayWatchEvent event = new ReplayWatchEvent(this, player);
+		ReplayJoinEvent event = new ReplayJoinEvent(this, player);
 		
 		Fukkit.getEventFactory().call(event);
 		
 		if (event.isCancelled())
 			return;
 		
-		if (this.watchers.stream().noneMatch(w -> player.getUniqueId().equals(w.getUniqueId())))
-	        this.watchers.add(player);
+		UUID transcript = null;
+		
+		if (this instanceof OverwatchReplay)
+			transcript = ((OverwatchReplay)this).getSuspect().getUniqueId();
+		
+		if (!this.isWatching(player.getPlayer()))
+	        this.watchersAndTranscripts.put(player, transcript);
+		
+		else if (transcript != null)
+			this.setTranscript(player, transcript);
+		
+		if (this.watchersAndTranscripts.size() == 1)
+			this.host = player.getUniqueId();
+		
+		this.joined = true;
 		
 		player.teleport(this.spawn);
 		
@@ -191,37 +234,66 @@ public class Replay extends Recording {
 		
 		Theme theme = player.getTheme();
 		
-		if (this.transcript == null)
+		UUID ts = this.watchersAndTranscripts.get(player);
+		
+		player.setLoadout(new ReplayLoadout(player, this), true);
+		
+		if (ts == null)
 			player.sendMessage(theme.format("<flow><pc>Not currently displaying a transcript<pp>."));
 		
-		else player.sendMessage(theme.format("<flow><pc>You are seeing<reset> <sc>" + this.getRecorded().get(this.transcript).toPlayer().getDisplayName(theme, true) + "<pc>'s complete chat log<pp>."));
+		else player.sendMessage(theme.format("<flow><pc>You are seeing<reset> <sc>" + this.getRecorded().get(ts).toPlayer().getDisplayName(theme, true) + "<pc>'s complete chat log<pp>."));
 		
 		player.sendMessage(theme.format("<flow><pc>View player recieved messages by right clicking them<pp>."));
 		
 	}
-
+	
+	public void onLeave(FleXPlayer player) {
+		
+		Objects.requireNonNull(player, "player cannot be null");
+		
+		if (player instanceof FleXBot)
+			return;
+		
+		Iterator<Entry<FleXPlayer, UUID>> it = this.watchersAndTranscripts.entrySet().iterator();
+		
+		while(it.hasNext())
+			if (it.next().getKey().getUniqueId().equals(player.getUniqueId()))
+				it.remove();
+		
+		ReplayLeaveEvent event = new ReplayLeaveEvent(this, player);
+		
+		Fukkit.getEventFactory().call(event);
+		
+		if (event.isCancelled())
+			throw new UnsupportedOperationException("cancelling ReplayLeaveEvent does nothing.");
+		
+	}
+	
 	@Override
 	public void run() {
 		
-		for (FleXPlayer watcher : this.watchers) {
+		if (!this.joined)
+			return;
+		
+		for (FleXPlayer fp : this.watchersAndTranscripts.keySet()) {
 			
-			if (watcher == null)
+			if (fp == null)
 				continue;
 			
-			if (!watcher.isOnline() || !watcher.getPlayer().getWorld().getUID().equals(this.world.getUID())) {
-				this.onPlayerDisconnect(watcher);
-				return;
+			if (!fp.isOnline() || !fp.getPlayer().getWorld().getUID().equals(this.world.getUID())) {
+				this.onPlayerDisconnect(fp);
+				continue;
 			}
 			
-			if (this.tick % 3 == 0)
-				this.world.playEffect(watcher.getLocation().clone().add(NumUtils.getRng().getDouble(-0.3, 0.3), 1, NumUtils.getRng().getDouble(-0.3, 0.3)), Effect.MOBSPAWNER_FLAMES, 0);
+			if (this.tick % 5 == 0)
+				this.world.playEffect(fp.getLocation().clone().add(NumUtils.getRng().getDouble(-0.3, 0.3), 0.7, NumUtils.getRng().getDouble(-0.3, 0.3)), Effect.MOBSPAWNER_FLAMES, 0);
 			
 		}
 		
 		if (this.pause)
 			return;
 		
-		if (this.tick == this.getLength()) {
+		if (this.tick == (this.reverse ? 0 : this.getLength())) {
 			
 			ReplayCompleteEvent event = new ReplayCompleteEvent(this);
 			
@@ -302,6 +374,77 @@ public class Replay extends Recording {
 							
 						}
 						
+						if (action == RecordedAction.LAUNCH_PROJECTILE) {
+							
+							ItemStack item = frame.getItem();
+							
+							Class<? extends Projectile> clazz = null;
+							
+							switch (item.getType()) {
+							case ARROW:
+								
+								clazz = Arrow.class;
+								break;
+								
+							case ENDER_PEARL:
+								
+								clazz = EnderPearl.class;
+								break;
+								
+							case EGG:
+
+								clazz = Egg.class;
+								break;
+								
+							default:
+								
+								Material sb = VersionUtils.material("SNOWBALL", "SNOW_BALL", "LEGACY_SNOW_BALL");
+								Material es = VersionUtils.material("EYE_OF_ENDER", "ENDER_EYE", "LEGACY_EYE_OF_ENDER");
+								
+								if (item.getType() == es)
+									clazz = null; // Not supported. (for now?) :(
+								
+								if (item.getType() == sb)
+									clazz = Snowball.class;
+								
+								break;
+							}
+							
+							if (clazz != null) {
+								
+								Projectile projectile = bot.getPlayer().launchProjectile(clazz);
+								
+								if (projectile instanceof Arrow && item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+									
+									String[] split = item.getItemMeta().getDisplayName().split(",");
+									
+									if (split.length == 4) {
+										
+										try {
+											
+											double x = Double.parseDouble(split[0]);
+											double y = Double.parseDouble(split[1]);
+											double z = Double.parseDouble(split[2]);
+
+											Vector vector = new Vector(x, y, z);
+											
+											boolean critical = Boolean.valueOf(split[3]);
+											
+											((Arrow)projectile).setVelocity(vector);
+											((Arrow)projectile).setCritical(critical);
+											
+										} catch (IndexOutOfBoundsException | NumberFormatException ignore) {}
+										
+									}
+									
+								}
+								
+							}
+							
+							continue;
+							
+						}
+						
 						((CraftRecorded)recordable).getActor().playAction(action);
 						
 					}
@@ -310,24 +453,26 @@ public class Replay extends Recording {
 				if (location != null)
 					bot.teleport(location);
 				
-				if (this.transcript != null) {
+				for (Entry<FleXPlayer, UUID> ts : this.watchersAndTranscripts.entrySet()) {
 					
-					if (recordable.getUniqueId().equals(this.transcript)) {
+					UUID uid = ts.getValue();
+					
+					if (uid != null && uid.equals(recordable.getUniqueId())) {
 						
 						String message = frame.getMessage();
 						
 						if (message != null) {
-							for (FleXPlayer watcher : this.watchers) {
+							
+							FleXPlayer reader = ts.getKey();
+							
+							if (reader != null && reader.isOnline()) {
 								
-								if (watcher != null && watcher instanceof FleXPlayer) {
-									
-									Theme theme = watcher.getTheme();
-									
-									watcher.sendMessage(theme.format("<pp>[<pv>" + frame.getTimeStamp() + "<pp>]<reset> ") + message);
-									
-								}
+								Theme theme = reader.getTheme();
+								
+								reader.sendMessage(theme.format("<pp>[<pv>" + frame.getTimeStamp() + "<pp>]<reset> ") + message);
 								
 							}
+							
 						}
 						
 					}
@@ -338,7 +483,10 @@ public class Replay extends Recording {
 			
 		}
 		
-		this.tick++;
+		if (this.reverse)
+			this.tick--;
+		
+		else this.tick++;
 		
 	}
 	
@@ -386,7 +534,7 @@ public class Replay extends Recording {
 			throw new UnsupportedOperationException("Could not find appropriate spawn location for watchers");
 		
 		for (FleXPlayer watcher : watchers)
-			this.addWatcher(watcher);
+			this.onJoin(watcher);
 		
 		this.pause = false;
 		
@@ -427,16 +575,11 @@ public class Replay extends Recording {
 		
 		this.cancel();
 		
-		List<FleXPlayer> all = new ArrayList<FleXPlayer>(this.watchers);
+		List<FleXPlayer> all = new ArrayList<FleXPlayer>(this.watchersAndTranscripts.keySet());
 		
-		for (FleXPlayer watcher : all) {
-			
+		for (FleXPlayer watcher : all)
 			if (watcher != null && watcher.isOnline())
-				try {
-					watcher.kick("The stage has closed: " + parse);
-				} catch (IllegalStateException ignore) {}
-				
-		}
+				this.onLeave(watcher);
 		
 		this.destroy();
 		
@@ -450,34 +593,57 @@ public class Replay extends Recording {
 			FileUtils.delete(this.world.getWorldFolder());
 		}
 		
-		if (this.watchers != null)
-			this.watchers.clear();
+		if (this.watchersAndTranscripts != null)
+			this.watchersAndTranscripts.clear();
 		
 		if (this.listener != null)
 			this.listener.unregister();
 		
 		this.listener = null;
-		this.watchers = null;
+		this.watchersAndTranscripts = null;
 		this.spawn = null;
 		
 		super.destroy();
 		
 	}
 	
+	public boolean isReversed() {
+		return this.reverse;
+	}
+	
 	public boolean isPlaying() {
-		return !this.watchers.isEmpty();
+		return !this.watchersAndTranscripts.isEmpty();
 	}
 
 	@Override
 	public void onPlayerDisconnect(FleXPlayer player) {
 		
-		if (player.getUniqueId().equals(this.getHost().getUniqueId()))
+		this.onLeave(player);
+		
+		if (player.getUniqueId().equals(this.host))
 			this.end("Host has disconnected.");
 		
 	}
 
 	@Override
 	public void onComplete() {
+		this.resart();
+	}
+	
+	public void play(boolean reverse) {
+		this.pause = false;
+		this.reverse = reverse;
+	}
+	
+	public void play() {
+		this.pause = false;
+	}
+		
+	public void pause() {
+		this.pause = true;
+	}
+	
+	public void resart() {
 		
 		this.getRecorded().forEach((k, v) -> {
 			
@@ -491,7 +657,7 @@ public class Replay extends Recording {
 			
 		});
 		
-		for (FleXPlayer watcher : this.watchers) {
+		for (FleXPlayer watcher : this.watchersAndTranscripts.keySet()) {
 			
 			if (watcher != null && watcher instanceof FleXPlayer)
 				watcher.sendMessage(watcher.getTheme().format("<flow><pc>Restarting recording<pp>..."));

@@ -33,6 +33,7 @@ public class FleXPlayerAsyncChatEvent extends FleXPlayerEvent implements Cancell
 
 	@Override
 	public void setCancelled(boolean cancel) {
+		Thread.dumpStack();
 		this.cancel = cancel;
 	}
 	

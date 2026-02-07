@@ -13,8 +13,8 @@ public class ReplayEvent extends RecordingEvent {
 		
 	}
 	
-	public ReplayEvent(Replay replay) {
-		super(confirm(replay), false);
+	public ReplayEvent(Replay replay, boolean async) {
+		super(confirm(replay), async);
 	}
 	
 	@Override

@@ -1,6 +1,5 @@
 package org.fukkit.clickable.button;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,9 +24,7 @@ import io.flex.commons.Nullable;
 import io.flex.commons.cache.Cacheable;
 import io.flex.commons.utils.ClassUtils;
 
-public abstract class ExecutableButton extends UniqueItem implements UniqueButton, Serializable, Cacheable {
-	
-	private static final long serialVersionUID = 8721156523715764987L;
+public abstract class ExecutableButton extends UniqueItem implements UniqueButton, Cacheable {
 	
 	private Set<Inventory> holders = new HashSet<Inventory>();
 	

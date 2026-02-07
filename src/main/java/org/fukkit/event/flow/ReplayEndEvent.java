@@ -8,7 +8,7 @@ public class ReplayEndEvent extends ReplayEvent {
 	
 	public ReplayEndEvent(Replay replay, String reason) {
 		
-		super(replay);
+		super(replay, false);
 		
 		this.reason = reason;
 		

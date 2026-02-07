@@ -6,7 +6,10 @@ import java.util.function.Consumer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -14,10 +17,13 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerFishEvent.State;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.util.Vector;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
@@ -28,6 +34,7 @@ import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.FleXEventListener;
 import org.fukkit.event.player.FleXPlayerMessageReceiveEvent;
+import org.fukkit.item.Item;
 import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.VersionUtils;
 
@@ -126,6 +133,77 @@ public class RecordingListeners extends FleXEventListener {
 			return;
 		
     	this.editFrame(entity, f -> f.addAction(event.getState() == State.FISHING ? RecordedAction.USE_ITEM : RecordedAction.STOP_USE_ITEM));
+		
+	}
+	
+	@EventHandler
+	public void event(ProjectileLaunchEvent event) {
+		
+		ProjectileSource entity = ((Projectile)event.getEntity()).getShooter();
+		
+		if (entity instanceof LivingEntity) {
+			
+			LivingEntity living = (LivingEntity) entity;
+			
+			if (!this.recording.isRecording((LivingEntity)entity))
+				return;
+			
+	    	this.editFrame(living, f -> {
+	    		
+	    		EntityType type = event.getEntity().getType();
+	    		Material mat = null;
+	    		
+	    		switch (type) {
+				case ARROW:
+					
+					mat = Material.ARROW;
+					break;
+					
+				case SNOWBALL:
+					
+					mat = VersionUtils.material("SNOWBALL", "SNOW_BALL", "LEGACY_SNOW_BALL");
+					break;
+					
+				case ENDER_SIGNAL:
+					
+					mat = VersionUtils.material("EYE_OF_ENDER", "ENDER_EYE", "LEGACY_EYE_OF_ENDER");
+					break;
+					
+				case ENDER_PEARL:
+					
+					mat = Material.ENDER_PEARL;
+					break;
+					
+				case EGG:
+
+					mat = Material.EGG;
+					break;
+					
+				default:
+					break;
+				}
+	    		
+	    		if (mat != null) {
+	    			
+	    			Item item = new Item(mat);
+	    			
+	    			if (mat == Material.ARROW) {
+	    				
+		    			Vector vector = event.getEntity().getVelocity();
+		    			
+	    				item.setName(vector.getX() + "," + vector.getY() + "," + vector.getZ() + "," + ((Arrow)event.getEntity()).isCritical());
+	    				
+	    			}
+	    			
+		    		f.setItem(item);
+		    		
+		    		f.addAction(RecordedAction.LAUNCH_PROJECTILE);
+	    			
+	    		}
+	    		
+	    	});
+			
+		}
 		
 	}
 	

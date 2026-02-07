@@ -61,6 +61,10 @@ public class NumUtils {
         return (input - deviation <= number && number <= input + deviation);
     }
     
+    /**
+     * This rounds.
+     * 1.236 -> 1.24
+     */
     public static double roundToDecimal(double value, int places) {
     	
         if (places < 0)
@@ -74,6 +78,10 @@ public class NumUtils {
         
     }
     
+    /**
+     * This doesn't round.
+     * 1.236 -> 1.23
+     */
     public static int getFractional(double number, int places) {
     	
     	if (places > String.valueOf(Integer.MAX_VALUE).length())

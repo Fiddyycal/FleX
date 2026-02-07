@@ -117,8 +117,6 @@ public class OverwatchReplay extends Replay {
 		if (spawn != null)
 			this.spawn = spawn;
 		
-		this.setTranscript(this.suspect);
-		
 		super.start(world, duration, watchers);
 		
 	}

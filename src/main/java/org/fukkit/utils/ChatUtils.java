@@ -77,12 +77,12 @@ public class ChatUtils {
 					p,
 					message);
 			
-			Fukkit.getEventFactory().call(event);
-			
-			message = receiveEvent.getMessage();
+			Fukkit.getEventFactory().call(receiveEvent);
 			
 			if (receiveEvent.isCancelled())
 				continue;
+			
+			message = receiveEvent.getMessage();
 			
 			if (mention) {
 				

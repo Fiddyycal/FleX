@@ -3,13 +3,13 @@ package org.fukkit.event.flow;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.recording.Replay;
 
-public class ReplayWatchEvent extends ReplayEvent {
-	
+public class ReplayPlayerEvent extends ReplayEvent {
+
 	private FleXPlayer player;
 	
-	public ReplayWatchEvent(Replay replay, FleXPlayer player) {
+	public ReplayPlayerEvent(Replay replay, FleXPlayer player, boolean async) {
 		
-		super(replay);
+		super(replay, async);
 		
 		this.player = player;
 		
@@ -18,5 +18,5 @@ public class ReplayWatchEvent extends ReplayEvent {
 	public FleXPlayer getPlayer() {
 		return this.player;
 	}
-	
+
 }
