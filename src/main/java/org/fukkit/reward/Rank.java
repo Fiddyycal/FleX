@@ -71,24 +71,21 @@ public class Rank extends FleXEventListener implements Cacheable {
 	
 	public String getDisplay(Theme theme, boolean present) {
 		
-		if (theme == null)
-			throw new NullPointerException("theme must not be null");
-		
-		Entry<BiCell<String, String>, String> entry = this.displays.entrySet().stream().filter(e -> e.getKey().a().equals(theme.getName()) && e.getKey().b().equals(this.name)).findFirst().orElse(null);
-		
-		if (entry == null)
-			return null;
-		
-		String display = entry.getValue();
-		
-		if (present && !entry.getValue().contains(this.name))
-			display = display + this.name;
-		
-		if (present)
-			return theme.format(present && display.contains(" ") ? display.substring(0, display.lastIndexOf(' ')) : display);
-		
-		return display;
-		
+	    if (theme == null)
+	    	throw new NullPointerException("theme must not be null");
+	    
+	    Entry<BiCell<String, String>, String> entry = this.displays.entrySet().stream().filter(e -> e.getKey().a().equals(theme.getName()) && e.getKey().b().equals(this.name)).findFirst().orElse(null);
+	    
+	    if (entry == null)
+	    	return null;
+	    
+	    String display = entry.getValue();
+	    
+	    if (present && !display.contains(this.name))
+	        display += this.name;
+	    
+	    return present ? theme.format(display) : display;
+	    
 	}
 	
 	public Set<String> getPermissions() {

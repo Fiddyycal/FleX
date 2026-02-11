@@ -10,7 +10,7 @@ public class BadgeCache extends LinkedCache<Badge, String> {
 	private static final long serialVersionUID = 1896219879102160101L;
 	
 	public BadgeCache() {
-		super((badge, key) -> badge.toString().equalsIgnoreCase(key));
+		super((badge, key) -> badge.name().equalsIgnoreCase(key));
 	}
 	
 	public Badge getByName(String name) {

@@ -4,8 +4,6 @@ import java.util.stream.IntStream;
 
 import org.bukkit.ChatColor;
 
-import io.flex.commons.utils.NumUtils;
-
 public class FormatUtils {
 	
 	public static final ChatColor[] RAINBOW = {
@@ -146,69 +144,71 @@ public class FormatUtils {
 	public static boolean isMagic(String s) {
 		return s.contains(ChatColor.MAGIC.toString());
 	}
-	
+
 	public static String format(String s) {
 		
-		if (s == null)
-			return null;
-		
-		while (s.contains(ChatColor.COLOR_CHAR + "h"))
-			s = s.replaceFirst("&h", RAINBOW[NumUtils.getRng().getInt(0, RAINBOW.length - 1)].toString());
-		
-		return ChatColor.translateAlternateColorCodes('&', rainbow(s));
-		
+	    if (s == null)
+	    	return null;
+	    
+	    s = rainbow(s);
+	    
+	    while (s.contains("&h"))
+	        s = s.replaceFirst("&h", RAINBOW[(int)(Math.random() * RAINBOW.length)].toString());
+	    
+	    return ChatColor.translateAlternateColorCodes('&', s);
+	    
 	}
-	/*
-	public static String rainbow(String check) {
-	
-		String checking = "&g";
-		
-		if (!check.contains(checking))
-			return check;
-		
-		StringBuilder builder = new StringBuilder();
-		
-		String[] sp = check.split(checking);
-		
-		for (int i = 0; i < sp.length; i++) {
-			
-			String[] spl = sp[i].split(Character.toString(ChatColor.COLOR_CHAR));
-			
-			for (int j = 0; j < spl.length; j++) {
-				String append = (j != 0 ? ChatColor.COLOR_CHAR : "") + spl[j];
-				builder.append(j == 0 && i != 0 ? FormatUtils.getRainbowString(append, check.contains(checking + ChatColor.COLOR_CHAR + "l"), true) : append);
-			}
-			
-		}
-		
-		return builder.toString();
-		
-	}*/
 	
 	public static String rainbow(String input) {
 		
 	    if (input == null || !input.contains("&g"))
-	    	return input;
-
-	    StringBuilder builder = new StringBuilder();
+	        return input;
 	    
-	    String[] parts = input.split("(?=&g)");
-
-	    for (String part : parts) {
+	    StringBuilder builder = new StringBuilder(input.length());
+	    
+	    int i = 0;
+	    
+	    while (i < input.length()) {
 	    	
-	        if (part.startsWith("&g")) {
+	        boolean bold = false;
+	        
+	        if (input.startsWith("&g&l", i) || input.startsWith("&g§l", i)) {
 	        	
-	            boolean bold = part.startsWith("&gl") || part.startsWith("&g&l");
+	            bold = true;
+	            i += 4;
 	            
-	            // Remove just the &g or &gl marker
-	            String text = part
-	                .replaceFirst("&g" + ChatColor.COLOR_CHAR + "l", "")
-	                .replaceFirst("&g&l", "")
-	                .replaceFirst("&g", "");
-
-	            builder.append(getRainbowString(text, bold, true));
+	        } else if (input.startsWith("&g", i))
+	            i += 2;
 	            
-	        } else builder.append(part);
+	        else {
+	        	
+	            builder.append(input.charAt(i));
+	            i++;
+	            continue;
+	            
+	        }
+	        
+	        int start = i;
+	        
+	        while (i < input.length()) {
+	        	
+	            char c = input.charAt(i);
+	            
+	            if (c == '&' && i + 1 < input.length()) {
+	            	
+	                char code = input.charAt(i + 1);
+	                
+	                if (code != 'g' && "0123456789abcdefklmnor".indexOf(code) >= 0)
+	                	break;
+	            }
+	            
+	            i++;
+	            
+	        }
+	        
+	        String segment = input.substring(start, i);
+	        
+	        builder.append(getRainbowString(segment, bold, true));
 	        
 	    }
 	    

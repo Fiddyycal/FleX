@@ -1,6 +1,7 @@
 package org.fukkit.cache;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.bukkit.configuration.ConfigurationSection;
@@ -40,6 +41,14 @@ public class RankCache extends LinkedCache<Rank, String> {
 		
 		return this.def;
 		
+	}
+	
+	/**
+	 * @param weight
+	 * @return Rank with weight, if no rank is found, returns the next rank below that.
+	 */
+	public Rank getByWeight(int weight) {
+	    return this.stream().filter(r -> r.getWeight() <= weight).max(Comparator.comparingLong(r -> r.getWeight())).orElse(null);
 	}
 
 	@Override

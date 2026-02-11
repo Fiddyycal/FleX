@@ -11,8 +11,6 @@ import io.flex.commons.Nullable;
 
 public abstract class ToggleableButton extends ExecutableButton {
 	
-	private static final long serialVersionUID = 1L;
-
 	private boolean toggled = false;
 	
 	public ToggleableButton(Material material) {

@@ -11,8 +11,6 @@ import io.flex.commons.Nullable;
 
 public class PointlessButton extends ExecutableButton {
 	
-	private static final long serialVersionUID = 7684359694291283253L;
-	
 	public PointlessButton(Material material) {
 		super(material, null);
 	}

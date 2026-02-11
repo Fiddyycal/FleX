@@ -53,9 +53,6 @@ public abstract class ExecutableButton extends UniqueItem implements UniqueButto
 		this.intractable = ClassUtils.getSuperAnnotation(this.getClass(), Interactable.class) != null;
 		this.droppable = ClassUtils.getSuperAnnotation(this.getClass(), Droppable.class) != null;
 		
-		if (this instanceof PointlessButton || this instanceof FacelessButton)
-			return;
-		
 		Memory.BUTTON_CACHE.add(this);
 		
 	}
@@ -116,7 +113,7 @@ public abstract class ExecutableButton extends UniqueItem implements UniqueButto
 				if (uid.equals(uuid)) {
 					
 					copy(item, this);
-			    	
+					
 					try {
 						inv.setItem(slot, item);
 					} catch (NullPointerException e) {}
@@ -136,25 +133,25 @@ public abstract class ExecutableButton extends UniqueItem implements UniqueButto
 				    int slotLimit = view.countSlots();
 
 				    for (int i = 0; i < slotLimit; i++) {
-				    	
+						
 				        try {
 				        	
 				            ItemStack item = view.getItem(i);
 				            
 				            if (item == null || item.getType() == Material.AIR)
 				                continue;
-
+							
 				            if (!similar(item, this))
 				                continue;
 				            
 				            UUID uid = Fukkit.getImplementation().getItemStackUniqueId(item);
 				            
 				            if (uid != null && uid.equals(uuid)) {
-				            	
+								
 				                copy(item, this);
 				                
 				                view.setItem(i, item);
-				                
+								
 				            }
 				            
 				        } catch (IndexOutOfBoundsException ignored) {

@@ -21,6 +21,8 @@ import org.fukkit.api.helper.EventHelper;
 import org.fukkit.clickable.Loadout;
 import org.fukkit.clickable.Menu;
 import org.fukkit.clickable.button.ExecutableButton;
+import org.fukkit.clickable.button.FacelessButton;
+import org.fukkit.clickable.button.PointlessButton;
 import org.fukkit.clickable.button.UniqueButton;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.entity.FleXPlayer;
@@ -157,6 +159,11 @@ public class ButtonListeners extends FleXEventListener {
 		
 		if (butt instanceof ExecutableButton == false)
 			return;
+		
+		if (butt instanceof PointlessButton || butt instanceof FacelessButton) {
+			event.setCancelled(true);
+			return;
+		}
 		
 		ExecutableButton button = (ExecutableButton) butt;
 		

@@ -12,8 +12,6 @@ import io.flex.commons.file.Variable;
 
 public class LanguageButton extends ExecutableButton {
 	
-	private static final long serialVersionUID = -1963371882839892716L;
-	
 	private Language language;
 	
 	public LanguageButton(Language language, Theme theme) {

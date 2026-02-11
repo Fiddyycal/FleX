@@ -28,8 +28,6 @@ import io.flex.commons.utils.StringUtils;
 @SuppressWarnings("deprecation")
 public class ThemeButton extends ExecutableButton {
 	
-	private static final long serialVersionUID = -8072076657498053925L;
-
 	private Theme theme;
 	
 	public ThemeButton(Theme theme) {
@@ -93,17 +91,6 @@ public class ThemeButton extends ExecutableButton {
 				boolean exists1 = Memory.BUTTON_CACHE.get(ThemeButton.this.getUniqueId()) != null;
 				boolean exists2 = Memory.GUI_CACHE.getByItem(ThemeButton.this) != null;
 				
-				System.out.println("-----------------------------------");
-				System.out.println(exists1 + "/" + exists2);
-				System.out.println(exists1 + "/" + exists2);
-				System.out.println(exists1 + "/" + exists2);
-				System.out.println(exists1 + "/" + exists2);
-				System.out.println(exists1 + "/" + exists2);
-				System.out.println(exists1 + "/" + exists2);
-				System.out.println(exists1 + "/" + exists2);
-				System.out.println(exists1 + "/" + exists2);
-				System.out.println("-----------------------------------");
-				
 				if (!exists1 || !exists2) {
 					this.cancel();
 					return;
@@ -155,7 +142,7 @@ public class ThemeButton extends ExecutableButton {
 				
 				lore[lore.length - 3] = "";
 				lore[lore.length - 2] = theme.format("<lore>Actual appearance may differ due");
-				lore[lore.length - 1] = theme.format("<lore>to manual<sp>/<lore>conditional input<pp>.");
+				lore[lore.length - 1] = theme.format("<lore>to manual or conditional input<pp>.");
 				
 				ThemeButton.this.setLore(lore);
 				

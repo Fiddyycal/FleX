@@ -221,20 +221,95 @@ public class Theme extends YamlConfig implements Cacheable {
 	}
 	
 	public String format(String s) {
-		
-		if (s == null)
-			return s;
-		
-		String format = s.replace("\\s", Theme.reset + " ");
-		
-		for (Entry<BiCell<String, String>, String> tag : this.getTags().entrySet())
-			if (format.contains(tag.getKey().b())) format = format.replace(tag.getKey().b(), tag.getValue() != null ? tag.getValue() : "");
-		
-		for (Emoji emoji : Emoji.values())
-			format = format.replace("[" + emoji.name() + "]", emoji.toString());
-		
-		return FormatUtils.format(format);
-		
+
+	    if (s == null)
+	        return null;
+	    
+	    // First pass does tags.
+	    StringBuilder builder = new StringBuilder(s.length());
+	    
+	    int i = 0;
+	    
+	    while (i < s.length()) {
+	    	
+	        boolean matched = false;
+	        
+	        for (Entry<BiCell<String, String>, String> tag : this.getTags().entrySet()) {
+	        	
+	            String key = tag.getKey().b();
+	            
+	            if (s.startsWith(key, i)) {
+	            	
+	                builder.append(tag.getValue() != null ? tag.getValue() : "");
+	                
+	                i += key.length();
+	                
+	                matched = true;
+	                break;
+	                
+	            }
+	            
+	        }
+	        
+	        if (matched)
+	            continue;
+	        
+	        if (s.startsWith("\\s", i)) {
+	        	
+	            builder.append(Theme.reset).append(' ');
+	            
+	            i += 2;
+	            continue;
+	            
+	        }
+	        
+	        builder.append(s.charAt(i));
+	        
+	        i++;
+	        
+	    }
+	    
+	    // Second pass does emojis
+	    String themed = builder.toString();
+	    
+	    builder = new StringBuilder(themed.length());
+	    
+	    i = 0;
+	    
+	    while (i < themed.length()) {
+
+	        if (themed.charAt(i) == '[') {
+
+	            int end = themed.indexOf(']', i);
+	            
+	            if (end != -1) {
+	            	
+	                String name = themed.substring(i + 1, end);
+	                
+	                try {
+	                	
+	                    Emoji emoji = Emoji.valueOf(name);
+	                    
+	                    builder.append(emoji.toString());
+	                    
+	                    i = end + 1;
+	                    continue;
+
+	                } catch (IllegalArgumentException ignore) {}
+	                
+	            }
+	            
+	        }
+
+	        builder.append(themed.charAt(i));
+	        
+	        i++;
+	        
+	    }
+	    
+	    return FormatUtils.format(builder.toString());
+	    
 	}
 
 }
+	        

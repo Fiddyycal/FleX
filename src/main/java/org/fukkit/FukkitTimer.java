@@ -41,7 +41,7 @@ public abstract class FukkitTimer extends FukkitRunnable {
     }
     
     public double getTimeLeft() {
-        return this.time - this.elapsed;
+        return NumUtils.getFractional(this.time - this.elapsed, 1);
     }
     
     public double getElapsedTime() {

@@ -4,8 +4,6 @@ import org.bukkit.Material;
 
 public class FacelessButton extends PointlessButton {
 
-	private static final long serialVersionUID = 1837802054576106416L;
-
 	public FacelessButton(Material material) {
 		super(material, "", 1);
 	}
