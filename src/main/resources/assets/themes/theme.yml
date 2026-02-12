@@ -1,52 +1,46 @@
 # Enable/Disable theme for selection in theme gui.
 # Theme will still load for Admin theme commands.
 # Default theme will always be Enabled.
-Enabled: true
+enabled: true
 
 # Theme information to display.
-Display:
-
+display:
+  
   # Theme category.
   # Sometimes shows when displaying the rank unless set to null.
-  Category: FleX Engine
+  category: FleX Engine
   
   # This will change decoration blocks into different blocks per player.
   # Wool, Stained Clay, Stained Glass and Stained Glass Panes will be changed to the data below.
-  Blocks:
-    Primary:
-      Data: 9
-    Secondary:
-      Data: 8
+  blocks:
+    primary-data: 9
+    secondary-data: 8
   
   # Display icon to display in gui selector.
-  # Theme must be Enabled.
-  Icon:
-    Material: BOOK
-    Data: 0
+  # Theme must be enabled.
+  icon:
+    material: BOOK
+    data: 0
 
 # Theme color customization.
 # All options below this line of the configuration use the Sequence system.
 
 # Sequences work either one of three ways.
 # Sequences can take one of [6] subkey true/false options (seen below).
-# Sequences can take a more advanced form using chat color codes.
+# Sequences can take a more advanced form using chat color codes. (&a, &b&l, &c&l&o etc)
 # Sequences can also use both if you're into that sort of thing.
 # Sequences are being used as examples in all ways below.
 
-# ChatColor unique names and their minecraft color codes:
-# https://i.imgur.com/ICzoxSg.png
-
 # You can also use emojis, though only few are compatible.
 # Here is an example for a pink heart: "&d[HEART]"
-# Here is a list of emoji's you can use:
-# HEART: ❤
-# DOUBLE_LEFT_POINTING_ARROW: «
-# DOUBLE_RIGHT_POINTING_ARROW: »
-# BLACK_PARALLELOGRAM ▰
-# WHITE_PARALLELOGRAM: ▱
-# HIGH_VOLTAGE: ⚡
+# You can setup additional emojis in the theme config.yml
 
-Tags:
+tags:
+  
+  # You can add and remove tags for customization.
+  # You can name tags what ever you want, and use whatever you want between the "<>" syntax.
+  # AOE: lang.yml files, partition.yml "Motd" section, ranks/config.yml file.
+
   Success:
     Tag: <success>
     Sequence:
@@ -56,100 +50,155 @@ Tags:
       StrikeThrough: false
       Underline: false
       Magic: false
+  
   Failure:
     Tag: <failure>
     Sequence:
       ChatColor: RED
+  
   Severe:
     Tag: <severe>
     Sequence:
       ChatColor: DARK_RED
+  
   Reset:
     Tag: <reset>
     Sequence:
-      ChatColor: RESET 
+      ChatColor: RESET
+  
   Server Prefix:
     Tag: <prefix>
     Sequence:
       Advanced: '&4&lFleX&f&lEngine&8&l:&r &f'
+  
   Engine Prefix:
     Tag: <engine>
     Sequence:
       Advanced: '&4&lFleX&8&l:&r &f'
+  
   FloW Prefix:
     Tag: <flow>
     Sequence:
       Advanced: '&8&l<&4&lFl&c&low&8&l>&r &f'
+  
   Primary Color:
     Tag: <pc>
     Sequence:
       Advanced: '&f'
+  
   Secondary Color:
     Tag: <sc>
     Sequence:
       Advanced: '&b'
+  
   Tertiary Color:
     Tag: <tc>
     Sequence:
       Advanced: '&e'
+  
   Quaternary Color:
     Tag: <qc>
     Sequence:
       Advanced: '&b'
+  
   Special Color:
     Tag: <spc>
     Sequence:
       Advanced: '&3'
+  
   Primary Punctuation:
     Tag: <pp>
     Sequence:
       Advanced: '&8'
+  
   Secondary Punctuation:
     Tag: <sp>
     Sequence:
       Advanced: '&8'
+  
   Tertiary Punctuation:
     Tag: <tp>
     Sequence:
       Advanced: '&7'
+  
   Primary Valuing:
     Tag: <pv>
     Sequence:
       Advanced: '&e'
+  
   Secondary Valuing:
     Tag: <sv>
     Sequence:
       Advanced: '&e'
+  
   Tertiary Valuing:
     Tag: <tv>
     Sequence:
       Advanced: '&c'
+  
   Title:
     Tag: <title>
     Sequence:
       Advanced: '&b'
+  
   Subtitle:
     Tag: <subtitle>
     Sequence:
       Advanced: '&8&o'
+  
   Display:
     Tag: <display>
     Sequence:
       Advanced: '&b'
+  
   Lore:
     Tag: <lore>
     Sequence:
       Advanced: '&7'
+      
+  Divider:
+    Tag: <divider>
+    Sequence:
+      Advanced: '&8&m                              '
+  
   Clock:
     Tag: <clock>
     Sequence:
       Advanced: '&7'
+  
   Clickable:
     Tag: <clickable>
-    Sequence: 
+    Sequence:
       Advanced: '&6'
+  
   Interactable:
     Tag: <interactable>
     Sequence:
       Advanced: '&3'
-    
+  Title Sidebar:
+    Tag: <sbt>
+    Sequence:
+      Advanced: '&4&l'
+  Subtitle Sidebar:
+    Tag: <sbst>
+    Sequence:
+      Advanced: '&c'
+  Key Sidebar:
+    Tag: <sbk>
+    Sequence:
+      Advanced: '&f'
+  Value Sidebar:
+    Tag: <sbv>
+    Sequence:
+      Advanced: '&e'
+  
+  Line Sidebar:
+    Tag: <sbl>
+    Sequence:
+      Advanced: '&7'
+  
+  Information Sidebar:
+    Tag: <sbi>
+    Sequence:
+      Advanced: '&7&o'
+

@@ -31,7 +31,7 @@ public class RankCache extends LinkedCache<Rank, String> {
 			
 			FileConfiguration rankConf = ConfigHelper.getConfig(Configuration.RANKS);
 		    
-		    String def = rankConf.getString("Default", "Member");
+		    String def = rankConf.getString("default", "Member");
 		    
 		    Rank rank = Memory.RANK_CACHE.get(def);
 		    
@@ -60,26 +60,26 @@ public class RankCache extends LinkedCache<Rank, String> {
 		YamlConfig yml = Fukkit.getResourceHandler().getYaml(Configuration.RANKS);
 		FileConfiguration conf = yml.asFileConfiguration();
 		
-		ConfigurationSection section = conf.getConfigurationSection("Ranks");
+		ConfigurationSection section = conf.getConfigurationSection("ranks");
 		
 		if (section == null || (section != null && section.getKeys(false).size() == 0)) {
 			
-			conf.set("Ranks.Probation.Display", "<pp>[&fMember<sp>(<failure>P<sp>)<pp>]<reset> <reset>");
-			conf.set("Ranks.Member.Display", "<pp>[&f%rank%<pp>]<reset> <reset>");
-			conf.set("Ranks.Owner.Display", "<pp>[&4%rank%<pp>]<reset> <reset>");
+			conf.set("ranks.Probation.display", "&4&lP&r &7");
+			conf.set("ranks.Member.display", "&7");
+			conf.set("ranks.Owner.display", "&4&lOwner&r &f");
 			
-			conf.set("Ranks.Probation.Weight", 0);
-			conf.set("Ranks.Member.Weight", 0);
+			conf.set("ranks.Probation.weight", 0);
+			conf.set("ranks.Member.weight", 0);
 			
-			conf.set("Ranks.Probation.Inherit", new ArrayList<String>());
-			conf.set("Ranks.Member.Inherit", new ArrayList<String>());
+			conf.set("ranks.Probation.inherit", new ArrayList<String>());
+			conf.set("ranks.Member.inherit", new ArrayList<String>());
 			
 			List<String> worlds = new ArrayList<String>();
 			
 			worlds.add("*");
 			
-			conf.set("Ranks.Probation.Worlds", worlds);
-			conf.set("Ranks.Member.Worlds", worlds);
+			conf.set("ranks.Probation.worlds", worlds);
+			conf.set("ranks.Member.worlds", worlds);
 			
 			List<String> perms = new ArrayList<String>();
 			
@@ -87,8 +87,8 @@ public class RankCache extends LinkedCache<Rank, String> {
 			perms.add("permission.you-guessed-it.two");
 			perms.add("another.permission.etc");
 			
-			conf.set("Ranks.Probation.Permissions", perms);
-			conf.set("Ranks.Member.Permissions", new ArrayList<String>());
+			conf.set("ranks.Probation.permissions", perms);
+			conf.set("ranks.Member.permissions", new ArrayList<String>());
 			yml.save();
 			
 		}

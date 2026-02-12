@@ -51,8 +51,8 @@ public class ThemeCache extends LinkedCache<Theme, String> {
 		
 		FileConfiguration config = conf.asFileConfiguration();
 		
-		if (!config.contains("Default")) {
-			config.set("Default", "");
+		if (!config.contains("default")) {
+			config.set("default", "");
 			conf.save();
 		}
 		
@@ -86,7 +86,7 @@ public class ThemeCache extends LinkedCache<Theme, String> {
 		
 		YamlConfig conf = Fukkit.getResourceHandler().getYaml(Configuration.THEMES);
 		
-		String theme = conf.getString("Default", "Default");
+		String theme = conf.getString("default", "Default");
 		
 		if (this.defaultTheme == null)
 			this.defaultTheme = this.get(theme);

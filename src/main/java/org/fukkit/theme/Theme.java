@@ -50,9 +50,9 @@ public class Theme extends YamlConfig implements Cacheable {
 		
 		this.name = name;
 		
-		this.category = this.getString("Display.Category", "FleX_Engine").replace("_", " ");
+		this.category = this.getString("display.category", "FleX");
 		
-		String parse = this.getString("Display.Icon.Material", "BOOK");
+		String parse = this.getString("display.icon.material", "BOOK");
 		
 		Material iconMat = null;
 		
@@ -71,12 +71,12 @@ public class Theme extends YamlConfig implements Cacheable {
 		if (iconMat == null)
 			iconMat = VersionUtils.material(parse, Material.BOOK.name());
 		
-	    this.icon = new UniqueItem(iconMat, "&f", 1, (short) this.getInt("Display.Icon.Data", 0));
+	    this.icon = new UniqueItem(iconMat, "&f", 1, (short) this.getInt("display.icon.data", 0));
 	    
-		this.data = (short) this.getInt("Display.Blocks.Primary.Data", 0);
-		this.subdata = (short) this.getInt("Display.Blocks.Secondary.Data", 0);
+		this.data = (short) this.getInt("display.blocks.primary-data", 14);
+		this.subdata = (short) this.getInt("display.blocks.secondary-data", 6);
 		
-		this.enabled = this.getBoolean("Enabled", true);
+		this.enabled = this.getBoolean("enabled", true);
 		
 		this.loadTags();
 		this.loadMessages();
@@ -123,7 +123,7 @@ public class Theme extends YamlConfig implements Cacheable {
 	
 	public void setEnabled(boolean enabled) {
 		
-		this.set("Enabled", enabled);
+		this.set("enabled", enabled);
 		this.save();
 		
 		this.enabled = enabled;
@@ -137,19 +137,19 @@ public class Theme extends YamlConfig implements Cacheable {
 	public void loadTags() {
 		
 		FileConfiguration conf = this.asFileConfiguration();
-		ConfigurationSection section = conf.getConfigurationSection("Tags");
+		ConfigurationSection section = conf.getConfigurationSection("tags");
 		
 		if (section == null)
 			return;
 		
 		section.getKeys(false).stream().forEach(t -> {
 			
-			String tag = conf.getString("Tags." + t + ".Tag");
+			String tag = conf.getString("tags." + t + ".Tag");
 			
 			if (tag == null)
 				return;
 			
-			String formatted = ConfigUtils.sequence(conf, "Tags." + t);
+			String formatted = ConfigUtils.sequence(conf, "tags." + t);
 			
 			this.tags.put(new BiCell<String, String>() {
 				

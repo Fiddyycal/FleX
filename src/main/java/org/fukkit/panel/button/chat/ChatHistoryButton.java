@@ -25,8 +25,6 @@ import io.flex.commons.utils.ArrayUtils;
 
 public class ChatHistoryButton extends ExecutableButton {
 	
-	private static final long serialVersionUID = 2984971389617295534L;
-	
 	private FleXPlayer other;
 	
 	public ChatHistoryButton(Theme theme, Language language, FleXPlayer other) {
@@ -129,6 +127,7 @@ public class ChatHistoryButton extends ExecutableButton {
 					new Variable<String>("%rank%", other.getRank().getDisplay(theme, true)),
 					new Variable<String>("%role%", other.getRank().getDisplay(theme, false)),
 					new Variable<String>("%player%", other.getDisplayName(theme, true)),
+					new Variable<String>("%display%", other.getDisplayName(theme, true)),
 					new Variable<String>("%name%", other.getName())
 					
 			};

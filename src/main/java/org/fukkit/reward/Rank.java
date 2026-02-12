@@ -46,13 +46,13 @@ public class Rank extends FleXEventListener implements Cacheable {
 		
 		this.name = name;
 		
-		this.abbreviation = yml.getString("Ranks."  + name + ".Abbreviation", name.length() >= 3 ? name.substring(0, 3) : name);
+		this.abbreviation = yml.getString("ranks."  + name + ".abbreviation", name.length() >= 3 ? name.substring(0, 3) : name);
 		
-		this.weight = yml.getLong("Ranks." + name + ".Weight", 1);
+		this.weight = yml.getLong("ranks." + name + ".weight", 1);
 		
-		this.permissions.addAll(yml.getStringList("Ranks." + this.name + ".Permissions"));
+		this.permissions.addAll(yml.getStringList("ranks." + this.name + ".permissions"));
 		
-		this.staff = this.weight >= yml.getLong("Staff.Weight", 10);
+		this.staff = this.weight >= yml.getLong("staff-weight", 10);
 		
 		BukkitUtils.runLater(() -> {
 			this.loadDisplays();
@@ -140,22 +140,22 @@ public class Rank extends FleXEventListener implements Cacheable {
 			
 			String writeToPath = "themes" + File.separator + theme.getName();
 			String defaultFromPath = ConfigHelper.assets + "themes" + File.separator;
-			String def = "<pp>[" + (this.name.equalsIgnoreCase("probation") ? "&fMember<sp>(<failure>P<sp>)" : this.name.equalsIgnoreCase("owner") ? "&4%rank%" : "&f%rank%") + "<pp>]<reset> <reset>";
+			String def = "&f<reset> <reset>";
 			
-			boolean perTheme = rankYml.getBoolean("Theme-Specific", true);
+			boolean perTheme = rankYml.getBoolean("theme-specific-displays", true);
 			
 			YamlConfig themeYml = perTheme ? new YamlConfig(ConfigHelper.plugin_path_absolute + File.separator + writeToPath, "ranks", defaultFromPath + "ranks.yml") : null;
 			
 			if (perTheme) {
 				
-				if (themeYml.getString("Ranks." + this.name) == null) {
-					themeYml.set("Ranks." + this.name, def);
+				if (!themeYml.contains(this.name)) {
+					themeYml.set(this.name, def);
 					themeYml.save();
 				}
 				
 			}
 			
-			String rank = perTheme ? themeYml.getString("Ranks." + this.name, def) : rankYml.getString("Ranks." + this.name + ".Display", def);
+			String rank = perTheme ? themeYml.getString(this.name, def) : rankYml.getString("ranks." + this.name + ".display", def);
 			
 			this.displays.put(new BiCell<String, String>() {
 
@@ -181,7 +181,7 @@ public class Rank extends FleXEventListener implements Cacheable {
 
 		YamlConfig yml = Fukkit.getResourceHandler().getYaml(Configuration.RANKS);
 		
-		yml.getStringList("Ranks." + this.name + ".Inherit").stream().forEach(i -> {
+		yml.getStringList("ranks." + this.name + ".inherit").stream().forEach(i -> {
 	    	
 			Rank inherit = Memory.RANK_CACHE.get(i);
 			

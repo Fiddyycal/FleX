@@ -20,6 +20,7 @@ import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.player.FleXPlayerDebugEvent;
+import org.fukkit.event.player.FleXPlayerPreDebugEvent;
 import org.fukkit.handlers.ServerHandler;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
@@ -262,14 +263,34 @@ public class DebugCommand extends FleXCommandAdapter {
 		
 	}
 	
-	private void sendRef(CommandSender sender) {
+	private String sendRef(CommandSender sender) {
+		
 		// TODO Log debug ref and debug log somewhere
+		String ref = "D" + NumUtils.getRng().getInt(0, 9) + NumUtils.getRng().getInt(0, 9) + NumUtils.getRng().getInt(0, 9) + StringUtils.generate(4, false).toUpperCase();
+		
+		if (sender instanceof FleXPlayer) {
+			
+			FleXPlayerPreDebugEvent event = new FleXPlayerPreDebugEvent((FleXPlayer)sender, ref);
+
+			Fukkit.getEventFactory().call(event);
+			
+			if (event.isCancelled())
+				return null;
+			
+		}
+		
 		sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Reference: " + ChatColor.RESET + "D" + NumUtils.getRng().getInt(0, 9) + NumUtils.getRng().getInt(0, 9) + NumUtils.getRng().getInt(0, 9) + StringUtils.generate(4, false).toUpperCase());
+		
+		return ref;
+		
 	}
 	
 	private void sendNetworkDebug(CommandSender sender, boolean silent) {
 		
-		this.sendRef(sender);
+		String ref = this.sendRef(sender);
+		
+		if (ref == null)
+			return;
 		
 		BukkitUtils.runLater(() -> {
 			
@@ -278,12 +299,12 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			if (sender instanceof FleXPlayer) {
 				
-				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender, ref);
+
+				Fukkit.getEventFactory().call(event);
 				
 				if (event.isCancelled())
 					return;
-
-				Fukkit.getEventFactory().call(event);
 				
 			}
 
@@ -358,7 +379,10 @@ public class DebugCommand extends FleXCommandAdapter {
 	
 	private void sendMemoryDebug(CommandSender sender) {
 		
-		this.sendRef(sender);
+		String ref = this.sendRef(sender);
+		
+		if (ref == null)
+			return;
 		
 		BukkitUtils.runLater(() -> {
 			
@@ -367,12 +391,12 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			if (sender instanceof FleXPlayer) {
 				
-				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender, ref);
+
+				Fukkit.getEventFactory().call(event);
 				
 				if (event.isCancelled())
 					return;
-
-				Fukkit.getEventFactory().call(event);
 				
 			}
 			
@@ -406,7 +430,10 @@ public class DebugCommand extends FleXCommandAdapter {
 	
 	private void sendWorldDebug(CommandSender sender, boolean silent, FleXPlayer player) {
 		
-		this.sendRef(sender);
+		String ref = this.sendRef(sender);
+		
+		if (ref == null)
+			return;
 		
 		FleXPlayer fp = ((FleXPlayer)sender);
 		
@@ -429,12 +456,12 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			if (sender instanceof FleXPlayer) {
 				
-				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender, ref);
+
+				Fukkit.getEventFactory().call(event);
 				
 				if (event.isCancelled())
 					return;
-
-				Fukkit.getEventFactory().call(event);
 				
 			}
 			
@@ -457,7 +484,10 @@ public class DebugCommand extends FleXCommandAdapter {
 	
 	private void sendPlayerDebug(CommandSender sender, boolean silent, boolean showUsage, FleXPlayer player) {
 		
-		this.sendRef(sender);
+		String ref = this.sendRef(sender);
+		
+		if (ref == null)
+			return;
 		
 		FleXPlayer fp = (FleXPlayer) sender;
 		
@@ -503,12 +533,12 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			if (sender instanceof FleXPlayer) {
 				
-				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender, ref);
+
+				Fukkit.getEventFactory().call(event);
 				
 				if (event.isCancelled())
 					return;
-
-				Fukkit.getEventFactory().call(event);
 				
 			}
 			
@@ -546,7 +576,10 @@ public class DebugCommand extends FleXCommandAdapter {
 	
 	private void sendBotDebug(CommandSender sender, boolean silent, FleXBot bot) {
 		
-		this.sendRef(sender);
+		String ref = this.sendRef(sender);
+		
+		if (ref == null)
+			return;
 		
 		FleXPlayer fp = (FleXPlayer) sender;
 		
@@ -562,12 +595,12 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			if (sender instanceof FleXPlayer) {
 				
-				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender, ref);
+
+				Fukkit.getEventFactory().call(event);
 				
 				if (event.isCancelled())
 					return;
-
-				Fukkit.getEventFactory().call(event);
 				
 			}
 			
@@ -593,7 +626,10 @@ public class DebugCommand extends FleXCommandAdapter {
 	
 	private void sendDataDebug(CommandSender sender, boolean silent, FleXPlayer player) {
 		
-		this.sendRef(sender);
+		String ref = this.sendRef(sender);
+		
+		if (ref == null)
+			return;
 		
 		sender.sendMessage(ChatColor.DARK_AQUA + "[Debug] " + ChatColor.GRAY + "Printing information about your cloud data...");
 		
@@ -607,12 +643,12 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			if (sender instanceof FleXPlayer) {
 				
-				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender, ref);
+
+				Fukkit.getEventFactory().call(event);
 				
 				if (event.isCancelled())
 					return;
-
-				Fukkit.getEventFactory().call(event);
 				
 			}
 			
@@ -643,7 +679,10 @@ public class DebugCommand extends FleXCommandAdapter {
 	
 	private void sendItemDebug(CommandSender sender, boolean silent, FleXPlayer player) {
 		
-		this.sendRef(sender);
+		String ref = this.sendRef(sender);
+		
+		if (ref == null)
+			return;
 		
 		FleXPlayer fp = ((FleXPlayer)sender);
 		
@@ -668,12 +707,12 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			if (sender instanceof FleXPlayer) {
 				
-				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender);
+				FleXPlayerDebugEvent event = new FleXPlayerDebugEvent((FleXPlayer)sender, ref);
+
+				Fukkit.getEventFactory().call(event);
 				
 				if (event.isCancelled())
 					return;
-
-				Fukkit.getEventFactory().call(event);
 				
 			}
 			

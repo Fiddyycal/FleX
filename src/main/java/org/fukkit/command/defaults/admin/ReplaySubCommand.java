@@ -10,7 +10,6 @@ import org.bukkit.command.CommandSender;
 import org.fukkit.Fukkit;
 import org.fukkit.api.helper.ConfigHelper;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.flow.AsyncFleXPlayerReplayPreDownloadEvent;
 import org.fukkit.recording.Replay;
 import org.fukkit.theme.Theme;
