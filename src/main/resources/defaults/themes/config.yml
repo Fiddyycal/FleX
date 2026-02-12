@@ -2,11 +2,19 @@
 # If no themes are present, all default themes will be generated again.
 # If no default is specified then a gui will open on first join, telling the player to select a theme.
 # This can also be used as an anti-spam/anti-bot stratergy as it requires theme selection before anything else.
-Default: 'Default'
+default: 'Default'
 
 # Enable/Disable theme selection.
-Theme-Selection:
+# The theme in the "Default" setting will always be used regardless of this setting.
+theme-selection-enabled: true
 
-  # Enable/Disable the ability for players to select their own theme.
-  # The theme in the "Default" setting will always be used regardless of this setting.
-  Enabled: true
+# This is unicode you can use in themes, with enclosed bracketing. []
+# Example: [HEART] would show ❤ in-game.
+unicode:
+
+  HEART: '❤'
+  HIGH_VOLTAGE: '⚡'
+  BLACK_PARALLEOGRAM: '▰'
+  WHITE_PARALLEOGRAM: '▱'
+  DOUBLE_ARROW_POINTING_LEFT: '«'
+  DOUBLE_ARROW_POINTING_RIGHT: '»'

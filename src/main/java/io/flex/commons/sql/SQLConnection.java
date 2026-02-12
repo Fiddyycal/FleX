@@ -7,6 +7,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.fukkit.Fukkit;
+import org.fukkit.config.Configuration;
+
 import io.flex.FleX;
 import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
@@ -378,11 +381,16 @@ public class SQLConnection {
 			Task.error("SQL (" + Severity.NOTICE + ")", "Connection attempt limit met. (" + attempt + "/" + limit + ")");
 	    	Task.error("SQL (" + Severity.NOTICE + ")", "Check your credentials and try again.");
 	    	
-	    	Task.print("SQL (" + Severity.NOTICE + ")", "Setting connection driver to SQLITE...");
-	        
-	        this.driver = SQLDriverType.SQLITE;
+			if (Fukkit.getResourceHandler().getYaml(Configuration.ENGINE).getBoolean("allow-startup-with-sqlite", false)) {
+				
+				Task.print("SQL (" + Severity.NOTICE + ")", "Setting connection driver to SQLITE...");
+		        
+		        this.driver = SQLDriverType.SQLITE;
+		    	
+		    	this.testConnection(-1);
+				
+			} else throw new UnsupportedOperationException("Could not connect to database and sqlite-on-connection-fail is false, please review credentials and try again. Alternatively set sqlite-on-connection-fail to true in the aFleX directory config.yml to allow for server startup with an sqlite local database.");
 	    	
-	    	this.testConnection(-1);
 			return;
 			
 		}

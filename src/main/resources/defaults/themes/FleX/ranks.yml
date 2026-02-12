@@ -1,8 +1,15 @@
-Ranks:
-  Probation: <pp>[&fMember<sp>(<failure>P<sp>)<pp>]<reset> <reset>
-  Bot: <pp>[&f%rank%<pp>]<reset> <reset>
-  Member: <pp>[&f%rank%<pp>]<reset> <reset>
-  Moderator: <pp>[&f%rank%<pp>]<reset> <reset>
-  Developer: <pp>[&f%rank%<pp>]<reset> <reset>
-  Administrator: <pp>[&f%rank%<pp>]<reset> <reset>
-  Owner: <pp>[&4%rank%<pp>]<reset> <reset>
+Probation: '&4&lP&r &7'
+Bot: '&7&lBot&r &7'
+Member: '&7'
+Donor_1: '&7&lGladiator&r &7'
+Donor_2: '&6&lChampion&r &7'
+Donor_3: '&3&lLegend&r &7'
+Donor_4: '&b&lMythic&r &7'
+Donor_5: '&a&lEternal&r &7'
+Map_Maker: '&d&lMap Maker&r &7'
+VIP: '&5&lVIP&r &7'
+Moderator: '&c&lMod&r &7'
+Senior_Moderator: '&4&lSenior Mod&r &7'
+Developer: '&4&lDeveloper&r &7'
+Administrator: '&4&lAdmin&r &7'
+Owner: '&4&lOwner&r &7'

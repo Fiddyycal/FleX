@@ -1,15 +1,15 @@
 # Network config.
 # What Region to display for all players on the server.
-Region: 'North America'
+region: 'North America'
 
 # What world should the player be placed in when joining the server?
 # If 'Join-Teleport' is set to false, this will be ignored after the initial join.
 # This must be a world found in the flex world container.
 # This takes a world name string, the default is 'void'.
-World: void
-  
+world: void
+
 # This is where to configure partition settings.
-Settings:
+settings:
 
   # The cleanliness of any player joining the partition.
   # This takes any of these values:
@@ -17,30 +17,30 @@ Settings:
   # - RINSE: Resets inventory, armor, potion effects, fall distance, fire ticks, experience, health, food, saturation, exhaustion, walk/fly speed, arrows in body.
   # - FRESH: All of the above but also removes scoreboards, resets crouch and sprint action, sets hotbar to first slot.
   # - SQUEAKY: All of the above but also clears client-side weather, removes any velocity, disables active flight.
-  Clean: SQUEAKY
+  clean: SQUEAKY
 
   # When re-joining the server, should this partition teleport you to the 'World' set above?
   # Or simply put you back where you left. This is useful for hubs and minigames.
   # This takes a value of true or false with a default of true.
-  Join-Teleport: true
+  join-teleport: true
   
   # Should the world reset on startup.
   # This is useful for hubs and minigame partitions.
   # This takes a value of true or false with a default of true.
-  Reset-Worlds: true
+  reset-worlds: true
   
   # Whether partition worlds are on an automatic back-up on startup.
   # WARNING: This setting uses a lot of startup memory and takes up
   # a lot of disk space, provided the backups folder remains full.
-  Backup-Worlds: false
+  backup-worlds: false
   
   # Whether a message should be displayed in the chat when a player joins/leaves this server.
   # This takes a value of true or false with a default of false.
-  Join-Leave-Messages: false
+  join-leave-messages: false
 
   # All client versions listed here will NOT be able to login to the server.
   # AOE: 1.7, 1.8, 1.9, etc...
-  Version-Blacklist: []
+  version-blacklist: []
 
 # All commands listed here will be unregistered by FleX.
-Unregister-Commands: []
+unregister-commands: []

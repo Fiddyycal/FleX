@@ -1,15 +1,46 @@
-Enabled: true
-Display:
-  Category: FleX Engine
-  Blocks:
-    Primary:
-      Data: 14
-    Secondary:
-      Data: 6
-  Icon:
-    Material: REDSTONE
-    Data: 0
-Tags:
+# Enable/Disable theme for selection in theme gui.
+# Theme will still load for Admin theme commands.
+# Default theme will always be Enabled.
+enabled: true
+
+# Theme information to display.
+display:
+  
+  # Theme category.
+  # Sometimes shows when displaying the rank unless set to null.
+  category: FleX
+  
+  # This will change decoration blocks into different blocks per player.
+  # Wool, Stained Clay, Stained Glass and Stained Glass Panes will be changed to the data below.
+  blocks:
+    primary-data: 14
+    secondary-data: 6
+  
+  # Display icon to display in gui selector.
+  # Theme must be enabled.
+  icon:
+    material: REDSTONE
+    data: 0
+
+# Theme color customization.
+# All options below this line of the configuration use the Sequence system.
+
+# Sequences work either one of three ways.
+# Sequences can take one of [6] subkey true/false options (seen below).
+# Sequences can take a more advanced form using chat color codes. (&a, &b&l, &c&l&o etc)
+# Sequences can also use both if you're into that sort of thing.
+# Sequences are being used as examples in all ways below.
+
+# You can also use emojis, though only few are compatible.
+# Here is an example for a pink heart: "&d[HEART]"
+# You can setup additional emojis in the theme config.yml
+
+tags:
+  
+  # You can add and remove tags for customization.
+  # You can name tags what ever you want, and use whatever you want between the "<>" syntax.
+  # AOE: lang.yml files, partition.yml "Motd" section, ranks/config.yml file.
+
   Success:
     Tag: <success>
     Sequence:

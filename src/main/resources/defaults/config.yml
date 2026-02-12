@@ -20,93 +20,63 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Leave this unchanged unless you know what you're doing.
-# ... or want a broken injection.
-Config-Version: 1.0
+config-version: 2
 
-# WARNING: This is in a BETA phase, EXPECT bugs.
-Flow-line-Enforcement:
+# flow-line enforcement anti-cheat.
+flow-line-enforcement:
 
-  # Enable the flow-line enforcement anti-cheat.
   # New types of cheat-proof algorithms are implemented all the time.
-  Enabled: false
+  enabled: false
   
   # Enable the replay/overwatch system.
   # Allow players to watch reported players and determine a verdict.
   # The algorithm for this is extremely extensive and can affect performance.
   # Flow-line-Enforcement must be enabled for this to take effect.
-  FloW: false
+  overwatch: false
   
-Combat:
+combat:
 
-  # Second delay between player hits.
-  # The Minecraft default is 1 second or 20 ticks.
-  Registration-Delay: 0.90
+  # Delay between player hit damage in ticks.
+  # The Minecraft default 20 ticks.
+  hit-registration: 19
   
-  # Knockback modifier.
-  # Change the way knockback works during combat.
-  Knockback-Modifier:
+chat:
   
-    # Enable/Disable the knockback modifier.
-    # This will reset knockback to the Minecraft defaults.
-    Enabled: true
+  # Global chat filter.
+  filter:
     
-    # Knockback settings.
-    # FleX defaults:
-    # Velocity: 1.02
-    # Height: 0.73
-    Velocity: 1.02
-    Height: 0.73
-  
-Chat:
-
-  # Chat settings apply globally.
-  # Enable/Disable the server chat settings below.
-  Enabled: true
-  
-  Filter:
-  
-    # Global chat filter.
     # Enable/Disable the global chat filter.
-    Enabled: true
+    enabled: true
     
     # Plural forms of all words in the filter are blocked.
     # This also means all "y" endings are replaced with "ies".
     # See examples of this below.
-    Censor:
+    censor:
     - nigger # This censors nigger"s" as well.
-    - tranny # This censors trann"ies" as well, etc.
+    - trann # This censors trann"y" and trann"ies" as well, etc.
     - fag
     - faggot
     - fagget
   
   # Global chat delay.
   # Staff members are not affected.
-  Delay:
+  delay:
   
     # Simple anti-spam system.
     # Enable/Dsiable player chat delay.
-    Enabled: true
+    enabled: true
     
     # Chat delay in seconds.
     # FleX default: 1.5
-    Seconds: 1.5
+    seconds: 1.5
     
     # The rank weight at which a player can bypass the chat delay.
     # FleX default: 10
-    Bypass: 10
+    bypass-weight: 10
     
-  Mentions:
+  mentions:
   
     # Player chat mentions.
     # Enable/Dsiable player mentions using @(player).
     # Mentioning players pings them and highlights their name.
-    Enabled: true
-    
-Unicode:
-  
-  Heart: '❤'
-  High Voltage: '⚡'
-  Black Parallelogram: '▰'
-  White Parallelogram: '▱'
-  Double Arrow Pointing Left: '«'
-  Double Arrow Pointing Right: '»'
+    enabled: true

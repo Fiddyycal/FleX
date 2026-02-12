@@ -1,52 +1,41 @@
 # Enable/Disable theme for selection in theme gui.
 # Theme will still load for Admin theme commands.
 # Default theme will always be Enabled.
-Enabled: true
+enabled: true
 
 # Theme information to display.
-Display:
+display:
   
   # Theme category.
   # Sometimes shows when displaying the rank unless set to null.
-  Category: FleX Engine
+  category: FleX Engine
   
   # This will change decoration blocks into different blocks per player.
   # Wool, Stained Clay, Stained Glass and Stained Glass Panes will be changed to the data below.
-  Blocks:
-    Primary:
-      Data: 9
-    Secondary:
-      Data: 8
+  blocks:
+    primary-data: 9
+    secondary-data: 8
   
   # Display icon to display in gui selector.
-  # Theme must be Enabled.
-  Icon:
-    Material: BOOK
-    Data: 0
+  # Theme must be enabled.
+  icon:
+    material: BOOK
+    data: 0
 
 # Theme color customization.
 # All options below this line of the configuration use the Sequence system.
 
 # Sequences work either one of three ways.
 # Sequences can take one of [6] subkey true/false options (seen below).
-# Sequences can take a more advanced form using chat color codes.
+# Sequences can take a more advanced form using chat color codes. (&a, &b&l, &c&l&o etc)
 # Sequences can also use both if you're into that sort of thing.
 # Sequences are being used as examples in all ways below.
 
-# ChatColor unique names and their minecraft color codes:
-# https://i.imgur.com/ICzoxSg.png
-
 # You can also use emojis, though only few are compatible.
 # Here is an example for a pink heart: "&d[HEART]"
-# Here is a list of emoji's you can use:
-# HEART: ❤
-# DOUBLE_LEFT_POINTING_ARROW: «
-# DOUBLE_RIGHT_POINTING_ARROW: »
-# BLACK_PARALLELOGRAM ▰
-# WHITE_PARALLELOGRAM: ▱
-# HIGH_VOLTAGE: ⚡
+# You can setup additional emojis in the theme config.yml
 
-Tags:
+tags:
   
   # You can add and remove tags for customization.
   # You can name tags what ever you want, and use whatever you want between the "<>" syntax.

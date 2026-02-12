@@ -11,28 +11,28 @@ import org.fukkit.world.FleXWorld;
 
 public enum WorldSetting {
 	
-	SPAWN_RADIUS("Spawn.Radius", 1),
-	SPAWN_PROTECTION("Spawn.Protection", 10),
+	SPAWN_RADIUS("spawn.radius", 1),
+	SPAWN_PROTECTION("spawn.protection", 10),
 	
-	SPAWN_CREATURE_ANIMALS("Spawn.Creatures.Animals", false),
-	SPAWN_CREATURE_MONSTERS("Spawn.Creatures.Monsters", false),
-	SPAWN_CREATURE_TESTIFICATES("Spawn.Creatures.Testificates", false),
+	SPAWN_CREATURE_ANIMALS("spawn.creatures.animals", false),
+	SPAWN_CREATURE_MONSTERS("spawn.creatures.monsters", false),
+	SPAWN_CREATURE_TESTIFICATES("spawn.creatures.testificates", false),
 	
-	AUTO_SAVE("Settings.Auto-save", -1),
+	AUTO_SAVE("settings.auto-save", -1),
 	
-	VOID_TELEPORT("Settings.Void-Teleport.Enabled", true),
-	VOID_TELEPORT_SPAWN("Settings.Void-Teleport.Spawn", true),
+	VOID_TELEPORT("settings.void-teleport.enabled", true),
+	VOID_TELEPORT_SPAWN("settings.void-teleport.spawn", true),
 	
-	CYCLE_WEATHER("Settings.Cycle.Weather", false),
-	CYCLE_DAYLIGHT("Settings.Cycle.Daylight", false),
+	CYCLE_WEATHER("settings.cycle.Weather", false),
+	CYCLE_DAYLIGHT("settings.cycle.Daylight", false),
 
-	DAMAGE_PVP("Settings.Damage.PvP", false),
-	DAMAGE_PVE("Settings.Damage.PvE", false),
+	DAMAGE_PVP("settings.damage.pvp", false),
+	DAMAGE_PVE("settings.damage.pve", false),
 	
-	BLOCK_PLACE("Settings.Blocks.Place", false),
-	BLOCK_BREAK("Settings.Blocks.Break", false),
-	BLOCK_WHITELIST("Settings.Blocks.Whitelist", Arrays.asList("*")),
-	BLOCK_BLACKLIST("Settings.Blocks.Blacklist", Arrays.asList("BEDROCK"));
+	BLOCK_PLACE("settings.blocks.place", false),
+	BLOCK_BREAK("settings.blocks.break", false),
+	BLOCK_WHITELIST("settings.blocks.whitelist", Arrays.asList("*")),
+	BLOCK_BLACKLIST("settings.blocks.blacklist", Arrays.asList("BEDROCK"));
 	
 	public static final HashMap<UUID, Location> LAST_KNOWN = new HashMap<UUID, Location>();
 	

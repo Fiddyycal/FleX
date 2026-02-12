@@ -91,7 +91,7 @@ public class ThemeListeners extends FleXEventListener {
 	@EventHandler
 	public void event(FleXFinalizeEvent event) {
 
-		YamlConfig yaml = new YamlConfig(ConfigHelper.flex_path + File.separator + "data", "themed");
+		YamlConfig yaml = new YamlConfig(ConfigHelper.flex_path + File.separator + "data", "themed-blocks");
 		FileConfiguration conf = yaml.asFileConfiguration();
 		
 		if (conf == null)

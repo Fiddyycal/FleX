@@ -1,6 +1,6 @@
 # Where do players spawn when they die or enter this world?
 # This will be ignored when re-joining if join-teleport is disabled in the network config.
-Spawn:
+spawn:
   x: 0.0
   y: 100.0
   z: 0.0
@@ -9,81 +9,81 @@ Spawn:
   
   # How many blocks can players randomly spread out over?
   # This is disabled by default with a value of 1.
-  Radius: 1
+  radius: 1
   
   # How big is the protection radius of the spawn area?
   # This protects the area from griefing and prevents combat.
-  Protection: 10
+  protection: 10
   
   # Whether creatures should spawn or not.
   # If PvE is enabled you should change these to true.
-  Creatures:
+  creatures:
     
-    Animals: false
-    Monsters: false
-    Testificates: false
+    animals: false
+    monsters: false
+    testificates: false
     
-Settings:
+settings:
 
   # Auto-save world in seconds.
   # WARNING: Auto-save is known to cause missing chunks, due to the file moving process. 
   # FleX will backup worlds for you, find all world backups in root/flex/backups. USE AT YOUR OWN RISK.
   # This takes the value of a number with a default of -1, like a minigame world it will not save itself.
-  Auto-save: -1
+  auto-save: -1
   
   # Whether falling into the void teleports the player instead of killing them.
   # If this setting is true, the Spawn setting below determines if the telport is to spawn or the last known location.
   # These take a value of true or false with a default of true for both settings.
-  Void-Teleport:
+  void-teleport:
   
-    Enabled: true
-    Spawn: true
+    enabled: true
+    spawn: true
   
   # Whether this world cycles weather or daylight.
   # These take a value of true or false with a default of false.
-  Cycle:
+  cycle:
   
-    Weather: false
-    Daylight: false
+    weather: false
+    daylight: false
   
   # Whether players and mobs take damage from ANYTHING.
   # These take a value of true or false with a default of true.
-  Damage:
+  damage:
   
-    PvP: true
-    PvE: true
+    pvp: true
+    pve: true
     
   # Whether players and mobs will be able to place/break blocks.
   # These take a value of true or false with a default of false.
-  Blocks:
+  blocks:
   
-    Place: false
-    Break: false
+    place: false
+    break: false
     
     # List of whitelisted blocks that can be modified, dependant on the setting above.
     # These take a MATERIAL value. Example: [DIRT, STONE] etc. Default value is '*' for all.
     # Whietlist default value is '*' - Blacklist default value is BEDROCK.
-    Whietlist:
+    whietlist:
     - '*'
     
-    Blacklist:
+    blacklist:
     - 'BEDROCK'
 
 # You can set up world privacy here.
 # Simply leave all fields empty to keep the world public.
-Privacy:
+privacy:
 
   # The password required to join this partition.
   # Keep empty or null for no password.
-  Password: ''
+  password: ''
   
   # Add a hint for the password.
   # This is empty by default, no hint message will appear.
-  Password-Hint: ''
+  password-hint: ''
 
   # Permission required to join the partition.
   # This is empty by default, no permission is required to join.
-  Permission: ''
+  permission: ''
 
 # All commands listed here will not be usable in this world.
-Commands-Blacklist: []
+commands-blacklist: []

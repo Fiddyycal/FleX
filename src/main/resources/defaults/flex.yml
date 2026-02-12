@@ -15,24 +15,8 @@
 #  FFFFFFFFFFF            LLLLLLLLLLLLLLLLLLLLLL EEEEEEEEEEEEEEEEEEEEEE XXXXXXX        XXXXXXX  #
 #                                                                                               #
 #  FleX Engine by Team Luminous Development.                                                    #
-#  The framework depends on the injection type set below.                                       #
-#                                                                                               #
-#  MINECRAFT_BUKKIT: Fukkit                                                                     #
-#  MINECRAFT_BUNGEE: FungeeCord                                                                 #
-#  COUNTERSTRIKE_GO: Work in progress...                                                        #
-#  PU_BATTLEGROUNDS: Work in progress...                                                        #
 #                                                                                               #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-# Leave this unchanged unless you know what you're doing.
-# ... or want a broken injection.
-Injection:
-  Type: 'AUTOMATIC'
-  Version: 1.0
-
-# Enable/Disable FleX injection.
-Enabled: true
-
-# Debug mode.
-# Displays important information for debugging purposes.
-Debug: false
+enabled: true
+debug: false
+sqlite-on-connection-fail: false

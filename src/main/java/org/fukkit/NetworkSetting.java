@@ -8,21 +8,21 @@ import net.md_5.fungee.server.ServerRegion;
 
 public enum NetworkSetting {
 
-	SERVER_REGION("Region", ServerRegion.NA.toString()),
+	SERVER_REGION("region", ServerRegion.NA.toString()),
 	
-	CLEAN_TYPE("Settings.Clean", CleanType.SQUEAKY.name()),
+	CLEAN_TYPE("settings.clean", CleanType.SQUEAKY.name()),
 	
-	JOIN_TELEPORT("Settings.Join-Teleport", true),
+	JOIN_TELEPORT("settings.join-teleport", true),
 	
-	RESET_WORLDS("Settings.Reset-Worlds", true),
+	RESET_WORLDS("settings.reset-worlds", true),
 	
-	BACKUP_WORLDS("Settings.Backup-Worlds", false),
+	BACKUP_WORLDS("settings.backup-worlds", false),
 		
-	MESSAGES_JOIN_LEAVE("Settings.Join-Leave-Messages", false),
+	MESSAGES_JOIN_LEAVE("settings.join-leave-messages", false),
 	
-	VERSION_BLACKLIST("Settings.Version-Blacklist", new ArrayList<String>()),
+	VERSION_BLACKLIST("settings.version-blacklist", new ArrayList<String>()),
 	
-	UNREGISTER_COMMANDS("Unregister-Commands", new ArrayList<String>());
+	UNREGISTER_COMMANDS("unregister-commands", new ArrayList<String>());
 	
 	private String key;
 	private Object def;
