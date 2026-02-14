@@ -208,4 +208,18 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public void onDisconnect(Player player);
 	
+	public ProxyInfo proxyInfo();
+	
+	public interface ProxyInfo {
+		
+		public String getDomain();
+		
+		public ProtocolVersion getVersion();
+		
+		public void setVersion(ProtocolVersion version);
+		
+		public void setDomain(String domain);
+		
+	}
+	
 }

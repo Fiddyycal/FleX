@@ -15,6 +15,7 @@ public enum PlayerState {
 	
 	FLOW(Visibility.SPECTATORS_ONLY),
 	CUSTOM(Visibility.UNCHANGED),
+	OFFLINE(Visibility.NONE),
 	UNKNOWN(Visibility.UNCHANGED);
 	
 	private Visibility visibility;
@@ -25,6 +26,14 @@ public enum PlayerState {
 	
 	public Visibility getVisibility() {
 		return this.visibility;
+	}
+	
+	public boolean isIngame() {
+		return this == INGAME || this == INGAME_PVE_ONLY;
+	}
+	
+	public boolean isSpectating() {
+		return this == SPECTATING || this == FLOW;
 	}
 	
 	public boolean isImpervious() {

@@ -43,9 +43,8 @@ import org.fukkit.PlayerState;
 import org.fukkit.WorldSetting;
 import org.fukkit.Memory.Setting;
 import org.fukkit.ai.AIDriver;
+import org.fukkit.api.helper.DataHelper;
 import org.fukkit.api.helper.PlayerHelper;
-import org.fukkit.cache.PlayerCache;
-import org.fukkit.cache.PlayerCache.PlayerCacheMeta;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXHumanEntity;
@@ -76,7 +75,6 @@ import io.flex.commons.socket.Data;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLRowWrapper;
-import io.flex.commons.utils.CollectionUtils;
 import io.flex.commons.utils.NumUtils;
 import io.netty.channel.ConnectTimeoutException;
 import net.md_5.fungee.ProtocolVersion;
@@ -85,19 +83,19 @@ import net.md_5.fungee.server.ServerVersion;
 
 @SuppressWarnings("deprecation")
 public class PlayerListeners extends FleXEventListener {
-	
+
+	/**
+	 * This event is incase the player
+	 * object already exists on the server.
+	 */
 	@EventHandler
 	public void event(AsyncDataReceivedEvent event) {
 		
 		Data data = event.getData();
 		
 		String key = data.getKey();
-		String value = data.getValue();
-		
-		System.out.println("test 1111111111111111111111111111111111111111111111");
 		
 		if (key.startsWith("player.")) {
-			System.out.println("test 222222222222222222222222222222222222222222222222");
 			
 			String uid = key.split(".")[1];
 			
@@ -108,41 +106,9 @@ public class PlayerListeners extends FleXEventListener {
 			} catch (Exception ignore) {
 				return;
 			}
-			System.out.println("test 3333333333333333333333333333333333333333333333333333");
 			
-			Map<String, String> entries = CollectionUtils.toMap(value);
-			
-			if (entries == null)
-				return;
-			
-			PlayerCacheMeta meta = PlayerCache.getCachedAttributes(uuid);
-			
-			if (entries.containsKey("version")) {
-				System.out.println("test 4");
-				
-				String ver = entries.get("version");
-				
-				ProtocolVersion version = ProtocolVersion.fromProtocol(Integer.parseInt(ver));
-				
-				meta.setVersion(version);
-				
-			}
-			
-			if (entries.containsKey("domain")) {
-				System.out.println("test 5");
-				
-				String ver = entries.get("domain");
-				
-				ProtocolVersion version = ProtocolVersion.fromProtocol(Integer.parseInt(ver));
-				
-				meta.setVersion(version);
-				
-			}
-			System.out.println("test 6");
-			
-			// If player happens to be loaded already.
 			FleXPlayer player = Fukkit.getCachedPlayer(uuid);
-			
+
 			if (player != null)
 				player.update();
 			
@@ -152,27 +118,63 @@ public class PlayerListeners extends FleXEventListener {
 	
 	@EventHandler(priority = EventPriority.LOW)
 	public void event(AsyncPlayerPreLoginEvent event) {
-
-	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.getFromCache(event.getUniqueId());
 		
-		try {
-			
-			if (fp == null)
-				Memory.PLAYER_CACHE.add(fp = Fukkit.getPlayerFactory().createFukkitSafe(event.getUniqueId(), event.getName(), PlayerState.CONNECTING));
-			
-			if (fp == null) {
-				disconnect(event, FleXPlayerNotLoadedException.class.getName());
-				return;
-			}
-			
-		} catch (Exception e) {
-			
-			disconnect(event, e.getMessage());
-			
-			Console.log("FleXPlayer", Severity.CRITICAL, e);
-	    	return;
-			
-		}
+		String name = event.getName();
+	    UUID uuid = event.getUniqueId();
+	    
+	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.getFromCache(uuid);
+	    
+	    try {
+	    	
+	        if (fp == null)
+	            Memory.PLAYER_CACHE.add(fp = Fukkit.getPlayerFactory().createFukkitSafe(uuid, name, PlayerState.CONNECTING));
+	            
+	        else {
+	        	
+	            fp.setState(PlayerState.CONNECTING);
+	            fp.update();
+	            
+	        }
+	        
+	        /**
+	         * Wait for proxy info to come through, onConnect relies on it.
+	         */
+	        long start = System.currentTimeMillis();
+	        
+	        Map<String, String> proxyInfo;
+	        
+	        boolean cancelled = false;
+	        
+	        while ((cancelled = event.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED) || (proxyInfo = DataHelper.getMap("player." + name + ".metadata")) == null || proxyInfo.isEmpty()) {
+	        	
+	            if (System.currentTimeMillis() - start > 15_000/* 15 second timeout*/) {
+	                disconnect(event, "Proxy information timeout.");
+	                return;
+	            }
+	            
+	            // 500 ms re-check speed (twice a second)
+	            Thread.sleep(500);
+	            
+	        }
+	        
+	        System.out.println("TEST 1");
+	        
+	        if (cancelled)
+	        	return;
+	        
+	        if (!proxyInfo.containsKey("version")) {
+	            disconnect(event, "Failed to resolve client version.");
+	            return;
+	        }
+	        
+	        fp.proxyInfo().setDomain(proxyInfo.get("domain"));
+	        fp.proxyInfo().setVersion(ProtocolVersion.fromProtocol(Integer.parseInt(proxyInfo.get("version"))));
+	        
+	    } catch (Exception e) {
+	    	
+	        disconnect(event, e.getMessage());
+	        Console.log("FleXPlayer", Severity.CRITICAL, e);
+	    }
 	    
 	}
 	

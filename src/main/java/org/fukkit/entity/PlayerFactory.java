@@ -10,8 +10,6 @@ import io.flex.commons.Nullable;
 
 public interface PlayerFactory {
 	
-	public FleXPlayer createFukkitSafe(UUID uuid, String name);
-	
 	public FleXPlayer createFukkitSafe(UUID uuid, String name, @Nullable PlayerState state);
 	
 	public FleXPlayer createFukkitFake(String name);
