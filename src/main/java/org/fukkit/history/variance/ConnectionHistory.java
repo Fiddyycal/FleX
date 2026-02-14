@@ -8,7 +8,7 @@ import org.bukkit.Bukkit;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.history.History;
 
-import net.md_5.fungee.ConnectionReason;
+import net.md_5.fungee.server.ConnectionReason;
 
 public class ConnectionHistory extends History<String> {
 

@@ -14,11 +14,11 @@ import net.md_5.bungee.api.ChatColor;
 
 public class ServerHelper {
 
-	public static <T extends Player> void connect(T player, String name) throws Exception {
+	public static <T extends Player> void connect(T player, String name) {
 		
 		ByteArrayOutputStream b = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(b);
-		 
+		
 		try {
 			
 			out.writeUTF("Connect");
@@ -27,10 +27,7 @@ public class ServerHelper {
 		} catch (Exception e) {
 			
 			e.printStackTrace();
-			
-			BukkitUtils.runLater(() -> player.sendMessage(ChatColor.WHITE + "Error(s) printed to console."));
-			
-			throw e;
+			return;
 			
 		}
 		

@@ -1,0 +1,8 @@
+{
+  "id": "flex",
+  "name": "FleX",
+  "version": "4.1-STABLE",
+  "main": "com.velocitypowered.Felocity",
+  "authors": ["5Ocal"],
+  "depends": []
+}

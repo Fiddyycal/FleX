@@ -7,6 +7,8 @@ import java.util.Map;
 
 import org.fukkit.Fukkit;
 
+import com.velocity.Felocity;
+
 import io.flex.FleX;
 import io.flex.commons.socket.Data;
 import io.flex.commons.socket.DataServer;
@@ -18,31 +20,31 @@ import net.md_5.fungee.utils.NetworkUtils;
 
 public class DataHelper {
 	
-	public static void send(String key, Object value, String ip, int port) {
+	public static void send(String key, Object value, String ip, int dataPort) {
 		
-		DataServer server = NetworkUtils.isProxy() ? FungeeCord.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
+		DataServer server = NetworkUtils.getType() == NetworkUtils.BUNGEECORD ? FungeeCord.getDataServer() : NetworkUtils.getType() == NetworkUtils.VELOCITY ? Felocity.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
 		
-		server.sendData(new Data(key, String.valueOf(value), server.getPort()), ip, port);
-		
-	}
-
-	public static void set(String key, Object value, String ip, int port) {
-		set(key, value, ip, port, -1);
-	}
-
-	public static void set(String key, Object value, String ip, int port, long deleteMs) {
-
-		DataServer server = NetworkUtils.isProxy() ? FungeeCord.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
-		
-		server.setData(new Data(key, String.valueOf(value), server.getPort()), ip, port, deleteMs);
+		server.sendData(new Data(key, String.valueOf(value), server.getPort()), ip, dataPort);
 		
 	}
 
-	public static String get(String key, Object value, String ip, int port) {
+	public static void set(String key, Object value, String ip, int dataPort) {
+		set(key, value, ip, dataPort, -1);
+	}
+
+	public static void set(String key, Object value, String ip, int dataPort, long deleteMs) {
+
+		DataServer server = NetworkUtils.getType() == NetworkUtils.BUNGEECORD ? FungeeCord.getDataServer() : NetworkUtils.getType() == NetworkUtils.VELOCITY ? Felocity.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
 		
-		DataServer server = NetworkUtils.isProxy() ? FungeeCord.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
+		server.setData(new Data(key, String.valueOf(value), server.getPort()), ip, dataPort, deleteMs);
 		
-		return server.getData(key, ip, port);
+	}
+
+	public static String get(String key, Object value, String ip, int dataPort) {
+		
+		DataServer server =NetworkUtils.getType() == NetworkUtils.BUNGEECORD ? FungeeCord.getDataServer() : NetworkUtils.getType() == NetworkUtils.VELOCITY ? Felocity.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
+		
+		return server.getData(key, ip, dataPort);
 		
 	}
 
@@ -52,7 +54,7 @@ public class DataHelper {
 
 	public static void set(String key, Object value, long deleteMs) {
 		
-		DataServer server = NetworkUtils.isProxy() ? FungeeCord.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
+		DataServer server = NetworkUtils.isProxy() ? Felocity.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
 		
 		String ip = NetworkUtils.isProxy() ? FleX.LOCALHOST_IP : RelayDataServer.DEFAULT_WRITABLE_IP;
 		
@@ -62,7 +64,7 @@ public class DataHelper {
 	
 	public static String getString(String key) {
 		
-		DataServer server = NetworkUtils.isProxy() ? FungeeCord.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
+		DataServer server = NetworkUtils.isProxy() ? Felocity.getDataServer() : Fukkit.getConnectionHandler().getLocalData();
 		
 		String ip = NetworkUtils.isProxy() ? FleX.LOCALHOST_IP : RelayDataServer.DEFAULT_WRITABLE_IP;
 		

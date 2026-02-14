@@ -1,13 +1,10 @@
 package org.fukkit.listeners;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -28,10 +25,6 @@ import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.ChatUtils;
 
 import io.flex.commons.file.Variable;
-
-import net.md_5.fungee.Memory;
-import net.md_5.fungee.channel.Channel;
-import net.md_5.fungee.utils.NetworkUtils;
 
 public class ChatListeners extends FleXEventListener {
 
@@ -153,21 +146,6 @@ public class ChatListeners extends FleXEventListener {
 			event.setCancelled(true);
 			return;
 		}
-		
-		Map<String, String> entries = new HashMap<String, String>();
-		
-		entries.put("UUID", uuid.toString());
-		entries.put("Message", message);
-		entries.put("Mentioned", mentions.stream().map(p -> p.getUniqueId().toString()).collect(Collectors.toList()).toString());
-		
-		/**
-		 * TODO: Make this optional.
-		 * Send chat to the proxy, so it can send it to all the OTHER servers.
-		 */
-		Channel channel = Memory.CHANNEL_CACHE.get("PlayerChat");
-		
-		if (channel != null)
-			channel.send(player, entries, NetworkUtils.ALL_OTHER);
 		
     }
 

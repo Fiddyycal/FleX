@@ -1,6 +1,7 @@
 package org.fukkit.listeners;
 
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
@@ -43,12 +44,15 @@ import org.fukkit.WorldSetting;
 import org.fukkit.Memory.Setting;
 import org.fukkit.ai.AIDriver;
 import org.fukkit.api.helper.PlayerHelper;
+import org.fukkit.cache.PlayerCache;
+import org.fukkit.cache.PlayerCache.PlayerCacheMeta;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.FleXEventListener;
+import org.fukkit.event.data.AsyncDataReceivedEvent;
 import org.fukkit.event.hologram.FloatingItemInteractEvent;
 import org.fukkit.event.hologram.HologramInteractEvent;
 import org.fukkit.event.player.FleXPlayerDeathEvent;
@@ -68,16 +72,83 @@ import io.flex.FleXMissingResourceException;
 import io.flex.FleX.Task;
 import io.flex.commons.Severity;
 import io.flex.commons.console.Console;
+import io.flex.commons.socket.Data;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.utils.CollectionUtils;
 import io.flex.commons.utils.NumUtils;
 import io.netty.channel.ConnectTimeoutException;
+import net.md_5.fungee.ProtocolVersion;
 import net.md_5.fungee.server.ServerConnectException;
 import net.md_5.fungee.server.ServerVersion;
 
 @SuppressWarnings("deprecation")
 public class PlayerListeners extends FleXEventListener {
+	
+	@EventHandler
+	public void event(AsyncDataReceivedEvent event) {
+		
+		Data data = event.getData();
+		
+		String key = data.getKey();
+		String value = data.getValue();
+		
+		System.out.println("test 1111111111111111111111111111111111111111111111");
+		
+		if (key.startsWith("player.")) {
+			System.out.println("test 222222222222222222222222222222222222222222222222");
+			
+			String uid = key.split(".")[1];
+			
+			UUID uuid = null;
+			
+			try {
+				uuid = UUID.fromString(uid);
+			} catch (Exception ignore) {
+				return;
+			}
+			System.out.println("test 3333333333333333333333333333333333333333333333333333");
+			
+			Map<String, String> entries = CollectionUtils.toMap(value);
+			
+			if (entries == null)
+				return;
+			
+			PlayerCacheMeta meta = PlayerCache.getCachedAttributes(uuid);
+			
+			if (entries.containsKey("version")) {
+				System.out.println("test 4");
+				
+				String ver = entries.get("version");
+				
+				ProtocolVersion version = ProtocolVersion.fromProtocol(Integer.parseInt(ver));
+				
+				meta.setVersion(version);
+				
+			}
+			
+			if (entries.containsKey("domain")) {
+				System.out.println("test 5");
+				
+				String ver = entries.get("domain");
+				
+				ProtocolVersion version = ProtocolVersion.fromProtocol(Integer.parseInt(ver));
+				
+				meta.setVersion(version);
+				
+			}
+			System.out.println("test 6");
+			
+			// If player happens to be loaded already.
+			FleXPlayer player = Fukkit.getCachedPlayer(uuid);
+			
+			if (player != null)
+				player.update();
+			
+		}
+		
+	}
 	
 	@EventHandler(priority = EventPriority.LOW)
 	public void event(AsyncPlayerPreLoginEvent event) {

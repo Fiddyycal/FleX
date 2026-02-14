@@ -414,7 +414,6 @@ public class DebugCommand extends FleXCommandAdapter {
     		sender.sendMessage(ChatColor.GRAY + "Teams: " + ChatColor.RESET + t);
     		sender.sendMessage(ChatColor.GRAY + "Objectives: " + ChatColor.RESET + o);
     		sender.sendMessage(ChatColor.GRAY + "Loadouts: " + ChatColor.RESET + Fukkit.getServerHandler().getOnlinePlayersUnsafe().stream().filter(p -> p.getLoadout() != null).count());
-    		sender.sendMessage(ChatColor.GRAY + "Channels: " + ChatColor.RESET + net.md_5.fungee.Memory.CHANNEL_CACHE.size());
     		sender.sendMessage(ChatColor.GRAY + "Commands: " + ChatColor.RESET + Memory.COMMAND_CACHE.size());
     		sender.sendMessage(ChatColor.GRAY + "Players/Bots: " + ChatColor.RESET + Memory.PLAYER_CACHE.size() + "/" + Memory.PLAYER_CACHE.stream().filter(p -> p instanceof FleXBot).count());
     		sender.sendMessage(ChatColor.GRAY + "Buttons: " + ChatColor.RESET + Memory.BUTTON_CACHE.size());

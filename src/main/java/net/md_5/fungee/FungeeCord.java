@@ -1,16 +1,11 @@
 package net.md_5.fungee;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import io.flex.commons.socket.DataServer;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.fungee.data.ProxyLocalDataServer;
-import net.md_5.fungee.listeners.ChannelListeners;
-import net.md_5.fungee.listeners.FlowListeners;
-import net.md_5.fungee.listeners.UpdaterListeners;
 
 public class FungeeCord extends Plugin implements Listener {
 	
@@ -39,24 +34,6 @@ public class FungeeCord extends Plugin implements Listener {
 		instance = this;
 		
 		data_server.start();
-		
-		new ChannelListeners();
-		new FlowListeners();
-		//new QueueListeners();
-		new UpdaterListeners();
-		
-		Memory.load();
-		
-		this.getProxy().getServers().forEach((s, i) -> {
-			
-			Map<String, String> entries = new HashMap<String, String>();
-			
-			entries.put("Name", s);
-			entries.put("Port", String.valueOf(i.getAddress().getPort()));
-			
-			Memory.CHANNEL_CACHE.get("ServerUpdater").send(entries, s);
-			
-		});
 		
 	}
 	

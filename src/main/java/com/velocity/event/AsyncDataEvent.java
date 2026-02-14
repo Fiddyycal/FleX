@@ -1,9 +1,8 @@
-package net.md_5.fungee.event;
+package com.velocity.event;
 
 import io.flex.commons.socket.Data;
-import net.md_5.bungee.api.plugin.Event;
 
-public class AsyncDataEvent extends Event {
+public class AsyncDataEvent {
 
 	private Data data;
 	

@@ -16,41 +16,41 @@
   
     <plugins>
     
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
+		<plugin>
+        	<artifactId>maven-compiler-plugin</artifactId>
+        	<version>3.8.1</version>
+        	<configuration>
+          	<source>1.8</source>
+          	<target>1.8</target>
+        	</configuration>
+      	</plugin>
       
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <artifactSet>
-                <excludes>
-                  <exclude>oi.flex:fukkit-8</exclude>
-                </excludes>
-                <includes>
-                  <include>org.spigotmc:spigot-19-api</include>
-                </includes>
-              </artifactSet>
-              <finalName>${project.artifactId}-${project.version}</finalName>
-              <shadedArtifactAttached>false</shadedArtifactAttached>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+		<plugin>
+		  <groupId>org.apache.maven.plugins</groupId>
+		  <artifactId>maven-shade-plugin</artifactId>
+		  <version>3.2.4</version>
+		  <executions>
+		    <execution>
+		      <phase>package</phase>
+		      <goals>
+		        <goal>shade</goal>
+		      </goals>
+		      <configuration>
+		        <artifactSet>
+		          <excludes>
+		            <exclude>org.spigotmc:spigot-api</exclude>
+		            <exclude>io.papermc.paper:paper-api</exclude>
+		            <exclude>net.md-5:bungeecord-api</exclude>
+		            <exclude>com.velocitypowered:velocity-api</exclude>
+		          </excludes>
+		        </artifactSet>
+		        <finalName>${project.artifactId}-${project.version}</finalName>
+		        <shadedArtifactAttached>false</shadedArtifactAttached>
+		        <createDependencyReducedPom>false</createDependencyReducedPom>
+		      </configuration>
+		    </execution>
+		  </executions>
+		</plugin>
       
     </plugins>
     
@@ -76,25 +76,63 @@
     <repository>
       <id>spigot-api-repo</id>
       <url>https://hub.spigotmc.org/nexus/content/groups/public/org/spigotmc/spigot-api/</url>
+	  <snapshots>
+        <enabled>false</enabled> <!-- disables SNAPSHOT lookups -->
+      </snapshots>
     </repository>
   
     <!--Bungeecord API (Java Doc)-->
     <repository>
       <id>bungeecord-repo</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+	  <snapshots>
+        <enabled>false</enabled> <!-- disables SNAPSHOT lookups -->
+      </snapshots>
     </repository>
 	
 	<!--Citizens-->
 	<repository>
       <id>citizens-repo</id>
       <url>https://maven.citizensnpcs.co/repo</url>
+	  <snapshots>
+        <enabled>false</enabled> <!-- disables SNAPSHOT lookups -->
+      </snapshots>
     </repository>
     
     <!--https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc-->
     <repository>
       <id>d-maven</id>
       <url>http://d-maven.googlecode.com/svn/trunk/repo</url>
+	  <snapshots>
+        <enabled>false</enabled> <!-- disables SNAPSHOT lookups -->
+      </snapshots>
     </repository>
+    
+    <!--Velocity-->
+    <repository>
+	  <id>velocitypowered-repo</id>
+	  <url>https://nexus.velocitypowered.com/repository/maven-public/</url>
+	  <snapshots>
+        <enabled>false</enabled> <!-- disables SNAPSHOT lookups -->
+      </snapshots>
+	</repository>
+	
+	<repository>
+	  <id>minebench-repo</id>
+	  <url>https://repo.minebench.de/</url>
+	  <snapshots>
+        <enabled>false</enabled> <!-- disables SNAPSHOT lookups -->
+      </snapshots>
+	</repository>
+	
+    <!--Paper-->
+	<repository>
+	  <id>papermc-releases</id>
+	  <url>https://papermc.io/repo/repository/maven-releases/</url>
+	  <snapshots>
+        <enabled>false</enabled> <!-- disables SNAPSHOT lookups -->
+      </snapshots>
+	</repository>
     
   </repositories>
 
@@ -126,6 +164,14 @@
       <type>javadoc</type>
       <scope>provided</scope>
     </dependency>
+    
+    <!-- Velocity API -->
+	<dependency>
+	    <groupId>com.velocitypowered</groupId>
+	    <artifactId>velocity-api</artifactId>
+	    <version>3.1.1</version>
+	    <scope>provided</scope>
+	</dependency>
     
 	<!--Citizens-->
     <dependency>

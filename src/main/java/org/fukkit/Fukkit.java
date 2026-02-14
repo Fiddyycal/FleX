@@ -105,11 +105,6 @@ public final class Fukkit extends JavaPlugin {
 	    Fukkit.fukkit.getLogger().info(String.format("This server is running %s version %s "
 	    		+ "(Injecting API version %s" + (into != null ? " into %s" : "") + ")", "CraftFukkit", fukkitVer, bukkitVer, into));
 	    
-	    /**
-	     * Some handlers need channels to be registered.
-	     */
-		net.md_5.fungee.Memory.CHANNEL_CACHE.load();
-	    
 		/**
 		 * 
 		 * Handlers need resources and/or a connection to work and must be prioritized.

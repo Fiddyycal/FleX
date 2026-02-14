@@ -43,7 +43,7 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 
 	/**
 	 * 
-	 * This is where all bungeecord related information is stored as a player is logging in.
+	 * This is where all proxy related information is stored as a player is logging in.
 	 * It's also how FleXPlayer objects are able to load ranks, names and other important objects on the main thread without blocking.
 	 *
 	 */

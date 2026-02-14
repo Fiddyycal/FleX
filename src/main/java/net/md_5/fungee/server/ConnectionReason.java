@@ -1,4 +1,4 @@
-package net.md_5.fungee;
+package net.md_5.fungee.server;
 
 public enum ConnectionReason {
 
