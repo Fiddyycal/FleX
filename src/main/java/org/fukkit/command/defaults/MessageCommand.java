@@ -11,7 +11,7 @@ import org.fukkit.command.GlobalCommand;
 import org.fukkit.entity.FleXPlayer;
 
 @GlobalCommand
-@Command(name = "message", usage = "/<command> [<player>] <message>", aliases = { "msg", "chat", "reply", "r", "chatback" })
+@Command(name = "message", usage = "/<command> [<player>] <message>", aliases = { "msg", "reply", "r" })
 public class MessageCommand extends FleXCommandAdapter {
 
 	public static final Map<FleXPlayer, FleXPlayer> REPLY_STORE = new HashMap<FleXPlayer, FleXPlayer>();
@@ -30,7 +30,7 @@ public class MessageCommand extends FleXCommandAdapter {
 		
 		if (reply && fp == null) {
 			// TODO: No one to reply to.
-			((FleXPlayer)sender).sendMessage("[ThemeMessage=COMMAND_REPLY_FAILURE]");
+			((FleXPlayer)sender).sendMessage(((FleXPlayer)sender).getTheme() + "<prefix><failure>You do not have anyone to reply to<pp>.");
 			return false;
 		}
 		
@@ -46,7 +46,7 @@ public class MessageCommand extends FleXCommandAdapter {
 		
 		if (fp == ((FleXPlayer)sender)) {
 			// TODO:
-			((FleXPlayer)sender).sendMessage("[ThemeMessage=COMMAND_MESSAGE_FAILURE_SELF]");
+			((FleXPlayer)sender).sendMessage(((FleXPlayer)sender).getTheme() + "<prefix><failure>You cannot message yourself<pp>.");
     		return false;
     	}
 		

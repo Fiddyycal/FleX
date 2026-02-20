@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.history.History;
+import org.fukkit.history.HistoryType;
 
 public class IPHistory extends History<String> {
 
@@ -21,7 +22,7 @@ public class IPHistory extends History<String> {
 	public static final String TABLE_NAME = "flex_history_ip";
 	
 	public IPHistory(FleXHumanEntity player) throws SQLException {
-		super(player, "flex_history_ip");
+		super(HistoryType.IPS, player, TABLE_NAME);
 	}
 
 	@Override

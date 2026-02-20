@@ -35,7 +35,7 @@ public class StaffCommand extends FleXCommandAdapter {
 				return;
 			
 			if (fp.hasPermission("flex.command.staff"))
-				fp.sendMessage(fp.getTheme().format("<pp>[<spc>Staff\\s<sc>" + fp.getDisplayName(((FleXPlayer)sender).getTheme()) + "<pp>]\\s<lore>" + arguments.toString()));
+				fp.sendMessage(fp.getTheme().format("<pp>[<spc>Staff\\s<sc>" + ((FleXPlayer)sender).getDisplayName(((FleXPlayer)sender).getTheme()) + "<pp>]\\s<lore>" + arguments.toString()));
 			
 		});
 		

@@ -4,6 +4,8 @@ import org.bukkit.command.CommandSender;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.history.HistoryType;
+import org.fukkit.history.variance.BadgeHistory;
 import org.fukkit.reward.Badge;
 import org.fukkit.theme.Theme;
 
@@ -63,12 +65,14 @@ public class BadgeSubCommand extends AbstractAdminSubCommand {
 		// TODO
 		player.sendMessage(theme.format("<engine><sc>" + (add ? "Adding badge to" : "Removing badge from") + "<reset> <spc>" + fp.getDisplayName(theme) + "<pp>..."));
 		
-		fp.getHistoryAsync(history -> {
+		fp.getOrLoadHistoryAsync(HistoryType.BADGES, history -> {
 			
 			if (!player.isOnline())
 				return;
-
-			boolean exists = history.getBadges().badgeSet().contains(badge);
+			
+			BadgeHistory badges = (BadgeHistory) history;
+			
+			boolean exists = badges.badgeSet().contains(badge);
 			
 			String reas = reason.length() > 0 ? reason.toString() : "No reason found";
 			
@@ -80,8 +84,8 @@ public class BadgeSubCommand extends AbstractAdminSubCommand {
 					return;
 				
 				}
-			
-				history.getBadges().onBadgeReceive(badge, reas);
+				
+				badges.onBadgeReceive(badge, reas);
 				
 			} else {
 
@@ -91,20 +95,19 @@ public class BadgeSubCommand extends AbstractAdminSubCommand {
 					return;
 				
 				}
-			
-				history.getBadges().onBadgeRemove(badge, reas);
+				
+				badges.onBadgeRemove(badge, reas);
 				
 			}
 			
-		}, () -> {
+		}, e -> {
 			
 			if (!player.isOnline())
 				return;
 			
-			player.sendMessage(theme.format("<engine><sc>" + fp.getDisplayName(theme) + "<failure>'s badge history failed to load, please try again later<pp>..."));
+			player.sendMessage(theme.format("<engine><sc>" + fp.getDisplayName(theme) + "<failure>'s badge history failed to load: " + e.getMessage() + ": please try again later<pp>..."));
 			
 		});
-		
 		return true;
 		
 	}

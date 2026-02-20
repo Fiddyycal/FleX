@@ -1,22 +1,23 @@
 package org.fukkit.event.player;
 
-import org.bukkit.event.Cancellable;
 import org.fukkit.disguise.Disguise;
 import org.fukkit.entity.FleXPlayer;
 
 import io.flex.commons.Nullable;
 
-public class FleXPlayerDisguiseEvent extends FleXPlayerEvent implements Cancellable {
-
-	private boolean cancel = false;
+public class FleXPlayerDisguiseEvent extends FleXPlayerEvent {
 	
 	private Disguise disguise;
 	
-	public FleXPlayerDisguiseEvent(FleXPlayer player, @Nullable Disguise disguise) {
+	private Result result;
+	
+	public FleXPlayerDisguiseEvent(FleXPlayer player, @Nullable Disguise disguise, Result result, boolean async) {
 		
-		super(player, false);
+		super(player, async);
 		
 		this.disguise = disguise;
+		
+		this.result = result;
 		
 	}
 	
@@ -24,14 +25,16 @@ public class FleXPlayerDisguiseEvent extends FleXPlayerEvent implements Cancella
 		return this.disguise;
 	}
 	
-	@Override
-	public boolean isCancelled() {
-		return this.cancel;
+	public Result getResult() {
+		return this.result;
 	}
-
-	@Override
-	public void setCancelled(boolean cancel) {
-		this.cancel = cancel;
+	
+	public enum Result {
+		SUCCESS, FAILURE, UNDISGUISE;
+	}
+	
+	public boolean isUnDisguise() {
+		return this.result == Result.UNDISGUISE;
 	}
 	
 }

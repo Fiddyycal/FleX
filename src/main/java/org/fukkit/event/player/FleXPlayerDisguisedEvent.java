@@ -1,28 +1,27 @@
 package org.fukkit.event.player;
 
-import org.fukkit.disguise.Disguise;
-import org.fukkit.entity.FleXPlayer;
+import org.fukkit.entity.FleXHumanEntity;
 
-import io.flex.commons.Nullable;
-
-public class FleXPlayerDisguisedEvent extends FleXPlayerDisguiseEvent {
+/**
+ * 
+ * This is NOT an extension of FleXPlayerDisguiseEvent by design
+ * You don't have to check if it's not instanceof FleXPlayerPreDisguiseEvent.
+ *
+ */
+public class FleXPlayerDisguisedEvent extends FleXHumanEntityEvent {
 	
-	private Result result;
+	private boolean unDisguise;
 	
-	public FleXPlayerDisguisedEvent(FleXPlayer player, @Nullable Disguise disguise, Result result) {
+	public FleXPlayerDisguisedEvent(FleXHumanEntity player, boolean unDisguise) {
 		
-		super(player, disguise);
+		super(player, false);
 		
-		this.result = result;
+		this.unDisguise = unDisguise;
 		
 	}
 	
-	public Result getResult() {
-		return this.result;
-	}
-	
-	public enum Result {
-		SUCCESS, FAILURE, UNDISGUISE;
+	public boolean isUnDisguise() {
+		return this.unDisguise;
 	}
 	
 }

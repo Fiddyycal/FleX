@@ -1,3 +1,4 @@
+package org.fukkit.history.variance;
 /*package org.fukkit.history.variance;
 
 import java.io.File;

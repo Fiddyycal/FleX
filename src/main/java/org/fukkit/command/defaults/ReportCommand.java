@@ -8,7 +8,7 @@ import org.fukkit.consequence.gui.SanctionGui;
 import org.fukkit.entity.FleXPlayer;
 
 @GlobalCommand
-@Command(name = "report", usage = "/<command> <player>", aliases = { "flexreport", "hacking", "hacker", "cheating", "cheater" })
+@Command(name = "report", usage = "/<command> <player>", aliases = { "hacker", "cheater" })
 public class ReportCommand extends AbstractSanctionCommand {
 	
 	@Override

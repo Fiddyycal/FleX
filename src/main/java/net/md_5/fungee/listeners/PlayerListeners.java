@@ -1,4 +1,4 @@
-package com.velocity.listeners;
+package net.md_5.fungee.listeners;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -6,38 +6,39 @@ import java.util.Map;
 
 import org.fukkit.api.helper.DataHelper;
 
-import com.velocity.Felocity;
-import com.velocitypowered.api.event.Subscribe;
-import com.velocitypowered.api.event.connection.DisconnectEvent;
-import com.velocitypowered.api.event.connection.PreLoginEvent;
-import com.velocitypowered.api.network.ProtocolVersion;
-import com.velocitypowered.api.proxy.InboundConnection;
-import com.velocitypowered.api.proxy.Player;
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.connection.PendingConnection;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
+import net.md_5.bungee.api.event.ServerConnectEvent;
+import net.md_5.bungee.api.plugin.Listener;
+import net.md_5.bungee.event.EventHandler;
+import net.md_5.fungee.FungeeCord;
+import net.md_5.fungee.ProtocolVersion;
 
-public class PlayerListeners {
-
+public class PlayerListeners implements Listener {
+	
 	public PlayerListeners() {
-        Felocity.getInstance().getServer().getEventManager().register(Felocity.getInstance(), this);
+		ProxyServer.getInstance().getPluginManager().registerListener(FungeeCord.getInstance(), this);
 	}
 	
-	@Subscribe
-	public void event(PreLoginEvent event) {
+	@EventHandler
+	public void event(ServerConnectEvent event) {
 		
-	    InboundConnection connection = event.getConnection();
+		ProxiedPlayer player = event.getPlayer();
+		
+		PendingConnection connection = player.getPendingConnection();
 	    
-	    InetSocketAddress host = connection.getVirtualHost().orElse(null);
+	    InetSocketAddress host = connection.getVirtualHost();
 	    
 	    if (host != null) {
 	    	
-	    	String name = event.getUsername();
+	    	String name = event.getPlayer().getName();
 	        String domain = host.getHostName();
 	        
-	        if (domain == null)
-	        	return;
+	        int protocol = connection.getVersion();
 	        
-	        ProtocolVersion version = connection.getProtocolVersion();
-	        
-	        int protocol = version.getProtocol();
+	        ProtocolVersion version = ProtocolVersion.fromProtocol(protocol);
 	        
 	    	System.out.println("==============================================================================");
 			System.out.println("[FleX] Player '" + name + "' is using client version " + version.name() + " (" + protocol + ") to log into '" + domain + "'...");
@@ -51,15 +52,14 @@ public class PlayerListeners {
 			DataHelper.set("player." + name + ".metadata", entries.toString());
 	        
 	    }
-	    
 	}
-	
-	@Subscribe
-	public void event(DisconnectEvent event) {
+
+	@EventHandler
+	public void event(PlayerDisconnectEvent event) {
 		
-		Player player = event.getPlayer();
+		ProxiedPlayer player = event.getPlayer();
 		
-    	String name = player.getUsername();
+    	String name = player.getName();
     	
     	System.out.println("===================================================================");
 		System.out.println("[FleX] Removing connection information for player " + name + "...");

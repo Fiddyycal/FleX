@@ -20,7 +20,7 @@ import io.flex.commons.utils.ArrayUtils;
 @ConsoleCommand
 @FlaggedCommand(flags = { "-g" })
 @RestrictCommand(permission = "flex.command.pardon", disallow = {})
-@Command(name = "unban", usage = "/<command> <player> [-g]", aliases = { "pardon", "flexunban", "untempban", "untban" })
+@Command(name = "unban", usage = "/<command> <player> [-g]", aliases = { "pardon", "untempban", "untban" })
 public class UnBanCommand extends FleXCommandAdapter {
 
 	@Override

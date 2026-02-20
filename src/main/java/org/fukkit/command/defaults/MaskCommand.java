@@ -9,8 +9,8 @@ import org.fukkit.command.Command;
 import org.fukkit.command.FleXCommandAdapter;
 import org.fukkit.command.GlobalCommand;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.event.player.FleXPlayerMaskEvent;
 import org.fukkit.event.player.FleXPlayerMaskEvent.Result;
+import org.fukkit.event.player.FleXPlayerPreMaskEvent;
 import org.fukkit.reward.Rank;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
@@ -38,7 +38,7 @@ public class MaskCommand extends FleXCommandAdapter {
 			
 			if (mask == null) {
 				
-				FleXPlayerMaskEvent event = new FleXPlayerMaskEvent(player, mask, Result.FAILURE);
+				FleXPlayerPreMaskEvent event = new FleXPlayerPreMaskEvent(player, mask, Result.FAILURE);
 				
 				Fukkit.getEventFactory().call(event);
 				
@@ -62,7 +62,7 @@ public class MaskCommand extends FleXCommandAdapter {
 			
 			if (!canMask(rank, mask)) {
 				
-				FleXPlayerMaskEvent event = new FleXPlayerMaskEvent(player, mask, Result.FAILURE);
+				FleXPlayerPreMaskEvent event = new FleXPlayerPreMaskEvent(player, mask, Result.FAILURE);
 				
 				Fukkit.getEventFactory().call(event);
 				
@@ -77,7 +77,7 @@ public class MaskCommand extends FleXCommandAdapter {
 				
 			}
 			
-			FleXPlayerMaskEvent event = new FleXPlayerMaskEvent(player, mask, Result.SUCCESS);
+			FleXPlayerPreMaskEvent event = new FleXPlayerPreMaskEvent(player, mask, Result.SUCCESS);
 			
 			Fukkit.getEventFactory().call(event);
 			

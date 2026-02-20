@@ -9,9 +9,9 @@ public enum ServerRegion {
 	NA("North America"),
 	AU("Oceania"),
 	SG("Singapore"),
-	US("America"),
-	
-	UNSPECIFIED("Global");
+	US("United States"),
+	CA("Canada"),
+	DEV("Local");
 	
 	private String display;
 	

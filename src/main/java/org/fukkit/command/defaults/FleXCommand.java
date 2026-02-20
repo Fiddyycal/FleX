@@ -8,10 +8,11 @@ import org.fukkit.command.GlobalCommand;
 import org.fukkit.command.RestrictCommand;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.panel.FleXPanel;
+import org.fukkit.utils.BukkitUtils;
 
 @GlobalCommand
 @RestrictCommand(permission = "flex.command.flex", disallow = {})
-@Command(name = "flex", usage = "/<command> <player>", aliases = { "fl", "flexpanel", "panel", "fpanel", "history", "fhistory", "flowlineenforcement", "flowlineenforcementpanel", "fle", "flepanel" })
+@Command(name = "flex", usage = "/<command> <player>", aliases = { "xime", "panel", "fp" })
 public class FleXCommand extends FleXCommandAdapter {
 	
 	public boolean perform(CommandSender sender, String[] args, String[] flags) {
@@ -28,7 +29,7 @@ public class FleXCommand extends FleXCommandAdapter {
 				return;
 			}
 			
-			((FleXPlayer)sender).openMenu(new FleXPanel(((FleXPlayer)sender), (FleXPlayer)fp, false), false);
+			BukkitUtils.mainThread(() -> ((FleXPlayer)sender).openMenu(new FleXPanel(((FleXPlayer)sender), (FleXPlayer)fp, false), false));
 			return;
 			
 		});

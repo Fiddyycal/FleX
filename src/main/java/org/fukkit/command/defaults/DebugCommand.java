@@ -18,7 +18,7 @@ import org.fukkit.command.FleXCommandAdapter;
 import org.fukkit.command.GlobalCommand;
 import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.entity.FleXPlayerNotLoadedException;
+import org.fukkit.entity.FleXPlayerHistoryNotLoadedException;
 import org.fukkit.event.player.FleXPlayerDebugEvent;
 import org.fukkit.event.player.FleXPlayerPreDebugEvent;
 import org.fukkit.handlers.ServerHandler;
@@ -42,7 +42,7 @@ import net.md_5.fungee.server.ServerVersion;
 @GlobalCommand
 @ConsoleCommand
 @FlaggedCommand(flags = "-h")
-@Command(name = "debug", usage = "/<command> [type] [-h]", aliases = { "bug", "deghost" }, description = "Prints debug information")
+@Command(name = "debug", usage = "/<command> [type] [-h]", aliases = { "deghost" }, description = "Prints debug information")
 public class DebugCommand extends FleXCommandAdapter {
 	
 	private static final String NAME = "FungeeCord";
@@ -549,7 +549,7 @@ public class DebugCommand extends FleXCommandAdapter {
 			
 			try {
 				ip = player.getIp();
-			} catch (FleXPlayerNotLoadedException ignore) {}
+			} catch (FleXPlayerHistoryNotLoadedException ignore) {}
 			
 			sender.sendMessage(ChatColor.GRAY + "User: " + ChatColor.RESET + "(#" + (/*(CraftFleXPlayer)*/id)/*.id*/ + ") " + name);
 			sender.sendMessage(ChatColor.GRAY + "Logged, Display: " + ChatColor.RESET + CollectionUtils.toCollection(player.getName() + "," + player.getDisplayName()));

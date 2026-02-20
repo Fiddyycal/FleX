@@ -8,6 +8,7 @@ import org.fukkit.Memory;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.history.History;
+import org.fukkit.history.HistoryType;
 import org.fukkit.reward.Badge;
 import org.fukkit.theme.Theme;
 import org.fukkit.utils.VersionUtils;
@@ -19,7 +20,7 @@ public class BadgeHistory extends History<String> {
 	public static final String TABLE_NAME = "flex_history_badge";
 	
 	public BadgeHistory(FleXHumanEntity player) throws SQLException {
-		super(player, TABLE_NAME);
+		super(HistoryType.BADGES, player, TABLE_NAME);
 	}
 	
 	/**
@@ -47,8 +48,8 @@ public class BadgeHistory extends History<String> {
 		if (badge == null)
 			return;
 		
-		if (!this.log.containsValue(badge.toString()))
-			super.add("+ " + badge.toString() + " [" + (reason != null ? reason : "No reason found") + "]");
+		if (!this.log.containsValue(badge.name()))
+			super.add("+ " + badge.name() + " [" + (reason != null ? reason : "No reason found") + "]");
 		
 		boolean fp = this.player instanceof FleXPlayer;
 		boolean online = this.player.isOnline();
@@ -84,8 +85,8 @@ public class BadgeHistory extends History<String> {
 		if (badge == null)
 			return;
 		
-		if (!this.log.containsValue(badge.toString()))
-			super.add("- " + badge.toString() + " [" + (reason != null ? reason : "No reason found") + "]");
+		if (!this.log.containsValue(badge.name()))
+			super.add("- " + badge.name() + " [" + (reason != null ? reason : "No reason found") + "]");
 		
 		boolean online = this.player.isOnline();
 		

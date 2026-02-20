@@ -12,7 +12,7 @@ import org.fukkit.entity.FleXPlayer;
 @GlobalCommand
 @FlaggedCommand(flags = { "-r" })
 @RestrictCommand(permission = "flex.command.combat", disallow = {})
-@Command(name = "combat", aliases = { "knockback", "kb", "hitreg", "hr" }, usage = "/<command> <player> [-f]")
+@Command(name = "combat", usage = "/<command>")
 public class CombatCommand extends FleXCommandAdapter {
 	
 	@Override

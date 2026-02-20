@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.bukkit.Bukkit;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.utils.BukkitUtils;
@@ -24,12 +25,19 @@ public abstract class History<T> {
 	
 	private String table;
 	
-	public History(FleXHumanEntity player) throws SQLException {
-		this(player, null);
+	private HistoryType type;
+	
+	public History(HistoryType type, FleXHumanEntity player) throws SQLException {
+		this(type, player, null);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public History(FleXHumanEntity player, @Nullable String table) throws SQLException {
+	public History(HistoryType type, FleXHumanEntity player, @Nullable String table) throws SQLException {
+		
+		if (Bukkit.isPrimaryThread())
+			throw new IllegalStateException("This constructor cannot be called from the primary thread.");
+		
+		this.type = type;
 		
 		this.player = player;
 		
@@ -41,7 +49,7 @@ public abstract class History<T> {
 		
 		try {
 			
-			database.getRows(table, SQLCondition.where("uuid").is(player.getUniqueId())).forEach(r -> {
+			database.getRows(table, SQLCondition.where("uuid").is(this.player.getUniqueId())).forEach(r -> {
 				try {
 					this.log.put(r.getLong("time"), (T) r.get("log"));
 				} catch (SQLException e) {
@@ -53,6 +61,10 @@ public abstract class History<T> {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	public HistoryType getType() {
+		return this.type;
 	}
 	
 	public T getLast(int howFar) {

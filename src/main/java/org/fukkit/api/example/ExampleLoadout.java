@@ -16,8 +16,6 @@ public class ExampleLoadout extends Loadout {
 		
 		ExecutableButton test = new ExecutableButton(Material.PAPER) {
 			
-			private static final long serialVersionUID = -6132974559526764938L;
-			
 			@Override
 			@SuppressWarnings("deprecation")
 			public boolean onExecute(FleXPlayer player, ButtonAction action, Inventory inventory) {

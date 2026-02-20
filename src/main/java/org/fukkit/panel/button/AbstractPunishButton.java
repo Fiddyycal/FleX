@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -20,14 +21,16 @@ import org.fukkit.consequence.PunishmentType;
 import org.fukkit.consequence.Report;
 import org.fukkit.consequence.gui.SanctionGui;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.entity.FleXPlayerHistoryNotLoadedException;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
+import org.fukkit.history.HistoryType;
+import org.fukkit.history.variance.ChatCommandHistory;
+import org.fukkit.history.variance.PunishmentHistory;
 import org.fukkit.theme.Theme;
 
 import io.flex.commons.file.Language;
 
 public abstract class AbstractPunishButton extends ExecutableButton {
-	
-	private static final long serialVersionUID = 2984971389617295534L;
 	
 	protected FleXPlayer other;
 	
@@ -96,7 +99,7 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 					
 				}).collect(Collectors.toList());
 				
-			} catch (FleXPlayerNotLoadedException e) {
+			} catch (FleXPlayerHistoryNotLoadedException e) {
 				
 				e.printStackTrace();
 				
@@ -170,12 +173,15 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 		Set<Punishment> convictions;
 		
 		try {
+
+			PunishmentHistory history = (PunishmentHistory) other.getHistory(HistoryType.PUNISHMENTS);
 			
-			convictions = other.getHistory().getPunishments().asMap().entrySet().stream().map(e -> e.getValue()).filter(c -> {
-				return c.getType() == convictionType;
-			}).collect(Collectors.toSet());
+			if (history != null)
+				convictions = history.asMap().entrySet().stream().map(e -> e.getValue()).filter(c -> c.getType() == convictionType).collect(Collectors.toSet());
 			
-		} catch (FleXPlayerNotLoadedException e) {
+			else return new ArrayList<String>();
+			
+		} catch (FleXPlayerHistoryNotLoadedException e) {
 			
 			e.printStackTrace();
 			
@@ -216,6 +222,6 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 		
 	}
 	
-	public abstract <T extends Punishment> Set<T> asSet() throws FleXPlayerNotLoadedException;
+	public abstract <T extends Punishment> Set<T> asSet() throws FleXPlayerHistoryNotLoadedException;
 
 }

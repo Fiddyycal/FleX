@@ -16,8 +16,6 @@ import io.flex.commons.file.Language;
 
 public class MetricsButton extends ExecutableButton {
 	
-	private static final long serialVersionUID = -679027306270702473L;
-	
 	protected FleXPlayer other;
 	
 	public MetricsButton(Theme theme, Language language, FleXPlayer other) {

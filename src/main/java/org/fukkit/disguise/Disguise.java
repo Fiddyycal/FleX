@@ -6,9 +6,13 @@ public class Disguise {
 	
 	private FleXSkin skin;
 	
-	public Disguise(String name, FleXSkin skin) {
+	private boolean randomName, randomSkin;
+	
+	public Disguise(String name, FleXSkin skin, boolean randomName, boolean randomSkin) {
 		this.name = name;
 		this.skin = skin;
+		this.randomName = randomName;
+		this.randomSkin = randomSkin;
 	}
 
 	public String getName() {
@@ -17,6 +21,14 @@ public class Disguise {
 
 	public FleXSkin getSkin() {
 		return this.skin;
+	}
+	
+	public boolean isRandomName() {
+		return this.randomName;
+	}
+	
+	public boolean isRandomSkin() {
+		return this.randomSkin;
 	}
 
 }

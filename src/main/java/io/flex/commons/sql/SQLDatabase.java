@@ -18,12 +18,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Map.Entry;
-import java.util.concurrent.BlockingQueue;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,19 +38,15 @@ import io.flex.commons.console.Console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.Serializable;
 
 import static io.flex.commons.utils.ClassUtils.is;
 import static io.flex.commons.utils.ClassUtils.isString;
 
 import static io.flex.commons.sql.SQLDataType.IDENTIFIER_QUOTE;
 
-public class SQLDatabase implements Serializable {
+public class SQLDatabase {
 	
-	private static final long
-	
-	serialVersionUID = -736068188882394525L,
-	max_connections = 5;
+	private static final int max_connections = 5;
 	
 	int port;
 	
@@ -59,13 +56,11 @@ public class SQLDatabase implements Serializable {
 	
 	private Set<SQLConnectionListener> listeners = new HashSet<SQLConnectionListener>();
 
-	private List<SQLConnection> pool = new ArrayList<SQLConnection>();
+	private final List<SQLConnection> pool = new ArrayList<SQLConnection>();
 	
 	private SQLDriverType driver;
 	
-	private BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
-	
-	private Thread worker;
+	private final ExecutorService executor;
 
 	public SQLDatabase(String ip, int port, String database, String username, String password, SQLDriverType driver) {
 		this(ip, port, database, username, password, driver, null);
@@ -89,35 +84,49 @@ public class SQLDatabase implements Serializable {
 		for (int i = 0; i < max_connections; i++)
 			this.pool.add(this.connect());
 		
-		this.worker = new Thread(() -> {
-			
-			while (!Thread.currentThread().isInterrupted()) {
-				try {
-					Runnable task = this.queue.take();
-					task.run();
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
-			}
-			
-		}, "SQL-Worker");
-		
-		this.worker.start();
+		this.executor = Executors.newFixedThreadPool(max_connections, r -> {
+		    Thread t = new Thread(r, "SQL-Worker");
+		    t.setDaemon(true);
+		    return t;
+		});
 		
 	}
 	
+	public <T> void queueAsync(Callable<T> task, Consumer<T> callback) {
+		queueAsync(task, callback, null);
+    }
+	
+	public <T> void queueAsync(Callable<T> task, Consumer<T> callback, @Nullable Consumer<SQLException> exception) {
+		
+		Objects.requireNonNull(callback, "callback cannot be null");
+
+	    this.executor.submit(() -> {
+	        try {
+	        	
+	            T result = task.call();
+	            
+	            callback.accept(result);
+
+	        } catch (Exception e) {
+	        	
+	            SQLException s = new SQLException(e);
+	            
+	            if (exception != null) {
+	            	exception.accept(s);
+	            
+	            } else e.printStackTrace();
+	            
+	        }
+	    });
+	    
+	}
+	
 	private <T> T queue(Callable<T> task) throws SQLException {
-		
-		FutureTask<T> future = new FutureTask<T>(task);
-		
-		this.queue.add(future);
-		
-		try {
-			return future.get();
-		} catch (InterruptedException | ExecutionException e) {
-			throw new SQLException(e);
-		}
-		
+	    try {
+	        return this.executor.submit(task).get();
+	    } catch (InterruptedException | ExecutionException e) {
+	        throw new SQLException(e);
+	    }
 	}
 
 	public String getHost() {
@@ -134,39 +143,117 @@ public class SQLDatabase implements Serializable {
 	}
 	
 	public SQLConnection open() throws SQLException {
-	    
-	    Task.debug("SQL", "Opening connection, connections in use: " + this.activeConnections());
-	    
-	    for (SQLConnection connection : this.pool) {
-	        
-	        if (connection.isAvailable()) {
-	        	
-	            connection.open();
+		
+	    synchronized(this.pool) {
+			
+            Task.debug("SQL", "Current connection pool: " + this.activeConnections() + "/" + this.pool.size());
+	    	
+			while (true) {
+				
+	            for (SQLConnection connection : this.pool) {
+	                if (connection.isAvailable()) {
+	                	
+	                    Task.debug("SQL", "Reusing existing connection: " + connection);
+	                    
+	                    connection.open();
+	                    
+	                    return connection;
+	                    
+	                }
+	            }
 	            
-	            return connection;
+	            if (this.pool.size() < max_connections) {
+	            	
+	                Task.debug("SQL", "Pool max_connections allows for more connections to open.");
+	                Task.debug("SQL", "Creating new connection...");
+	                
+	                SQLConnection connection = this.connect();
+	                
+	                this.pool.add(connection);
+                	
+                	connection.open();
+                    
+                    return connection;
+                    
+	            }
+	            
+	            // No free connections and pool is maxed out, wait until someone releases.
+	            Task.debug("SQL", "No available connections, waiting...");
+	            Task.debug("SQL", "If you're seeting this alot, consider increasing the max_connections field.");
+	            Task.debug("SQL", "IMPORTANT: Make sure the field max_connections is lower or equal to the value in the database.");
+	            
+	            try {
+					this.pool.wait();
+				} catch (InterruptedException e) {
+					throw new SQLException(e);
+				}
 	            
 	        }
-	        
+	    	
 	    }
-	    
-	    if (this.pool.size() >= max_connections)
-	        return null;
-	    
-	    SQLConnection connection = this.connect();
-	    
-	    connection.open();
-	    
-	    this.pool.add(connection);
-	    
-	    return connection;
 	    
 	}
 	
-	private SQLConnection connect() {
+	public void release(SQLConnection connection) {
+	    synchronized(this.pool) {
+	    	
+	        connection.release();
+	        
+	        this.pool.notifyAll();
+	        
+	    }
+	}
+	
+	private int activeConnections() {
+		
+	    int count = 0;
+	    
+	    for (SQLConnection conn : this.pool)
+	        if (!conn.isAvailable())
+	        	count++;
+	        
+	    return count;
+	    
+	}
+	
+	private SQLConnection connect() {Task.debug("SQL", "CONNECT CALLED -> creating new connection. Current pool size: " + pool.size());
+
 		return this.driver == SQLDriverType.SQLITE ?
 				
 				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.sqlite) :
 				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.driver);
+	}
+	
+	/**
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * Async safe.
+	 */
+	public void getRowAsync(String table, Consumer<SQLRowWrapper> callback) throws SQLException {
+		this.queueAsync(() -> this.row(table, null, null), callback);
+	}
+	
+	/**
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * Async safe.
+	 */
+	public void getRowsAsync(String table, Consumer<Set<SQLRowWrapper>> callback) throws SQLException {
+		this.queueAsync(() -> this.rows(table, -1, null, null), callback);
+	}
+	
+	/**
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * Async safe.
+	 */
+	public void getRowAsync(String table, @Nullable SQLCondition<?> condition, Consumer<SQLRowWrapper> callback) throws SQLException {
+		this.queueAsync(() -> this.row(table, null, condition != null ? Arrays.asList(condition) : null), callback);
+	}
+	
+	/**
+	 * Will attempt to open a connection, utilize it, then close the connection.
+	 * Async safe.
+	 */
+	public void getRowsAsync(String table, @Nullable SQLCondition<?> condition, Consumer<Set<SQLRowWrapper>> callback) throws SQLException {
+		this.queueAsync(() -> this.rows(table, -1, null, condition != null ? Arrays.asList(condition) : null), callback);
 	}
 	
 	/**
@@ -295,8 +382,8 @@ public class SQLDatabase implements Serializable {
 						statement.close();
 					} catch (SQLException ignore) {}
 				}
-				
-				connection.release();
+		        
+				this.release(connection);
 				
 			}
 			
@@ -416,8 +503,8 @@ public class SQLDatabase implements Serializable {
 						statement.close();
 					} catch (SQLException ignore) {}
 				}
-		    	
-		    	connection.release();
+		        
+				this.release(connection);
 					
 			}
 	    	
@@ -486,8 +573,8 @@ public class SQLDatabase implements Serializable {
 						statement.close();
 					} catch (SQLException ignore) {}
 				}
-		    	
-		    	connection.release();
+		        
+				this.release(connection);
 					
 			}
 	    	
@@ -597,8 +684,8 @@ public class SQLDatabase implements Serializable {
 						statement.close();
 					} catch (SQLException ignore) {}
 				}
-		    	
-		    	connection.release();
+		        
+				this.release(connection);
 					
 			}
 			
@@ -668,8 +755,8 @@ public class SQLDatabase implements Serializable {
 	        }
 	        
 	    } finally {
-	    	
-	    	connection.release();
+	        
+			this.release(connection);
 	        
 	    }
 	}
@@ -721,18 +808,6 @@ public class SQLDatabase implements Serializable {
 		
 		return isString(value) || is(UUID.class, value) ? value.toString() : (value != null ? value : "NULL");
 		
-	}
-	
-	private int activeConnections() {
-		
-	    int count = 0;
-	    
-	    for (SQLConnection connection : this.pool)
-	        if (!connection.isAvailable())
-	            count++;
-	    
-	    return count;
-	    
 	}
 	
 	private void create(String table, @Nullable String primary, LinkedHashMap<String, SQLDataType> columns) throws SQLException {
@@ -825,8 +900,8 @@ public class SQLDatabase implements Serializable {
 					statement.close();
 				} catch (SQLException ignore) {}
 			}
-	    	
-	    	connection.release();
+	        
+			this.release(connection);
 				
 		}
 		
@@ -921,8 +996,8 @@ public class SQLDatabase implements Serializable {
 	            	statement.close();
 	            } catch (SQLException ignore) {}
 	        }
-
-    		connection.release();
+	        
+			this.release(connection);
             
 	    }
 		
@@ -966,7 +1041,7 @@ public class SQLDatabase implements Serializable {
 				} catch (SQLException ignore) {}
 			}
 			
-			connection.release();
+			this.release(connection);
 			
 		}
 		
@@ -1063,8 +1138,8 @@ public class SQLDatabase implements Serializable {
 	                statement.close();
 	            } catch (SQLException ignore) {}
 	        }
-	        
-	        connection.release();
+
+			this.release(connection);
 	        
 	    }
 	    

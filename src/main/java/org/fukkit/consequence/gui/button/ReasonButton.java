@@ -23,8 +23,6 @@ import io.flex.commons.utils.ArrayUtils;
 
 public class ReasonButton extends ExecutableButton {
 
-	private static final long serialVersionUID = 8853569532472199379L;
-	
 	private FleXPlayer threatened;
 	
 	private Reason reason;

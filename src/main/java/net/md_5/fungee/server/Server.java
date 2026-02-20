@@ -14,19 +14,19 @@ import net.md_5.fungee.utils.NetworkUtils;
 
 public class Server {
 	
-    public static final Server PROXY = new Server(25565);
-	
 	private static final List<Server> values = new LinkedList<Server>();
+	
+    public static final Server PROXY = new Server(25565);
 	
     private Server fallback;
     
     private int port, data;
     
-    private Server(int port) {
+    public Server(int port) {
         this(null, port);
     }
 
-    private Server(@Nullable Server fallback, int port) {
+    public Server(@Nullable Server fallback, int port) {
     	
     	if (port < 1025)
             throw new UnsupportedOperationException("Cannot use port '" + port + "': Ports be greater than 1025 (pterodactyl default minimum).");

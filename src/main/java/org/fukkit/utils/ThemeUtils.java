@@ -11,13 +11,17 @@ import io.flex.commons.file.Variable;
 
 public class ThemeUtils {
 	
-	@SuppressWarnings("deprecation")
 	public static Variable<?>[] getNameVariables(FleXPlayer player, Theme theme) {
+		return getNameVariables(player, theme, false);
+	}
+	
+	@SuppressWarnings("deprecation")
+	public static Variable<?>[] getNameVariables(FleXPlayer player, Theme theme, boolean ignoreDisguise) {
 		return new Variable<?>[] {
-
+			
 			new Variable<String>("%name%", player.getDisplayName()),
 			new Variable<String>("%player%", player.getName()),
-			new Variable<String>("%display%", player.getDisplayName(theme)),
+			new Variable<String>("%display%", player.getDisplayName(theme, ignoreDisguise)),
 			new Variable<String>("%rank%", player.getRank().getDisplay(theme, true)),
 			
 		};

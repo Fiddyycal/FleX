@@ -12,7 +12,7 @@ import org.fukkit.entity.FleXPlayer;
 @GlobalCommand
 @FlaggedCommand(flags = { "-i", "-s" })
 @RestrictCommand(permission = "flex.command.punish", disallow = {})
-@Command(name = "mute", usage = "/<command> <player> [-i, -s]", aliases = { "flexmute", "tempmute", "tmute" })
+@Command(name = "mute", usage = "/<command> <player> [-i, -s]", aliases = { "tempmute", "tmute" })
 public class MuteCommand extends AbstractSanctionCommand {
 	
 	@Override

@@ -8,18 +8,18 @@ import org.fukkit.command.FleXCommandAdapter;
 import org.fukkit.command.GlobalCommand;
 import org.fukkit.command.RestrictCommand;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.event.player.FleXPlayerDisguiseEvent;
-import org.fukkit.event.player.FleXPlayerDisguisedEvent;
-import org.fukkit.event.player.FleXPlayerDisguisedEvent.Result;
+import org.fukkit.event.player.FleXPlayerDisguiseEvent.Result;
+import org.fukkit.event.player.FleXPlayerAsyncPreDisguiseEvent;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
+import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.ThemeUtils;
 
 import io.flex.commons.file.Language;
 
 @GlobalCommand
 @RestrictCommand(permission = "flex.command.disguise", disallow = { PlayerState.INGAME_PVE_ONLY, PlayerState.INGAME, PlayerState.SPECTATING, PlayerState.UNKNOWN })
-@Command(name = "undisguise", aliases = { "ud", "und", "undis" }, usage = "/<command> [player]")
+@Command(name = "undisguise", aliases = { "ud", "und" }, usage = "/<command> [player]")
 public class UnDisguiseCommand extends FleXCommandAdapter {
 	
 	public boolean perform(CommandSender sender, String[] args, String[] flags) {
@@ -55,32 +55,38 @@ public class UnDisguiseCommand extends FleXCommandAdapter {
 		
 		try {
 			
-			FleXPlayerDisguiseEvent load = new FleXPlayerDisguiseEvent(((FleXPlayer)sender), null);
+			BukkitUtils.asyncThread(() -> {
+				
+				FleXPlayerAsyncPreDisguiseEvent preDisguise = new FleXPlayerAsyncPreDisguiseEvent(player, null, Result.UNDISGUISE);
+				
+				Fukkit.getEventFactory().call(preDisguise);
+				
+				if (preDisguise.isCancelled())
+					return;
+				
+				BukkitUtils.mainThread(() -> {
+					
+					player.unDisguise();
+
+					player.sendMessage(ThemeMessage.UNDISGUISE_SUCCESS.format(theme, lang, ThemeUtils.getNameVariables(((FleXPlayer)sender), theme)));
+					
+					if (((FleXPlayer)sender) != player)
+						((FleXPlayer)sender).sendMessage(ThemeMessage.UNDISGUISE_SUCCESS_OTHER.format(theme, lang, ThemeUtils.getNameVariables(player, theme)));
+					
+				});
+				
+			});
 			
-			Fukkit.getEventFactory().call(load);
-			
-			if (load.isCancelled())
-				return false;
-			
-			player.unDisguise();
+			return true;
 			
 		} catch (Exception e) {
+			
+			e.printStackTrace();
 			
 			((FleXPlayer)sender).sendMessage(ThemeMessage.UNDISGUISE_FAILURE_ERROR.format(theme, lang, ThemeUtils.getNameVariables(player, theme)));
 			return false;
 			
 		}
-		
-		FleXPlayerDisguiseEvent load = new FleXPlayerDisguisedEvent(((FleXPlayer)sender), null, Result.UNDISGUISE);
-		
-		Fukkit.getEventFactory().call(load);
-		
-		player.sendMessage(ThemeMessage.UNDISGUISE_SUCCESS.format(theme, lang, ThemeUtils.getNameVariables(((FleXPlayer)sender), theme)));
-		
-		if (((FleXPlayer)sender) != player)
-			((FleXPlayer)sender).sendMessage(ThemeMessage.UNDISGUISE_SUCCESS_OTHER.format(theme, lang, ThemeUtils.getNameVariables(player, theme)));
-		
-		return true;
 		
 	}
 	

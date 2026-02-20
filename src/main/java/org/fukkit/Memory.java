@@ -11,10 +11,12 @@ import org.fukkit.cache.RecordingCache;
 import org.fukkit.cache.ThemeCache;
 import org.fukkit.cache.WorldCache;
 import org.fukkit.consequence.Ban.BanCache;
+import org.fukkit.consequence.Mute.MuteCache;
 
 public interface Memory {
 
 	BanCache BAN_CACHE = new BanCache();
+	MuteCache MUTE_CACHE = new MuteCache();
 	GuiCache GUI_CACHE = new GuiCache();
 	RankCache RANK_CACHE = new RankCache();
 	SkinCache SKIN_CACHE = new SkinCache();

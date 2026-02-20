@@ -10,7 +10,7 @@ import org.fukkit.entity.FleXPlayer;
 
 @FlaggedCommand(flags = { "-s" })
 @RestrictCommand(permission = "flex.command.punish", disallow = {})
-@Command(name = "kick", usage = "/<command> <player> [-s]", aliases = { "flexkick" })
+@Command(name = "kick", usage = "/<command> <player> [-s]", aliases = { "boot" })
 public class KickCommand extends AbstractSanctionCommand {
 	
 	@Override

@@ -3,6 +3,8 @@ package org.fukkit.listeners;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -49,16 +51,17 @@ import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.entity.FleXPlayer.ProxyInfo;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.FleXEventListener;
-import org.fukkit.event.data.AsyncDataReceivedEvent;
 import org.fukkit.event.hologram.FloatingItemInteractEvent;
 import org.fukkit.event.hologram.HologramInteractEvent;
 import org.fukkit.event.player.FleXPlayerDeathEvent;
 import org.fukkit.event.player.FleXPlayerDisguisedEvent;
-import org.fukkit.event.player.FleXPlayerLoginEvent;
+import org.fukkit.event.player.FleXPlayerConnectEvent;
+import org.fukkit.event.player.FleXPlayerConnectedEvent;
 import org.fukkit.event.player.FleXPlayerMaskEvent;
-import org.fukkit.event.player.FleXPlayerPreLoginEvent;
+import org.fukkit.event.player.FleXPlayerPreMaskEvent;
 import org.fukkit.handlers.ConnectionHandler;
 import org.fukkit.hologram.FloatingItem;
 import org.fukkit.hologram.Hologram;
@@ -71,12 +74,12 @@ import io.flex.FleXMissingResourceException;
 import io.flex.FleX.Task;
 import io.flex.commons.Severity;
 import io.flex.commons.console.Console;
-import io.flex.commons.socket.Data;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLRowWrapper;
 import io.flex.commons.utils.NumUtils;
 import io.netty.channel.ConnectTimeoutException;
+
 import net.md_5.fungee.ProtocolVersion;
 import net.md_5.fungee.server.ServerConnectException;
 import net.md_5.fungee.server.ServerVersion;
@@ -84,38 +87,6 @@ import net.md_5.fungee.server.ServerVersion;
 @SuppressWarnings("deprecation")
 public class PlayerListeners extends FleXEventListener {
 
-	/**
-	 * This event is incase the player
-	 * object already exists on the server.
-	 */
-	@EventHandler
-	public void event(AsyncDataReceivedEvent event) {
-		
-		Data data = event.getData();
-		
-		String key = data.getKey();
-		
-		if (key.startsWith("player.")) {
-			
-			String uid = key.split(".")[1];
-			
-			UUID uuid = null;
-			
-			try {
-				uuid = UUID.fromString(uid);
-			} catch (Exception ignore) {
-				return;
-			}
-			
-			FleXPlayer player = Fukkit.getCachedPlayer(uuid);
-
-			if (player != null)
-				player.update();
-			
-		}
-		
-	}
-	
 	@EventHandler(priority = EventPriority.LOW)
 	public void event(AsyncPlayerPreLoginEvent event) {
 		
@@ -126,54 +97,50 @@ public class PlayerListeners extends FleXEventListener {
 	    
 	    try {
 	    	
-	        if (fp == null)
-	            Memory.PLAYER_CACHE.add(fp = Fukkit.getPlayerFactory().createFukkitSafe(uuid, name, PlayerState.CONNECTING));
-	            
-	        else {
-	        	
-	            fp.setState(PlayerState.CONNECTING);
-	            fp.update();
-	            
-	        }
+	    	if (fp != null) {
+	    		
+	    		// Stale object, remove it
+	    	    Memory.PLAYER_CACHE.remove(fp);
+	    	    fp = null;
+	    	    
+	    	}
+	    	
+	    	Memory.PLAYER_CACHE.add(fp = Fukkit.getPlayerFactory().createFukkitSafe(uuid, name, PlayerState.CONNECTING));
 	        
 	        /**
 	         * Wait for proxy info to come through, onConnect relies on it.
 	         */
-	        long start = System.currentTimeMillis();
+	        CompletableFuture<Map<String, String>> future = CompletableFuture.supplyAsync(() -> DataHelper.getMap("player." + name + ".metadata"));
 	        
-	        Map<String, String> proxyInfo;
+	        Map<String, String> proxyInfo = future.get(1, TimeUnit.SECONDS);
+        	
+        	if (event.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED)
+        		return;
 	        
-	        boolean cancelled = false;
-	        
-	        while ((cancelled = event.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED) || (proxyInfo = DataHelper.getMap("player." + name + ".metadata")) == null || proxyInfo.isEmpty()) {
-	        	
-	            if (System.currentTimeMillis() - start > 15_000/* 15 second timeout*/) {
-	                disconnect(event, "Proxy information timeout.");
-	                return;
-	            }
-	            
-	            // 500 ms re-check speed (twice a second)
-	            Thread.sleep(500);
-	            
+	        if (proxyInfo == null) {
+	        	disconnect(event, "Proxy information timeout: Poor connection.");
+		        return;
 	        }
-	        
-	        System.out.println("TEST 1");
-	        
-	        if (cancelled)
-	        	return;
 	        
 	        if (!proxyInfo.containsKey("version")) {
 	            disconnect(event, "Failed to resolve client version.");
 	            return;
 	        }
 	        
-	        fp.proxyInfo().setDomain(proxyInfo.get("domain"));
-	        fp.proxyInfo().setVersion(ProtocolVersion.fromProtocol(Integer.parseInt(proxyInfo.get("version"))));
+	        ProxyInfo info = fp.proxyInfo();
+	        
+	        info.setDomain(proxyInfo.get("domain"));
+	        info.setVersion(ProtocolVersion.fromProtocol(Integer.parseInt(proxyInfo.get("version"))));
 	        
 	    } catch (Exception e) {
 	    	
 	        disconnect(event, e.getMessage());
+	        
 	        Console.log("FleXPlayer", Severity.CRITICAL, e);
+	        
+	        if (fp != null)
+	        	Memory.PLAYER_CACHE.remove(fp);
+	        
 	    }
 	    
 	}
@@ -186,15 +153,6 @@ public class PlayerListeners extends FleXEventListener {
 		Player player = event.getPlayer();
 		
 	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.getFromCache(player.getUniqueId());
-	    
-	    FleXPlayerPreLoginEvent preLoginEvent = Fukkit.getEventFactory().call(new FleXPlayerPreLoginEvent(fp));
-		
-	    if (preLoginEvent.isCancelled()) {
-	    	
-			disconnect(player, preLoginEvent.getKickMessage());
-			return;
-			
-	    }
 	    
 		try {
 			
@@ -276,9 +234,9 @@ public class PlayerListeners extends FleXEventListener {
 			
 			fp.onConnect(player);
 			
-			FleXPlayerLoginEvent loginEvent = new FleXPlayerLoginEvent(fp);
+			FleXPlayerConnectEvent connectEvent = new FleXPlayerConnectEvent(fp);
 			
-			Fukkit.getEventFactory().call(loginEvent);
+			Fukkit.getEventFactory().call(connectEvent);
 			
 			loc = loc.clone();
 			
@@ -294,7 +252,7 @@ public class PlayerListeners extends FleXEventListener {
 				
 			}
 			
-			loc = loginEvent.getSpawnLocation() != null ? loginEvent.getSpawnLocation() : loc;
+			loc = connectEvent.getSpawnLocation() != null ? connectEvent.getSpawnLocation() : loc;
 			
 			if (loc == null) {
 				
@@ -304,6 +262,10 @@ public class PlayerListeners extends FleXEventListener {
 			}
 			
 			player.teleport(loc);
+			
+			FleXPlayerConnectedEvent connectedEvent = new FleXPlayerConnectedEvent(fp);
+			
+			Fukkit.getEventFactory().call(connectedEvent);
 			
 		} catch (Exception e) {
 			
@@ -357,22 +319,16 @@ public class PlayerListeners extends FleXEventListener {
 				FleXWorld world = (FleXWorld) player.getWorld();
 				
 				world.getOnlinePlayers().remove(player);
-				world.getPlayerData(player).setLastSeen(player.getLocation());
+				
+				PlayerData data = world.getPlayerData(player);
+				
+				if (data != null)
+					data.setLastSeen(player.getLocation());
 				
 			}
 			
 			player.onDisconnect(event.getPlayer());
 			
-			/**
-			 * We are removing the FleXPlayer object, so there may be excessive loading when player data is looked up in-game.
-			 * 
-			 * Running this async with a small delay also allows some time for any disconnect logic to finish up.
-			 * 
-			 * TODO: Make a low-latency mode, that does not remove players from cache when they disconnect (like it is atm).
-			 * TODO: MAKE SURE TO CHECK EVERYWHERE REMOVE METHOD IS CALLED (I.e ConvictionListeners).
-			 * 
-			 * Example: When low-latency mode is disabled, players that dc are removed from cache and their data has to be retrieved everytime if they are offline.
-			 */
 			Memory.PLAYER_CACHE.remove(player);
 			
 		}
@@ -386,23 +342,13 @@ public class PlayerListeners extends FleXEventListener {
 		
 		FleXPlayer player = Fukkit.getPlayer(event.getPlayer().getUniqueId());
 		
-		/**
-		 * Update player visibility.
-		 */
-		BukkitUtils.runLater(() -> {
-			
-			if (player == null || !player.isOnline())
-				return;
-			
-			player.setVisibility(player.getVisibility());
-			
-		});
-		
 		Location from = event.getFrom();
 		Location to = event.getTo();
 		
 		if (from.getWorld().equals(to.getWorld()))
 			return;
+		
+		player.closeMenu();
 		
 		FleXWorld world = to.getWorld() != null ? Fukkit.getWorld(to.getWorld().getUID()) : null;
 		
@@ -892,27 +838,27 @@ public class PlayerListeners extends FleXEventListener {
 		}
 		
 	}
-	
+
 	@EventHandler
 	public void event(FleXPlayerDisguisedEvent event) {
 		
-		FleXPlayer player = event.getPlayer();
+		FleXPlayer player = (FleXPlayer) event.getPlayer();
 		
-		if (event.getResult() == org.fukkit.event.player.FleXPlayerDisguisedEvent.Result.UNDISGUISE) {
+		if (event.isUnDisguise()) {
 			
 			Rank mask = player.getMask();
 			
 			if (mask == null)
 				return;
 			
-			FleXPlayerMaskEvent call = new FleXPlayerMaskEvent(player, mask, org.fukkit.event.player.FleXPlayerMaskEvent.Result.UNMASK);
+			FleXPlayerPreMaskEvent call = new FleXPlayerPreMaskEvent(player, mask, FleXPlayerMaskEvent.Result.UNMASK);
 			
 			Fukkit.getEventFactory().call(call);
 			
 			if (call.isCancelled())
 				return;
 			
-			event.getPlayer().setMask(null);
+			player.setMask(null);
 			
 		}
 		
@@ -939,6 +885,11 @@ public class PlayerListeners extends FleXEventListener {
 			return;
 		
 		player.kickPlayer(disconnectMessage(reason));
+		
+		FleXHumanEntity fp = Memory.PLAYER_CACHE.getFromCache(player.getUniqueId());
+		
+		if (fp != null)
+			Memory.PLAYER_CACHE.remove(fp);
 		
 	}
 	

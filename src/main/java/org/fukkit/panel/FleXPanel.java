@@ -23,30 +23,27 @@ public class FleXPanel extends Menu {
 		Theme theme = player.getTheme();
 		Language lang = player.getLanguage();
 		
-		other.getHistoryAsync(history -> {
-			
-			this.addButton(new ChatHistoryButton(theme, lang, other));
-			this.addButton(new IPHistoryButton(theme, lang, other));
-			this.addButton(new ReportHistoryButton(theme, lang, other));
-			this.addButton(new BanButton(theme, lang, other));
-			this.addButton(new MuteButton(theme, lang, other));
-			this.addButton(new KickButton(theme, lang, other));
-			this.addButton(new MetricsButton(theme, lang, other));
-			this.addButton(new ReplaysButton(theme, lang, other));
-			
-		}, () -> {
-			
-			other.sendMessage("Failed to load FleX Panel for player " + other.getName() + ".");
-			
-		});
+		this.addButton(new ChatHistoryButton(theme, lang, other));
+		this.addButton(new ReportHistoryButton(theme, lang, other));
+		this.addButton(new BanButton(theme, lang, other));
+		this.addButton(new MuteButton(theme, lang, other));
+		this.addButton(new KickButton(theme, lang, other));
+		this.addButton(new MetricsButton(theme, lang, other));
+		this.addButton(new ReplaysButton(theme, lang, other));
 		
 		/* References */
 		/* Ranks */
 		/* Accounts */
 		/* Names */
 		/* Disguises */
-		/* IPs - Admin only */
-		/* Flow Reference names - Admin only */
+		
+		if (player.isAdmin()) {
+			
+			this.addButton(new IPHistoryButton(theme, lang, other));
+			
+			/* Flow Reference names - Admin only */
+			
+		}
 		
 	}
 

@@ -12,8 +12,12 @@ theme-specific-displays: true
 default: 'Member'
 
 # This weight determines which ranks are considered as staff ranks.
-# Any rank with a weight higher than, or equal to what is set below will have staff perks.
+# Any rank with a weight higher than, or equal to what is set below will have staff permissions.
 staff-weight: 10
+
+# This weight determines which ranks are considered as admin ranks.
+# Any rank with a weight higher than, or equal to what is set below will have admin permissions.
+admin-weight: 20
 
 # Create and add/remove ranks below.
 # Ranks will use "Display" set below for each rank unless explicitly set in each themes ranks.yml file otherwise disabled above.
@@ -121,10 +125,26 @@ ranks:
     - '*'
     permissions: []
   Donor_5:
-    display: '&a&lEternal&r &f'
+    display: '&a&lFabled&r &f'
     weight: 6
     Inherit:
     - Donor_4
+    worlds:
+    - '*'
+    permissions: []
+  Donor_6:
+    display: '&9&lEternal&r &f'
+    weight: 7
+    inherit:
+    - Donor_5
+    worlds:
+    - '*'
+    permissions: []
+  Donor_7:
+    display: '&e&lArchon&r &f'
+    weight: 8
+    Inherit:
+    - Donor_6
     worlds:
     - '*'
     permissions: []
@@ -133,7 +153,7 @@ ranks:
     abbreviation: 'Author'
     weight: 7
     inherit:
-    - Donor_5
+    - Donor_7
     worlds:
     - '*'
     permissions: []
@@ -141,15 +161,15 @@ ranks:
     display: '&5&lVIP&r &f'
     weight: 7
     inherit:
-    - Donor_5
+    - Donor_7
     worlds:
     - '*'
     permissions: []
   Moderator:
     display: '&c&lMod&r &f'
-    weight: 9
+    weight: 10
     inherit:
-    - Donor_5
+    - Donor_6
     worlds:
     - '*'
     permissions:
@@ -168,8 +188,8 @@ ranks:
     permissions: []
   Developer:
     display: '&4&lDeveloper&r &f'
-    abbreviation: 'Devs'
-    weight: 15
+    abbreviation: 'Dev'
+    weight: 20
     inherit:
     - Senior_Moderator
     worlds:

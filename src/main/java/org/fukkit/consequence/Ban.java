@@ -8,6 +8,7 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.listeners.ConvictionListeners;
 import org.fukkit.theme.Theme;
 
 import io.flex.commons.cache.LinkedCache;
@@ -22,8 +23,8 @@ public class Ban extends Punishment {
 	
 	/**
 	 * 
-	 * Local cache for bans so database isn't being
-	 * stressed everytime someone attempts to connect.
+	 * Local cache for bans so the database isn't
+	 * being stressed everytime someone attempts to connect.
 	 * 
 	 * @see ConvictionListeners
 	 *
@@ -33,12 +34,11 @@ public class Ban extends Punishment {
 		private static final long serialVersionUID = -4132115098896228306L;
 		
 		public BanCache() {
-			super((con, uid) -> con.uuid.equals(uid));
+			super((ban, uid) -> ban.uuid.equals(uid) && ban.isActive());
 		}
 		
-		@SuppressWarnings("unchecked")
-		public <C extends Consequence> C getByPlayer(FleXPlayer player) {
-			return (C) this.stream().filter(b -> b.uuid.equals(player.getUniqueId())).findFirst().orElse(null);
+		public Ban getByPlayer(FleXPlayer player) {
+			return this.stream().filter(b -> b.uuid.equals(player.getUniqueId()) && b.isActive()).findFirst().orElse(null);
 		}
 		
 		@Override
@@ -48,7 +48,8 @@ public class Ban extends Punishment {
 			
 			try {
 				
-				for (SQLRowWrapper row : database.getRows("flex_punishment", SQLCondition.where("type").is(PunishmentType.BAN.name())))
+				
+				for (SQLRowWrapper row : database.getRows("flex_punishment", SQLCondition.where("type").is(PunishmentType.BAN.name()), SQLCondition.where("pardoned").is(false)))
 					this.add(Ban.download(row.getLong("id")));
 				
 			} catch (SQLException e) {
@@ -161,7 +162,7 @@ public class Ban extends Punishment {
 			    !perm ? theme.format("<lore>Upheld for<sp>:" + Theme.reset + " <failure>" + duration) : null,
 			    "",
 			    theme.format("<lore>If you believe you were unfairly punished<sp>," + Theme.reset + " <lore>or this was in error"),
-			    theme.format("<lore>feel free to dispute your punishment at <sc>&ndispute.luminous.gg")
+			    theme.format("<lore>feel free to dispute your punishment at <sc>&ndispute.mcgamer.rip")
 			    
 		};
 		

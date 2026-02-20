@@ -151,7 +151,7 @@ public class ServerHandler {
 		
 		YamlConfig yml = Fukkit.getResourceHandler().getYaml(Configuration.NETWORK);
 		
-		FleXWorld world = Memory.WORLD_CACHE.getByName(yml.getString("World", "void"));
+		FleXWorld world = Memory.WORLD_CACHE.getByName(yml.getString("world", "void"));
 		
 		return world != null ? world : Memory.WORLD_CACHE.stream().findFirst().orElse(null);
 		

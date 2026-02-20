@@ -38,7 +38,7 @@ import net.md_5.bungee.api.chat.ClickEvent.Action;
 @GlobalCommand
 @FlaggedCommand(flags = { "-v", "-a", "-c", "-r" })
 @RestrictCommand(permission = "flex.command.flow", disallow = {})
-@Command(name = "flow", usage = "/<command> [<#>] [<-v, -a, -c>]", aliases = { "flexoverwatch", "reports" })
+@Command(name = "flow", usage = "/<command> [<#>] [<-v, -a, -c>]", aliases = { "reports", "overwatch", "ow" })
 public class FlowCommand extends FleXCommandAdapter {
 	
 	@SuppressWarnings("deprecation")

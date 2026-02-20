@@ -16,7 +16,9 @@ import org.fukkit.consequence.Mute;
 import org.fukkit.disguise.Disguise;
 import org.fukkit.disguise.Visibility;
 import org.fukkit.event.entity.EntityCleanEvent.CleanType;
-import org.fukkit.history.HistoryStore;
+import org.fukkit.history.History;
+import org.fukkit.history.HistoryType;
+import org.fukkit.history.variance.BadgeHistory;
 import org.fukkit.json.JsonBuffer;
 import org.fukkit.scoreboard.playerlist.ListScore;
 import org.fukkit.scoreboard.playerlist.NameTag;
@@ -54,7 +56,7 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public Theme getTheme();
 	
-	public String getIp() throws FleXPlayerNotLoadedException;
+	public String getIp() throws FleXPlayerHistoryNotLoadedException;
 	
 	public String getDomain();
 	
@@ -84,11 +86,13 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public Map<String, Boolean> getPermissions();
 	
-	public HistoryStore getHistory() throws FleXPlayerNotLoadedException;
+	public <T extends History<?>> T getHistory(HistoryType type) throws FleXPlayerHistoryNotLoadedException;
 	
-	public void getHistoryAsync(Consumer<HistoryStore> history);
+	public <T extends History<?>> void getOrLoadHistoryAsync(HistoryType type, Consumer<T> callback);
 	
-	public void getHistoryAsync(Consumer<HistoryStore> history, Runnable timeout);
+	public <T extends History<?>> void getOrLoadHistoryAsync(HistoryType type, Consumer<T> callback, @Nullable Consumer<Exception> exception);
+	
+	public BadgeHistory getBadges() throws FleXPlayerHistoryNotLoadedException;
 	
 	public Player getPlayer();
 	
@@ -159,6 +163,8 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public void unDisguise();
 	
+	public void unMask();
+	
 	public void unMute();
 	
 	public void unBan();
@@ -169,7 +175,7 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public boolean isBanned();
 	
-	public boolean isNew() throws FleXPlayerNotLoadedException;
+	public boolean isNew() throws FleXPlayerHistoryNotLoadedException;
 	
 	public void disconnect(@Nullable String reason);
 	

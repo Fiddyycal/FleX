@@ -11,13 +11,16 @@ import org.fukkit.consequence.Mute;
 import org.fukkit.consequence.Report;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.history.History;
+import org.fukkit.history.HistoryType;
 
 import io.flex.FleX.Task;
 
 public class PunishmentHistory extends History<Punishment> {
 
 	public PunishmentHistory(FleXHumanEntity player) throws SQLException {
-		super(player);
+		
+		super(HistoryType.PUNISHMENTS, player);
+		
 		try {
 			
 			this.log = Punishment.download(player).stream().collect(Collectors.toMap(Punishment::getTime, c -> c,
@@ -30,6 +33,7 @@ public class PunishmentHistory extends History<Punishment> {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		
 	}
 	
 	public Set<Ban> banSet() {

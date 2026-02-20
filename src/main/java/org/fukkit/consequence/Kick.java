@@ -88,9 +88,7 @@ public class Kick extends Punishment {
 				"",
 				theme.format("<lore>Standing reason<sp>:" + Theme.reset + " <failure>" + this.getReason() + Theme.reset + " <sp>&o(" + this.getReason().getCategory() + ")"),
 				this.hasEvidence() ? theme.format("<lore>Evidence<sp>:" + Theme.reset + " <failure>" + this.getEvidence()[0]) : null,
-				"",
-				theme.format("<lore>If you believe you were unfairly punished<sp>," + Theme.reset + " <lore>or this was in error"),
-			    theme.format("<lore>feel free to dispute your punishment at <sc>&ndispute.luminous.gg"));
+				"");
 		
 	}
 

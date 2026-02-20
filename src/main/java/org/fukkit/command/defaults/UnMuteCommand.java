@@ -20,7 +20,7 @@ import io.flex.commons.utils.ArrayUtils;
 @ConsoleCommand
 @FlaggedCommand(flags = { "-g" })
 @RestrictCommand(permission = "flex.command.pardon", disallow = {})
-@Command(name = "unmute", usage = "/<command> <player> [-g]", aliases = { "flexunmute", "untempmute", "untmute" })
+@Command(name = "unmute", usage = "/<command> <player> [-g]", aliases = { "untempmute", "untmute" })
 public class UnMuteCommand extends FleXCommandAdapter {
 
 	@Override

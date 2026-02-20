@@ -6,6 +6,7 @@ import io.flex.commons.socket.DataServer;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.fungee.data.ProxyLocalDataServer;
+import net.md_5.fungee.listeners.PlayerListeners;
 
 public class FungeeCord extends Plugin implements Listener {
 	
@@ -34,6 +35,8 @@ public class FungeeCord extends Plugin implements Listener {
 		instance = this;
 		
 		data_server.start();
+		
+		new PlayerListeners();
 		
 	}
 	

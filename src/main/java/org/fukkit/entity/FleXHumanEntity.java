@@ -80,6 +80,8 @@ public interface FleXHumanEntity extends FleXLivingEntity, CommandSender {
 	
 	public boolean isStaff();
 	
+	public boolean isAdmin();
+	
 	public boolean isUploaded();
 	
 	public boolean hasPermission(@Nullable String perm);

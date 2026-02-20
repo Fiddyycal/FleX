@@ -14,7 +14,9 @@ import org.bukkit.inventory.Inventory;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.clickable.button.ExecutableButton;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.entity.FleXPlayerNotLoadedException;
+import org.fukkit.entity.FleXPlayerHistoryNotLoadedException;
+import org.fukkit.history.HistoryType;
+import org.fukkit.history.variance.ChatCommandHistory;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.VersionUtils;
@@ -85,8 +87,15 @@ public class ChatHistoryButton extends ExecutableButton {
 		Map<Long, String> chats = null;
 		
 		try {
-			chats = other.getHistory().getChatAndCommands().asMap();
-		} catch (FleXPlayerNotLoadedException e) {
+			
+			ChatCommandHistory history = other.getHistory(HistoryType.CHAT_AND_COMMANDS);
+			
+			if (history != null)
+				chats = history.asMap();
+			
+			else return new ArrayList<String>();
+			
+		} catch (FleXPlayerHistoryNotLoadedException e) {
 			
 			e.printStackTrace();
 			

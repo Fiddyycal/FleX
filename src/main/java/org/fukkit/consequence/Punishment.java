@@ -11,6 +11,8 @@ import java.util.stream.IntStream;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.history.HistoryType;
+import org.fukkit.history.variance.PunishmentHistory;
 
 import io.flex.commons.Nullable;
 import io.flex.commons.sql.SQLCondition;
@@ -40,7 +42,7 @@ public abstract class Punishment extends Consequence {
 			
 		}
 		
-		player.getHistoryAsync(history -> history.getPunishments().add(this));
+		player.getOrLoadHistoryAsync(HistoryType.PUNISHMENTS, history -> ((PunishmentHistory)history).add(this));
 		
 	}
 	

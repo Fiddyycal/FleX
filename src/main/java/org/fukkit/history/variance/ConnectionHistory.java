@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.history.History;
+import org.fukkit.history.HistoryType;
 
 import net.md_5.fungee.server.ConnectionReason;
 
@@ -15,7 +16,7 @@ public class ConnectionHistory extends History<String> {
 	public static final String TABLE_NAME = "flex_history_connection";
 	
 	public ConnectionHistory(FleXHumanEntity player) throws SQLException {
-		super(player, "flex_history_connection");
+		super(HistoryType.CONNECTIONS, player, TABLE_NAME);
 	}
 	
 	public Map<Long, String> connectionMap() {

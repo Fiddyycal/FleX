@@ -12,7 +12,7 @@ import org.fukkit.entity.FleXPlayer;
 @GlobalCommand
 @FlaggedCommand(flags = { "-i", "-s" })
 @RestrictCommand(permission = "flex.command.punish", disallow = {})
-@Command(name = "ban", usage = "/<command> <player> [-i, -s]", aliases = { "flexban", "tempban", "tban" })
+@Command(name = "ban", usage = "/<command> <player> [-i, -s]", aliases = { "tempban", "tban" })
 public class BanCommand extends AbstractSanctionCommand {
 	
 	@Override

@@ -16,7 +16,7 @@ import io.flex.commons.utils.StringUtils;
 
 @GlobalCommand
 @RestrictCommand(permission = "flex.command.gamemode", disallow = {})
-@Command(name = "gamemode", usage = "/<command> <mode> [<player>]", aliases = { "mode", "gm" })
+@Command(name = "gamemode", usage = "/<command> <mode> [<player>]", aliases = { "gm" })
 public class GameModeCommand extends FleXCommandAdapter {
 
 	@Override

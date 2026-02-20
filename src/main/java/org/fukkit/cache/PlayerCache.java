@@ -19,6 +19,7 @@ import io.flex.FleX.Task;
 import io.flex.commons.cache.LinkedCache;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.utils.StringUtils;
 
 public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 	
@@ -104,13 +105,15 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 	public void getFromDatabaseAsync(String name, Consumer<FleXHumanEntity> callback) {
 		BukkitUtils.asyncThread(() -> {
 			
-			FleXHumanEntity player = this.getByName(name);
+			boolean uid = StringUtils.isUUID(name);
+			
+			FleXHumanEntity player = uid ? this.getByUniqueId(UUID.fromString(name)) : this.getByName(name);
 			
 			if (player == null) {
 				
 				try {
 					
-					SQLRowWrapper row = Fukkit.getConnectionHandler().getDatabase().getRow("flex_user", SQLCondition.where("name").is(name));
+					SQLRowWrapper row = Fukkit.getConnectionHandler().getDatabase().getRow("flex_user", SQLCondition.where(uid ? "uuid" : "name").is(name));
 					
 					if (row != null)
 						player = Fukkit.getPlayerFactory().createFukkitSafe(UUID.fromString(row.getString("uuid")), name, PlayerState.OFFLINE);
@@ -124,6 +127,61 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 			callback.accept(player);
 			
 		});
+	}
+	
+	public FleXHumanEntity getFromDatabase(String name) {
+		
+		if (Bukkit.isPrimaryThread())
+			throw new IllegalStateException("This method cannot be called from the primary thread.");
+		
+		if (StringUtils.isUUID(name))
+			return this.getFromDatabase(UUID.fromString(name));
+		
+		FleXHumanEntity player = this.getByName(name);
+		
+		if (player == null) {
+			
+			try {
+				
+				SQLRowWrapper row = Fukkit.getConnectionHandler().getDatabase().getRow("flex_user", SQLCondition.where("name").is(name));
+				
+				if (row != null)
+					player = Fukkit.getPlayerFactory().createFukkitSafe(UUID.fromString(row.getString("uuid")), name, PlayerState.OFFLINE);
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+		return player;
+		
+	}
+	
+	public FleXHumanEntity getFromDatabase(UUID uuid) {
+		
+		if (Bukkit.isPrimaryThread())
+			throw new IllegalStateException("This method cannot be called from the primary thread.");
+		
+		FleXHumanEntity player = this.getByUniqueId(uuid);
+		
+		if (player == null) {
+			
+			try {
+				
+				SQLRowWrapper row = Fukkit.getConnectionHandler().getDatabase().getRow("flex_user", SQLCondition.where("uuid").is(uuid));
+				
+				if (row != null)
+					player = Fukkit.getPlayerFactory().createFukkitSafe(uuid, row.getString("name"), PlayerState.OFFLINE);
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+		return player;
+		
 	}
 	
 	public FleXHumanEntity getFromCache(UUID uuid) {

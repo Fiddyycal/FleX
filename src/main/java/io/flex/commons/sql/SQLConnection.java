@@ -270,8 +270,11 @@ public class SQLConnection {
 			if (this.connection == null)
 				return true;
 			
+			// 5 second validation timeout
+			boolean valid = this.connection.isValid(5);
+			
 			// Expire after 6 hours (below MySQL's 8-hour timeout)
-	        return (System.currentTimeMillis() - this.creation > this.lifeSpan) || !this.connection.isValid(2);
+	        return (System.currentTimeMillis() - this.creation > this.lifeSpan) || !valid;
 			
 		} catch (SQLException e) {
 			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to check if connection is stale: " + e.getMessage());
@@ -311,7 +314,8 @@ public class SQLConnection {
 		
 	}
 	
-	public void release() {
+	// package level enforcement
+	void release() {
 		Task.debug("SQL", "Closing connection.");
 		this.available = true;
 	}

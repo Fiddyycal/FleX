@@ -22,7 +22,7 @@ import io.flex.commons.file.Variable;
 @ConsoleCommand
 @FlaggedCommand(flags = { "-r", "-t", "-m", "-c", "-d", "-g" })
 @RestrictCommand(permission = "flex.command.admin", disallow = {})
-@Command(name = "admin", usage = "/<command> <subCommand> [<args>] [-f]", aliases = { "owner", "developer", "dev" })
+@Command(name = "admin", usage = "/<command> <subCommand> [<args>] [-f]")
 public class AdminCommand extends FleXCommandAdapter {
 
 	private static final Cache<AbstractAdminSubCommand, String> sub_command_cache = new LinkedCache<AbstractAdminSubCommand, String>((subCommand, alias) -> {

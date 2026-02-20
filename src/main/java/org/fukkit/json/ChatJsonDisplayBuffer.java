@@ -5,12 +5,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.entity.FleXPlayerNotLoadedException;
+import org.fukkit.entity.FleXPlayerHistoryNotLoadedException;
 import org.fukkit.reward.Badge;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 
-import io.flex.commons.emoji.Emoji;
 import io.flex.commons.file.Variable;
 import io.flex.commons.utils.StringUtils;
 
@@ -25,36 +24,44 @@ public class ChatJsonDisplayBuffer extends JsonBuffer {
 		Theme theme = recipient.getTheme();
 		
 		boolean mcgamer = theme.getName().equalsIgnoreCase("mcgamer");
+		boolean hide = player.isDisguised() || player.isMasked();
 		
-		Badge badge = player.getBadge();
+		Badge badge = hide ? null : player.getBadge();
 		
 		List<String> badges = new LinkedList<String>();
 		
 		badges.add("<pc>Badge on display<pp>:<reset> <sc>" + (badge != null ? badge.getIcon() : "None"));
-	    
-		try {
+		
+		if (!hide) {
 			
-			Set<Badge> all = player.getHistory().getBadges().badgeSet();
-			
-			if (!all.isEmpty()) {
+			try {
+				
+				Set<Badge> all = player.getBadges().badgeSet();
+				
+				if (!all.isEmpty()) {
+					
+					badges.add("");
+					
+					all.forEach(b -> {
+						badges.add("<reset>" + b.getDisplay(theme, true) + "<reset> <pp>&l-<reset> <lore>" + b.getDescription(theme));
+					});
+					
+				}
+				
+			} catch (FleXPlayerHistoryNotLoadedException e) {
 				
 				badges.add("");
-				
-				all.forEach(b -> {
-					badges.add("<reset>" + b.getDisplay(theme, true) + "<reset> <pp>&l" + Emoji.DOUBLE_RIGHT_POINTING_ARROW + "<reset> <lore>" + b.getDescription(theme));
-				});
+				badges.add("<failure>Badges loading<pp>...");
 				
 			}
 			
-		} catch (FleXPlayerNotLoadedException e) {
-			badges.add("<failure>Badges failed to load<pp>.");
 		}
 		
 		Variable<?>[] variables = new Variable<?>[] {
 			
 			new Variable<String>("%player%", player.getName()),
 			new Variable<String>("%display%", player.getDisplayName(theme)),
-			new Variable<String>("%rank%", player.getRank().getDisplay(theme, true)),
+			new Variable<String>("%rank%", player.isMasked() ? player.getMask().getDisplay(theme, true) : player.getRank().getDisplay(theme, true)),
 			new Variable<String>("%badges%", StringUtils.join(badges, "\n")),
 			
 		};
@@ -67,7 +74,7 @@ public class ChatJsonDisplayBuffer extends JsonBuffer {
 		JsonComponent comp = new JsonComponent(theme.format(player.getDisplayName(theme)))
 		
 				.onHover(theme.format(StringUtils.join(format, "\n")))
-				.onClick(Action.RUN_COMMAND, "/stats " + player.getName());
+				.onClick(Action.RUN_COMMAND, "/stats " + player.getPlayer().getName());
 		
 		this.append(comp);
 		
@@ -78,7 +85,7 @@ public class ChatJsonDisplayBuffer extends JsonBuffer {
 			
 			this.append(new JsonComponent(mcgamer ? theme.format("&a" + badge.getIcon()) : " " + badge.getDisplay(theme, false))
 					
-					.onHover(theme.format("<reset>" + badge.getDisplay(theme, true) + "<reset> <pp>&l" + Emoji.DOUBLE_RIGHT_POINTING_ARROW + "<reset> <lore>" + badge.getDescription(theme))));
+					.onHover(theme.format("<reset>" + badge.getDisplay(theme, true) + "<reset> <pp>&l-<reset> <lore>" + badge.getDescription(theme))));
 			
 		}
 		

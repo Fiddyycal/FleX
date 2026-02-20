@@ -8,7 +8,7 @@ import net.md_5.fungee.server.ServerRegion;
 
 public enum NetworkSetting {
 
-	SERVER_REGION("region", ServerRegion.NA.toString()),
+	SERVER_REGION("region", ServerRegion.DEV.toString()),
 	
 	CLEAN_TYPE("settings.clean", CleanType.SQUEAKY.name()),
 	

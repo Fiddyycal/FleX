@@ -36,7 +36,7 @@ public class Rank extends FleXEventListener implements Cacheable {
 	
 	private Set<Rank> inherited = new HashSet<Rank>();
 	
-	private boolean staff;
+	private boolean staff, admin;
 	
 	public Rank(String name) {
 		
@@ -53,6 +53,7 @@ public class Rank extends FleXEventListener implements Cacheable {
 		this.permissions.addAll(yml.getStringList("ranks." + this.name + ".permissions"));
 		
 		this.staff = this.weight >= yml.getLong("staff-weight", 10);
+		this.admin = this.weight >= yml.getLong("admin-weight", 20);
 		
 		BukkitUtils.runLater(() -> {
 			this.loadDisplays();
@@ -102,6 +103,10 @@ public class Rank extends FleXEventListener implements Cacheable {
 	
 	public boolean isStaff() {
 		return this.staff;
+	}
+	
+	public boolean isAdmin() {
+		return this.admin;
 	}
 	
 	private Set<String> cached;

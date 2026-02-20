@@ -3,7 +3,7 @@ package org.fukkit.command.defaults;
 import org.bukkit.GameMode;
 import org.fukkit.command.Command;
 
-@Command(name = "spectator", usage = "/<command> [player]", aliases = { "gamemodespectator", "gamemode3", "gamemodesp", "modespectator", "mode3", "modesp", "gmspectator", "gm3", "gmsp" })
+@Command(name = "spectator", usage = "/<command> [player]", aliases = { "gm3" })
 public class SpectatorCommand extends AbstractGameModeCommand {
 
 	@Override

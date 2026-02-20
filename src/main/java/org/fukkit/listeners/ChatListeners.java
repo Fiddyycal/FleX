@@ -16,9 +16,9 @@ import org.fukkit.PlayerState;
 import org.fukkit.config.Configuration;
 import org.fukkit.config.YamlConfig;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.FleXEventListener;
-import org.fukkit.history.HistoryStore;
+import org.fukkit.history.HistoryType;
+import org.fukkit.history.variance.ChatCommandHistory;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.BukkitUtils;
@@ -72,22 +72,6 @@ public class ChatListeners extends FleXEventListener {
 			
 		}
 		
-		HistoryStore history;
-		
-		try {
-			
-			// Checks if error is cast before logging chat.
-			history = player.getHistory();
-			
-		} catch (FleXPlayerNotLoadedException e) {
-			
-			player.sendMessage(theme.format("<engine><failure>Loading profile, please wait<pp>..."));
-			
-			event.setCancelled(true);
-			return;
-			
-		}
-		
 		if (chat_delay.contains(uuid)) {
 			
 			player.sendMessage(ThemeMessage.CHAT_DENIED_DELAY.format(player.getTheme(), player.getLanguage(), new Variable<Double>("%delay%", this.delay)));
@@ -97,7 +81,7 @@ public class ChatListeners extends FleXEventListener {
 			
 		}
 		
-		history.getChatAndCommands().add(event.getMessage());
+		player.getOrLoadHistoryAsync(HistoryType.CHAT_AND_COMMANDS, history -> ((ChatCommandHistory)history).add(event.getMessage()));
 		
 		if (player.getRank().getWeight() < this.weight) {
 			

@@ -28,6 +28,7 @@ import org.fukkit.consequence.Report;
 import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.entity.FleXPlayerHistoryNotLoadedException;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.FleXEventListener;
 import org.fukkit.event.FleXFinalizeEvent;
@@ -40,6 +41,8 @@ import org.fukkit.event.consequence.FleXReportEvent;
 import org.fukkit.event.player.FleXPlayerAsyncChatEvent;
 import org.fukkit.event.player.PlayerChangeStateEvent;
 import org.fukkit.handlers.FlowLineEnforcementHandler;
+import org.fukkit.history.HistoryType;
+import org.fukkit.history.variance.ChatCommandHistory;
 import org.fukkit.metadata.FleXFixedMetadataValue;
 import org.fukkit.recording.Frame;
 import org.fukkit.recording.RecordedAction;
@@ -143,10 +146,17 @@ public class ConvictionListeners extends FleXEventListener {
 		
 		if (Arrays.stream(required).anyMatch(e -> e.isChatType())) {
 			
-			long logged = player.getHistory().getChatAndCommands().asMap().entrySet().stream().filter(e -> {
+			ChatCommandHistory history = null;
+			
+			try {
+				history = player.getHistory(HistoryType.CHAT_AND_COMMANDS);
+			} catch (FleXPlayerHistoryNotLoadedException e) {}
+			
+			long logged = history != null ? history.asMap().entrySet().stream().filter(e -> {
+				
 				return e.getValue().contains(":") && e.getKey() >= (System.currentTimeMillis() - (NumUtils.MINUTE_TO_MILLIS * 10));
 				
-			}).map(e -> e.getKey()).findFirst().orElse(-1L);
+			}).map(e -> e.getKey()).findFirst().orElse(-1L) : -1L;
 			
 			if (logged != -1L)
 				return "flow-" + FileUtils.getTimeStamp(logged) + ".chat";
@@ -333,8 +343,8 @@ public class ConvictionListeners extends FleXEventListener {
 		
 			event.setKickMessage(
 					
-					ChatColor.DARK_RED + "" + ChatColor.BOLD + "FleXPlayer signature not found" + ChatColor.DARK_GRAY + ChatColor.BOLD + ".\n" +
-					ChatColor.WHITE + "FleX is still loading from a scheduled restart, Surefire is stopping all login attempts" + ChatColor.DARK_GRAY + ".\n"
+					ChatColor.DARK_RED + "" + ChatColor.BOLD + "Server loading" + ChatColor.DARK_GRAY + ChatColor.BOLD + "...\n" +
+					ChatColor.WHITE + "The server is still loading from a scheduled restart: Surefire is stopping all login attempts" + ChatColor.DARK_GRAY + ".\n"
 					+ "\n" +
 					ChatColor.GRAY + "If this persists please contact a staff member" + ChatColor.DARK_GRAY + ".");
 			

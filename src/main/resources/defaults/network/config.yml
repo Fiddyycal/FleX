@@ -1,6 +1,7 @@
 # Network config.
 # What Region to display for all players on the server.
-region: 'North America'
+# Regions to select from are Local, Asia, Europe, North America, Oceania, Singapore, United States, Canada.
+region: 'Local'
 
 # What world should the player be placed in when joining the server?
 # If 'Join-Teleport' is set to false, this will be ignored after the initial join.

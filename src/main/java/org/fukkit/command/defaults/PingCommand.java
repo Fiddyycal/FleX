@@ -12,7 +12,7 @@ import org.fukkit.utils.FormatUtils;
 import io.flex.commons.file.Language;
 import io.flex.commons.file.Variable;
 
-@Command(name = "ping", usage = "/<command> [player]", aliases = { "latency", "connection", "ms" })
+@Command(name = "ping", usage = "/<command> [player]", aliases = { "connection", "ms" })
 public class PingCommand extends FleXCommandAdapter {
 
 	@SuppressWarnings("deprecation")

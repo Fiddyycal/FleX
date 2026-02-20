@@ -8,12 +8,14 @@ import org.fukkit.entity.FleXPlayer;
  * This Event is called after the FleXPlayer
  * object is created and before it has loaded.
  * 
+ * This is the event you should set a spawn location to.
+ * 
  */
-public class FleXPlayerLoginEvent extends FleXPlayerEvent {
+public class FleXPlayerConnectEvent extends FleXPlayerEvent {
 	
 	private Location spawn;
 	
-	public FleXPlayerLoginEvent(FleXPlayer player) {
+	public FleXPlayerConnectEvent(FleXPlayer player) {
 		super(player, false);
 	}
 	

@@ -17,7 +17,7 @@ import io.flex.commons.utils.StringUtils;
 
 @GlobalCommand
 @RestrictCommand(permission = "flex.command.fly", disallow = { PlayerState.INGAME_PVE_ONLY, PlayerState.INGAME, PlayerState.SPECTATING })
-@Command(name = "fly", usage = "/<command> [<player>] [enable/disable]", aliases = "flight")
+@Command(name = "fly", usage = "/<command> [<player>] [enable/disable]")
 public class FlyCommand extends FleXCommandAdapter {
 	
 	@Override

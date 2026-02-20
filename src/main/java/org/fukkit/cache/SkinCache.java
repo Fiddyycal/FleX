@@ -37,6 +37,10 @@ public class SkinCache extends LinkedCache<FleXSkin, BufferedImage> {
 		super((s, i) -> s instanceof FleXImageSkin && i == ((FleXImageSkin)s).getImage());
 	}
 	
+	public FleXSkin getByName(String name) {
+		return this.stream().filter(s -> s.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+	}
+	
 	public FleXImageSkin getByUniqueId(UUID uuid) {
 		return (FleXImageSkin) this.stream().filter(s -> s instanceof FleXImageSkin).filter(s -> s.getName().equals(uuid + "_IMAGE")).findFirst().orElse(null);
 	}
@@ -64,12 +68,12 @@ public class SkinCache extends LinkedCache<FleXSkin, BufferedImage> {
 		try {
 			
 			int skip = NumUtils.getRng().getInt(10000, 30000);
-			int limit = 5000;
+			int limit = 1500; // Make this number higher if players keep getting the same names.
 			
 			Set<SQLRowWrapper> rows = Fukkit.getConnectionHandler().getDatabase().result(
 					
-					"WITH ranked AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY signed ORDER BY name ASC) AS rn FROM flex_disguises) " +
-					"SELECT name, signature, value, signed FROM ranked WHERE (signed = TRUE) OR (signed = FALSE AND rn > " + skip + ") ORDER BY signed DESC, name ASC LIMIT " + limit);
+					"WITH ranked AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY signed ORDER BY RAND()) AS rn FROM flex_disguises) " +
+					"SELECT name, signature, value, signed FROM ranked WHERE (signed = TRUE) OR (signed = FALSE AND rn > " + skip + ") ORDER BY signed DESC, RAND() LIMIT " + limit);
 			
 			for (SQLRowWrapper row : rows) {
 				

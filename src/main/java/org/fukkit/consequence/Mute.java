@@ -2,20 +2,66 @@ package org.fukkit.consequence;
 
 import java.sql.SQLException;
 import java.util.Set;
+import java.util.UUID;
 
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.json.JsonBuffer;
 import org.fukkit.json.JsonComponent;
+import org.fukkit.listeners.ConvictionListeners;
 import org.fukkit.theme.Theme;
 
+import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.sql.SQLCondition;
+import io.flex.commons.sql.SQLDatabase;
+import io.flex.commons.sql.SQLRowWrapper;
 import io.flex.commons.utils.NumUtils;
 
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 public class Mute extends Punishment {
+	
+	/**
+	 * 
+	 * Local cache for mutes so the database isn't
+	 * being stressed everytime someone attempts to connect.
+	 * 
+	 * @see ConvictionListeners
+	 *
+	 */
+	public static class MuteCache extends LinkedCache<Mute, UUID> {
+		
+		private static final long serialVersionUID = -4132115098896228306L;
+		
+		public MuteCache() {
+			super((mute, uid) -> mute.uuid.equals(uid) && mute.isActive());
+		}
+		
+		public Mute getByPlayer(FleXPlayer player) {
+			return this.stream().filter(m -> m.uuid.equals(player.getUniqueId()) && m.isActive()).findFirst().orElse(null);
+		}
+		
+		@Override
+		public boolean load() {
+			
+			SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
+			
+			try {
 
+				for (SQLRowWrapper row : database.getRows("flex_punishment", SQLCondition.where("type").is(PunishmentType.MUTE.name()), SQLCondition.where("pardoned").is(false)))
+					this.add(Mute.download(row.getLong("id")));
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+			return true;
+			
+		}
+		
+	}
+	
 	public Mute(FleXPlayer player, FleXPlayer by, Reason reason, boolean ip, boolean silent, String... evidence) {
 		super(player, by, reason, ip, silent, evidence);
 	}
@@ -121,7 +167,7 @@ public class Mute extends Punishment {
 		buffer = buffer.append(new JsonComponent(theme.format("<clickable>here"))
 				
 				.onHover(theme.format("Dispute your active <interactable>mute<pp>."))
-				.onClick(Action.OPEN_URL, "http://dispute.luminous.gg/"));
+				.onClick(Action.OPEN_URL, "https://dispute.mcgamer.rip/"));
 		
 		buffer = buffer.append(new JsonComponent(theme.format("<pp>.")));
 		
