@@ -9,16 +9,15 @@ import org.fukkit.command.GlobalCommand;
 import org.fukkit.command.RestrictCommand;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.player.FleXPlayerDisguiseEvent.Result;
-import org.fukkit.event.player.FleXPlayerAsyncPreDisguiseEvent;
+import org.fukkit.event.player.FleXPlayerPreDisguiseEvent;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
-import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.ThemeUtils;
 
 import io.flex.commons.file.Language;
 
 @GlobalCommand
-@RestrictCommand(permission = "flex.command.disguise", disallow = { PlayerState.INGAME_PVE_ONLY, PlayerState.INGAME, PlayerState.SPECTATING, PlayerState.UNKNOWN })
+@RestrictCommand(permission = "", disallow = { PlayerState.INGAME_PVE_ONLY, PlayerState.INGAME, PlayerState.SPECTATING, PlayerState.UNKNOWN })
 @Command(name = "undisguise", aliases = { "ud", "und" }, usage = "/<command> [player]")
 public class UnDisguiseCommand extends FleXCommandAdapter {
 	
@@ -55,27 +54,19 @@ public class UnDisguiseCommand extends FleXCommandAdapter {
 		
 		try {
 			
-			BukkitUtils.asyncThread(() -> {
-				
-				FleXPlayerAsyncPreDisguiseEvent preDisguise = new FleXPlayerAsyncPreDisguiseEvent(player, null, Result.UNDISGUISE);
-				
-				Fukkit.getEventFactory().call(preDisguise);
-				
-				if (preDisguise.isCancelled())
-					return;
-				
-				BukkitUtils.mainThread(() -> {
-					
-					player.unDisguise();
+			FleXPlayerPreDisguiseEvent preDisguise = new FleXPlayerPreDisguiseEvent(player, null, Result.UNDISGUISE);
+			
+			Fukkit.getEventFactory().call(preDisguise);
+			
+			if (preDisguise.isCancelled())
+				return false;
+			
+			player.unDisguise();
 
-					player.sendMessage(ThemeMessage.UNDISGUISE_SUCCESS.format(theme, lang, ThemeUtils.getNameVariables(((FleXPlayer)sender), theme)));
-					
-					if (((FleXPlayer)sender) != player)
-						((FleXPlayer)sender).sendMessage(ThemeMessage.UNDISGUISE_SUCCESS_OTHER.format(theme, lang, ThemeUtils.getNameVariables(player, theme)));
-					
-				});
-				
-			});
+			player.sendMessage(ThemeMessage.UNDISGUISE_SUCCESS.format(theme, lang, ThemeUtils.getNameVariables(((FleXPlayer)sender), theme)));
+			
+			if (((FleXPlayer)sender) != player)
+				((FleXPlayer)sender).sendMessage(ThemeMessage.UNDISGUISE_SUCCESS_OTHER.format(theme, lang, ThemeUtils.getNameVariables(player, theme)));
 			
 			return true;
 			

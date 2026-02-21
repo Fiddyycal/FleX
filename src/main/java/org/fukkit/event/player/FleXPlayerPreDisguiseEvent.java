@@ -5,12 +5,12 @@ import org.fukkit.disguise.Disguise;
 import org.fukkit.entity.FleXPlayer;
 import io.flex.commons.Nullable;
 
-public class FleXPlayerAsyncPreDisguiseEvent extends FleXPlayerDisguiseEvent implements Cancellable {
+public class FleXPlayerPreDisguiseEvent extends FleXPlayerDisguiseEvent implements Cancellable {
 	
 	private boolean cancel = false;
 	
-	public FleXPlayerAsyncPreDisguiseEvent(FleXPlayer player, @Nullable Disguise disguise, Result result) {
-		super(player, disguise, result, true);
+	public FleXPlayerPreDisguiseEvent(FleXPlayer player, @Nullable Disguise disguise, Result result) {
+		super(player, disguise, result);
 	}
 	
 	public boolean isFlipped() {

@@ -23,28 +23,30 @@ import io.flex.commons.utils.StringUtils;
 
 public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 	
-	private static int members = 0;
+	private static int members = -1;
 	
 	public static int getMemberAmount() {
 		
 		if (Bukkit.isPrimaryThread())
 			throw new IllegalStateException("This method cannot be called from the primary thread.");
 		
-		try {
+		if (members == 0) {
+			try {
+				
+				Task.debug("FleX", "Counting members... (async)");
+				
+				Set<SQLRowWrapper> rows = Fukkit.getConnectionHandler().getDatabase().result("SELECT COUNT(*) FROM flex_user");
+				
+				if (!rows.isEmpty())
+					members = rows.stream().findFirst().orElse(null).getInt("COUNT(*)");
+				
+				rows.clear();
+				
+				Task.print("FleX", "Done!");
 			
-			Task.debug("FleX", "Counting members... (async)");
-			
-			Set<SQLRowWrapper> rows = Fukkit.getConnectionHandler().getDatabase().result("SELECT COUNT(*) AS total FROM flex_user");
-			
-			if (!rows.isEmpty())
-				members = rows.stream().findFirst().orElse(null).getInt("total");
-			
-			rows.clear();
-			
-			Task.print("FleX", "Done!");
-		
-		} catch (SQLException e) {
-			e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		return members;

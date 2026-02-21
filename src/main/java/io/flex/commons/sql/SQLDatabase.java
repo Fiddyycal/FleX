@@ -21,8 +21,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -46,8 +46,6 @@ import static io.flex.commons.sql.SQLDataType.IDENTIFIER_QUOTE;
 
 public class SQLDatabase {
 	
-	private static final int max_connections = 5;
-	
 	int port;
 	
 	private String
@@ -55,12 +53,14 @@ public class SQLDatabase {
 	ip, database, username, password, sqlite = FleX.EXE_PATH.replace(File.separator, "/") + "/flex/data/sqlite";
 	
 	private Set<SQLConnectionListener> listeners = new HashSet<SQLConnectionListener>();
-
-	private final List<SQLConnection> pool = new ArrayList<SQLConnection>();
 	
 	private SQLDriverType driver;
 	
-	private final ExecutorService executor;
+	private int maxConnections = 15;
+	
+	private final List<SQLConnection> pool = new ArrayList<SQLConnection>();
+	
+	private final ThreadPoolExecutor executor;
 
 	public SQLDatabase(String ip, int port, String database, String username, String password, SQLDriverType driver) {
 		this(ip, port, database, username, password, driver, null);
@@ -81,13 +81,16 @@ public class SQLDatabase {
 		this.password = password;
 		this.sqlite = sqlite;
 		
-		for (int i = 0; i < max_connections; i++)
+		for (int i = 0; i < this.maxConnections; i++)
 			this.pool.add(this.connect());
 		
-		this.executor = Executors.newFixedThreadPool(max_connections, r -> {
+		this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(this.maxConnections, r -> {
+			
 		    Thread t = new Thread(r, "SQL-Worker");
+		    
 		    t.setDaemon(true);
 		    return t;
+		    
 		});
 		
 	}
@@ -146,7 +149,7 @@ public class SQLDatabase {
 		
 	    synchronized(this.pool) {
 			
-            Task.debug("SQL", "Current connection pool: " + this.activeConnections() + "/" + this.pool.size());
+            Task.debug("SQL", "Current connection pool: " + this.getActiveConnections() + "/" + this.getMaxConnections());
 	    	
 			while (true) {
 				
@@ -162,9 +165,9 @@ public class SQLDatabase {
 	                }
 	            }
 	            
-	            if (this.pool.size() < max_connections) {
+	            if (this.pool.size() < this.maxConnections) {
 	            	
-	                Task.debug("SQL", "Pool max_connections allows for more connections to open.");
+	                Task.debug("SQL", "Pool maximum connections allows for more connections to open.");
 	                Task.debug("SQL", "Creating new connection...");
 	                
 	                SQLConnection connection = this.connect();
@@ -179,8 +182,8 @@ public class SQLDatabase {
 	            
 	            // No free connections and pool is maxed out, wait until someone releases.
 	            Task.debug("SQL", "No available connections, waiting...");
-	            Task.debug("SQL", "If you're seeting this alot, consider increasing the max_connections field.");
-	            Task.debug("SQL", "IMPORTANT: Make sure the field max_connections is lower or equal to the value in the database.");
+	            Task.debug("SQL", "If you're seeting this alot, consider increasing the maximum connections allowed.");
+	            Task.debug("SQL", "IMPORTANT: Make sure that the permitted maximum by the ENTIRE NETWORK is lower or equal to the value in the database.");
 	            
 	            try {
 					this.pool.wait();
@@ -204,7 +207,27 @@ public class SQLDatabase {
 	    }
 	}
 	
-	private int activeConnections() {
+	private SQLConnection connect() {Task.debug("SQL", "CONNECT CALLED -> creating new connection. Current pool size: " + pool.size());
+
+		return this.driver == SQLDriverType.SQLITE ?
+				
+				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.sqlite) :
+				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.driver);
+	}
+	
+	public int getAvailableConnections() {
+		
+	    int count = 0;
+	    
+	    for (SQLConnection conn : this.pool)
+	        if (conn.isAvailable())
+	        	count++;
+	        
+	    return count;
+	    
+	}
+	
+	public int getActiveConnections() {
 		
 	    int count = 0;
 	    
@@ -216,12 +239,8 @@ public class SQLDatabase {
 	    
 	}
 	
-	private SQLConnection connect() {Task.debug("SQL", "CONNECT CALLED -> creating new connection. Current pool size: " + pool.size());
-
-		return this.driver == SQLDriverType.SQLITE ?
-				
-				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.sqlite) :
-				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.driver);
+	public int getMaxConnections() {
+		return this.maxConnections;
 	}
 	
 	/**
@@ -391,6 +410,15 @@ public class SQLDatabase {
 	    	
 	    });
 	    
+	}
+	
+	public void setMaxConnections(int maxConnections) {
+		
+		if (maxConnections < 1)
+			throw new IllegalArgumentException("maxConnections cannot be less than 1.");
+		
+		this.maxConnections = maxConnections;
+		this.executor.setMaximumPoolSize(maxConnections);
 	}
 	
 	/**

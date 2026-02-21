@@ -3,8 +3,6 @@ package org.fukkit.listeners;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -106,13 +104,8 @@ public class PlayerListeners extends FleXEventListener {
 	    	}
 	    	
 	    	Memory.PLAYER_CACHE.add(fp = Fukkit.getPlayerFactory().createFukkitSafe(uuid, name, PlayerState.CONNECTING));
-	        
-	        /**
-	         * Wait for proxy info to come through, onConnect relies on it.
-	         */
-	        CompletableFuture<Map<String, String>> future = CompletableFuture.supplyAsync(() -> DataHelper.getMap("player." + name + ".metadata"));
-	        
-	        Map<String, String> proxyInfo = future.get(1, TimeUnit.SECONDS);
+	    	
+	        Map<String, String> proxyInfo = DataHelper.getMap("player." + name + ".metadata");
         	
         	if (event.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED)
         		return;

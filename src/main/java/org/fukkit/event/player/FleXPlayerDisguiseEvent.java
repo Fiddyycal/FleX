@@ -11,9 +11,9 @@ public class FleXPlayerDisguiseEvent extends FleXPlayerEvent {
 	
 	private Result result;
 	
-	public FleXPlayerDisguiseEvent(FleXPlayer player, @Nullable Disguise disguise, Result result, boolean async) {
+	public FleXPlayerDisguiseEvent(FleXPlayer player, @Nullable Disguise disguise, Result result) {
 		
-		super(player, async);
+		super(player, false);
 		
 		this.disguise = disguise;
 		

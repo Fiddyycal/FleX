@@ -28,8 +28,10 @@ import org.fukkit.utils.BukkitUtils;
 import org.fukkit.utils.ItemUtils;
 import org.fukkit.world.FleXWorld;
 
+import io.flex.FleX.Task;
 import io.flex.commons.file.Language;
 import io.flex.commons.file.Variable;
+import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.CollectionUtils;
 import io.flex.commons.utils.NumUtils;
@@ -56,34 +58,41 @@ public class DebugCommand extends FleXCommandAdapter {
 	@Override
 	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
-		/*
-		 * 
-		 * 
-		 * 
-		 * 
-		 * String ed = Task.isDebugEnabled() ? "Disable" : "Enable";
-		
-		if (args.length != 0) {
+		if (sender instanceof ConsoleCommandSender) {
 			
-			if (((FleXPlayer)sender) != null) {
-				this.usage(sender);
-				return false;
+			if (args.length == 0) {
+				
+				SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
+				
+				Task.print("FleX",
+						
+						"==============================",
+						"[DEBUG INFORMATION]", 
+						"World Cache: " + Memory.WORLD_CACHE.size(),
+						"Player Cache: " + Memory.PLAYER_CACHE.size(),
+						"Connections: " + base.getActiveConnections() + "/" + base.getMaxConnections(),
+						"==============================");
+				
+				return true;
+				
 			}
 			
-			Task.print("-O_O-", "FleX Bot: " + ed + " debug messages are " + ed.toLowerCase() + "ed\". " + ed + " debug mode using \"/debug\".");
+			boolean on = args[0].equalsIgnoreCase("enable") || args[0].equalsIgnoreCase("on");
+			boolean off = args[0].equalsIgnoreCase("disable") || args[0].equalsIgnoreCase("off");
+			
+			if (args.length == 1 && (on || off)) {
+				
+				Task.enableDebugMode(on);
+				
+				Task.print("FleX", "Debug messages have been " + (on ? "enabled" : "disabled") + ".");
+				return true;
+				
+			}
+			
+			this.usage(sender, "/<command> [enable/disable]");
 			return false;
 			
 		}
-		
-		Task.enableDebugMode(!Task.isDebugEnabled());
-		Task.print("-O_O-", "FleX Bot: Debug messages have been " + ed + "ed.");
-		return true;
-		 * 
-		 * 
-		 * 
-		 * 
-		 * 
-		 */
 		
 		FleXPlayer player = (FleXPlayer) sender;
 		

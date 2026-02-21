@@ -18,7 +18,7 @@ import org.fukkit.disguise.Disguise;
 import org.fukkit.disguise.FleXSkin;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.player.FleXPlayerDisguiseEvent.Result;
-import org.fukkit.event.player.FleXPlayerAsyncPreDisguiseEvent;
+import org.fukkit.event.player.FleXPlayerPreDisguiseEvent;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
 import org.fukkit.utils.BukkitUtils;
@@ -106,7 +106,7 @@ public class DisguiseCommand extends FleXCommandAdapter {
 			Theme theme = player.getTheme();
 			Language lang = player.getLanguage();
 			
-			FleXPlayerAsyncPreDisguiseEvent preDisguise = null;
+			FleXPlayerPreDisguiseEvent preDisguise = null;
 			
 			FleXSkin skin = null;
 			
@@ -138,7 +138,7 @@ public class DisguiseCommand extends FleXCommandAdapter {
 				
 				Disguise disguise = new Disguise(parseName, skin, randomName, randomSkin);
 				
-				preDisguise = new FleXPlayerAsyncPreDisguiseEvent(player, disguise, Result.SUCCESS);
+				preDisguise = new FleXPlayerPreDisguiseEvent(player, disguise, Result.SUCCESS);
 				
 			} catch (Exception e) {
 				
@@ -156,20 +156,24 @@ public class DisguiseCommand extends FleXCommandAdapter {
 				
 				Console.log("Disguise", Severity.NOTICE, exception);
 				
-				preDisguise = new FleXPlayerAsyncPreDisguiseEvent(player, null, Result.FAILURE);
+				preDisguise = new FleXPlayerPreDisguiseEvent(player, null, Result.FAILURE);
 				
 			}
 			
-			Fukkit.getEventFactory().call(preDisguise);
+			FleXPlayerPreDisguiseEvent parsePreDisguise = preDisguise;
 			
-			Disguise disguise = preDisguise.getDisguise();
-			
-			if (disguise == null || skin == null || preDisguise.isCancelled())
-				return;
+			FleXSkin parseSkin = skin;
 			
 			BukkitUtils.mainThread(() -> {
 				
 				if (!player.isOnline())
+					return;
+				
+				Fukkit.getEventFactory().call(parsePreDisguise);
+				
+				Disguise disguise = parsePreDisguise.getDisguise();
+				
+				if (disguise == null || parseSkin == null || parsePreDisguise.isCancelled())
 					return;
 				
 				player.setDisguise(disguise);
