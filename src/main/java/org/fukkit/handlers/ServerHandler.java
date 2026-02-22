@@ -99,7 +99,11 @@ public class ServerHandler {
 		}
 		
 		try {
+			
 			this.version = ServerVersion.valueOf(ver, false);
+			
+			Task.print("CraftFukkit", "This server is running Fukkit version " + Fukkit.getInstance().getDescription().getVersion() + " (Injecting implmentation version CraftFukkit-" + this.version + ")");
+			
 		} catch (IllegalArgumentException | NoSuchElementException e) {
 			
 			Task.error("Version", "This server version (" + ver + ") isn't supported by FleX.");

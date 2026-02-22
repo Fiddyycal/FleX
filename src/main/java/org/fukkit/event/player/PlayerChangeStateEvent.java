@@ -1,5 +1,6 @@
 package org.fukkit.event.player;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.fukkit.PlayerState;
@@ -22,9 +23,9 @@ public class PlayerChangeStateEvent extends Event {
 		return handlers;
 	}
 	
-	public PlayerChangeStateEvent(FleXPlayer player, PlayerState state, boolean async) {
+	public PlayerChangeStateEvent(FleXPlayer player, PlayerState state) {
 		
-		super(async);
+		super(!Bukkit.isPrimaryThread());
 		
 		this.player = player;
 		

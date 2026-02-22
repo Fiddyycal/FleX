@@ -141,9 +141,10 @@ public class WorldCache extends LinkedCache<FleXWorld, UUID> {
 			
 			boolean exists = false;
 			
-			for (String check : backend.list())
-				if (check.equals(name))
-					exists = true;
+			if (backend != null && backend.exists() && backend.isDirectory())
+				for (String check : backend.list())
+					if (check.equals(name))
+						exists = true;
 			
 			if (!exists) {
 				

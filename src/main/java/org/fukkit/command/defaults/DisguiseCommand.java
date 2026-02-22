@@ -71,7 +71,7 @@ public class DisguiseCommand extends FleXCommandAdapter {
 		boolean generateNameOnly = args.length == 1;
 		boolean chooseBoth = args.length == 2;
 		
-		if ((chooseBoth && !canChooseNameAndSkin) || (flipped && !canFlip) || (original && !canKeepSkin)) {
+		if ((chooseBoth && !canChooseNameAndSkin) || (generateNameOnly && !canChooseSkin) || (flipped && !canFlip) || (original && !canKeepSkin)) {
 			this.noPermission(sender);
 			return false;
 		}
@@ -144,7 +144,7 @@ public class DisguiseCommand extends FleXCommandAdapter {
 				
 				e.printStackTrace();
 				
-				String nameDisplay = randomName ? ChatColor.MAGIC + "random" + ChatColor.RESET : skinName;
+				String nameDisplay = randomName ? ChatColor.MAGIC + "random" + ChatColor.RESET : parseName;
 				String skinDisplay = randomSkin ? ChatColor.MAGIC + "random" + ChatColor.RESET : skinName;
 				
 				// TODO add more custom messages for different permissions.

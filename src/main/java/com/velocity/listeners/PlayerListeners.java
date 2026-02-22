@@ -7,9 +7,11 @@ import java.util.Map;
 import org.fukkit.api.helper.DataHelper;
 
 import com.velocity.Felocity;
+import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.PreLoginEvent;
+import com.velocitypowered.api.event.connection.PreLoginEvent.PreLoginComponentResult;
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.InboundConnection;
 import com.velocitypowered.api.proxy.Player;
@@ -20,8 +22,11 @@ public class PlayerListeners {
         Felocity.getInstance().getServer().getEventManager().register(Felocity.getInstance(), this);
 	}
 	
-	@Subscribe
+	@Subscribe(order = PostOrder.LATE)
 	public void event(PreLoginEvent event) {
+		
+		if (event.getResult() != PreLoginComponentResult.allowed())
+			return;
 		
 	    InboundConnection connection = event.getConnection();
 	    

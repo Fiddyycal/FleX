@@ -25,9 +25,9 @@ public class PlayerChangeVisibilityEvent extends Event implements Cancellable {
 		return handlers;
 	}
 	
-	public PlayerChangeVisibilityEvent(FleXPlayer player, Visibility visibility, boolean async) {
+	public PlayerChangeVisibilityEvent(FleXPlayer player, Visibility visibility) {
 		
-		super(async);
+		super(false);
 		
 		this.player = player;
 		

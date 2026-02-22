@@ -505,7 +505,7 @@ public class SQLDatabase {
 				
 				Task.debug("SQL", "Attempting EXECUTE -|- base; " + q);
 				
-				statement = connection.getDriverConnection().prepareStatement(q, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+				statement = connection.getDriverConnection().prepareStatement(q, this.driver == SQLDriverType.SQLITE ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				
 				boolean resultSet = statement.execute();
 				
@@ -566,7 +566,7 @@ public class SQLDatabase {
 				
 				Task.debug("SQL", "Attempting UPDATE -> base; " + q);
 				
-				statement = connection.getDriverConnection().prepareStatement(q, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+				statement = connection.getDriverConnection().prepareStatement(q, this.driver == SQLDriverType.SQLITE ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				
 				if (objects != null && objects.length > 0) {
 					for (int i = 0; i < objects.length; i++) {
@@ -638,7 +638,7 @@ public class SQLDatabase {
 				
 				Task.debug("SQL", "Attempting RESULT -> base; " + q);
 				
-				statement = connection.getDriverConnection().prepareStatement(q, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+				statement = connection.getDriverConnection().prepareStatement(q, this.driver == SQLDriverType.SQLITE ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				
 				if (objects != null && objects.length > 0) {
 					for (int i = 0; i < objects.length; i++) {
@@ -975,7 +975,7 @@ public class SQLDatabase {
 			if (limit > 0)
 				query.append(" LIMIT " + limit);
 			
-			statement = connection.getDriverConnection().prepareStatement(query.toString(), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			statement = connection.getDriverConnection().prepareStatement(query.toString(), this.driver == SQLDriverType.SQLITE ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			
 			for (int i = 0; i < params.size(); i++)
 				bind(statement, i+1, params.get(i));

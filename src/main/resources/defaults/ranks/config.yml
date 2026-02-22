@@ -6,10 +6,10 @@ enabled: true
 # If the below setting is Enabled, theme folders will generate a ranks.yml file, which will contain all ranks that are LOADED to the server.
 # New ranks you add to this files "Ranks" section below will appear in each ranks.yml file when you restart the server.
 theme-specific-displays: true
-  
+
 # Rank players will start with by default.
 # If no default is specified no rank will be used.
-default: 'Member'
+default: Member
 
 # This weight determines which ranks are considered as staff ranks.
 # Any rank with a weight higher than, or equal to what is set below will have staff permissions.
@@ -22,58 +22,58 @@ admin-weight: 20
 # Create and add/remove ranks below.
 # Ranks will use "Display" set below for each rank unless explicitly set in each themes ranks.yml file otherwise disabled above.
 ranks:
-
-  Probation:
   
+  Probation:
+    
     # The following variables are applicable to the "Display" node.
     # Tags set in each themes "Tags" node are also applicable below.
-    
-    # [VARIABLE]     | [VALUE USE]   ; [SMALL DESCRIPTION]
-    
-    # \n             | Next Line     ; Send multiple lines of text.
+
+        # [VARIABLE]     | [VALUE USE]   ; [SMALL DESCRIPTION]
+
+        # \n             | Next Line     ; Send multiple lines of text.
     # %time%         | Time Stamp    ; Time the message was created.
     # %date%         | Date Stamp    ; Date the message was created.
     # %name%         | Player Name   ; Player name or disguise name.
     # %player%       | Real Name     ; Player name, ignores player disguises.
     # %rank%         | Rank          ; Rank that is being added, easier for copy/paste.
-    
-    # What will display when this rank is presented or infront of a players name when using chat.
-    
+
+        # What will display when this rank is presented or infront of a players name when using chat.
+
     display: '&4&lP&r &7'
     
     # What will display when this rank is abbreviated.
     # Examples of abbreviation is in the tab list or a sidebar.
-    
-    abbreviation: 'None'
+
+    abbreviation: None
     
     # Command and permission weight.
     # The higher the weight the higher the authority.
     # If the weight is set to 0, the rank will not be able to do most things.
     # If the weight of a rank is 0 or lower, players will not be able to mask as the rank.
     # FleX default: [Probation] 0, [Member] 1, [Staff] 10+ (See Staff.Weight above)
-    
+
     weight: 0
     
     # Weight is used in all rank restricted FleX commands.
     # You can also inherit another ranks permissions below.
-    
+
     inherit: []
     
     # Want ranks per world or even per partition?
     # Simply add the worlds name or UUID below (find in the worlds info.yml).
     # If you would like the rank to be usable in all worlds, just add an asterisk ('*') to the list.
-    
+
     worlds:
     - '*'
     
     # A place for permission nodes.
     # Since this is a all-in-one engine, this is quite necessary instead of just using static ranks.
-    
+
     permissions:
     - permission.one
     - permission.you-guessed-it.two
     - another.permission.etc
-    
+  
   Bot:
     display: '&7&lBot&r &7'
     weight: 1
@@ -84,7 +84,7 @@ ranks:
     permissions: []
   Member:
     display: '&7'
-    abbreviation: 'None'
+    abbreviation: None
     weight: 1
     inherit: []
     worlds:
@@ -101,7 +101,7 @@ ranks:
   Donor_2:
     display: '&6&lChampion&r &f'
     weight: 3
-    Inherit:
+    inherit:
     - Donor_1
     worlds:
     - '*'
@@ -110,7 +110,7 @@ ranks:
   Donor_3:
     display: '&3&lLegend&r &f'
     weight: 4
-    Inherit:
+    inherit:
     - Donor_2
     worlds:
     - '*'
@@ -123,15 +123,17 @@ ranks:
     - Donor_3
     worlds:
     - '*'
-    permissions: []
+    permissions:
+    - flex.command.disguise.keepskin
   Donor_5:
     display: '&a&lFabled&r &f'
     weight: 6
-    Inherit:
+    inherit:
     - Donor_4
     worlds:
     - '*'
-    permissions: []
+    permissions:
+    - flex.command.disguise.flip
   Donor_6:
     display: '&9&lEternal&r &f'
     weight: 7
@@ -139,18 +141,19 @@ ranks:
     - Donor_5
     worlds:
     - '*'
-    permissions: []
+    permissions:
+    - flex.command.disguise.chooseskin
   Donor_7:
     display: '&e&lArchon&r &f'
     weight: 8
-    Inherit:
+    inherit:
     - Donor_6
     worlds:
     - '*'
     permissions: []
   Map_Maker:
     display: '&d&lMap Maker&r &f'
-    abbreviation: 'Author'
+    abbreviation: Author
     weight: 7
     inherit:
     - Donor_7
@@ -179,7 +182,7 @@ ranks:
     - flex.command.teleport
   Senior_Moderator:
     display: '&4&lSenior Mod&r &f'
-    abbreviation: 'Sr.Mod'
+    abbreviation: Sr.Mod
     weight: 10
     inherit:
     - Moderator
@@ -188,8 +191,8 @@ ranks:
     permissions: []
   Developer:
     display: '&4&lDeveloper&r &f'
-    abbreviation: 'Dev'
-    weight: 20
+    abbreviation: Dev
+    weight: 15
     inherit:
     - Senior_Moderator
     worlds:
@@ -198,8 +201,6 @@ ranks:
     - flex.command.admin
     - flex.command.combat
     - flex.command.disguise.custom
-    - flex.command.disguise.flip
-    - flex.command.disguise.keepskin
     - flex.command.gamemode
   Administrator:
     display: '&4&lAdmin&r &f'
@@ -210,7 +211,6 @@ ranks:
     - '*'
     permissions:
     - flex.command.admin
-    - flex.command.disguise.keepskin
     - flex.command.gamemode
   Owner:
     display: '&4&lOwner&r &f'

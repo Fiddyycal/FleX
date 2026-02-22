@@ -97,14 +97,6 @@ public final class Fukkit extends JavaPlugin {
 		 */
 		Fukkit.bridgeHandler = new BridgeHandler();
 		
-		String fukkitVer = fukkit.getDescription().getVersion();
-		String bukkitVer = fukkit.getDescription().getVersion();
-		
-		String into = plugin != null && plugin != fukkit ? plugin.getName() + " version " + plugin.getDescription().getVersion() : null;
-		
-	    Fukkit.fukkit.getLogger().info(String.format("This server is running %s version %s "
-	    		+ "(Injecting API version %s" + (into != null ? " into %s" : "") + ")", "CraftFukkit", fukkitVer, bukkitVer, into));
-	    
 		/**
 		 * 
 		 * Handlers need resources and/or a connection to work and must be prioritized.
