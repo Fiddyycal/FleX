@@ -98,7 +98,7 @@ public class MaskCommand extends FleXCommandAdapter {
 		
 		for (Rank mask : Memory.RANK_CACHE)
 			if (canMask(rank, mask))
-				masks.append(masks.length() > 0 ? "<sp>,<reset> <sc>" + mask + " <pp>(<reset>" + mask.getDisplay(theme, true) + "<pp>)" : "<sc>" + mask + "<reset> <pp>(<sc>" + mask.getDisplay(theme, true) + "<pp>)");
+				masks.append(masks.length() > 0 ? "<sp>,<reset> <sc>" + mask + " <pp>(<reset>" + mask.getDisplayName(theme) + "<pp>)" : "<sc>" + mask + "<reset> <pp>(<sc>" + mask.getDisplayName(theme) + "<pp>)");
 		
 		Arrays.stream(ThemeMessage.MASK_LIST.format(theme, player.getLanguage(), new Variable<String>("%masks%", masks.toString()))).forEach(m -> {
 			player.sendMessage(theme.format(m));

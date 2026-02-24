@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -20,6 +19,7 @@ import org.fukkit.utils.ItemUtils;
 import io.flex.commons.Nullable;
 import io.flex.commons.Overridden;
 import io.flex.commons.utils.StringUtils;
+
 import net.md_5.fungee.server.ServerVersion;
 
 @SuppressWarnings("deprecation")
@@ -163,10 +163,15 @@ public class Item extends ItemStack implements Cloneable {
 		
 	}
 	
+	// Fixes item update bug.
+	protected Material oldType = null;
+	
 	public void setType(Material material) {
 		
+		this.oldType = this.getType();
+		
 		super.setType(material);
-
+		
 		this.update();
 		
 	}

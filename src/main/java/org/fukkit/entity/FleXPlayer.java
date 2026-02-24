@@ -17,7 +17,6 @@ import org.fukkit.disguise.Disguise;
 import org.fukkit.disguise.Visibility;
 import org.fukkit.event.entity.EntityCleanEvent.CleanType;
 import org.fukkit.history.History;
-import org.fukkit.history.HistoryType;
 import org.fukkit.history.variance.BadgeHistory;
 import org.fukkit.json.JsonBuffer;
 import org.fukkit.scoreboard.playerlist.ListScore;
@@ -86,11 +85,11 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public Map<String, Boolean> getPermissions();
 	
-	public <T extends History<?>> T getHistory(HistoryType type) throws FleXPlayerHistoryNotLoadedException;
+	public <T extends History<?>> T getHistory(Class<T> type) throws FleXPlayerHistoryNotLoadedException;
 	
-	public <T extends History<?>> void getOrLoadHistoryAsync(HistoryType type, Consumer<T> callback);
+	public <T extends History<?>> void getOrLoadHistoryAsync(Class<T> type, Consumer<T> callback);
 	
-	public <T extends History<?>> void getOrLoadHistoryAsync(HistoryType type, Consumer<T> callback, @Nullable Consumer<Exception> exception);
+	public <T extends History<?>> void getOrLoadHistoryAsync(Class<T> type, Consumer<T> callback, @Nullable Consumer<Exception> exception);
 	
 	public BadgeHistory getBadges() throws FleXPlayerHistoryNotLoadedException;
 	

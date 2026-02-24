@@ -10,9 +10,9 @@ public class FleXPlayerRankChangeEvent extends FleXHumanEntityEvent implements C
 	
 	private boolean cancel = false;
 	
-	public FleXPlayerRankChangeEvent(FleXHumanEntity player, Rank rank, boolean async) {
+	public FleXPlayerRankChangeEvent(FleXHumanEntity player, Rank rank) {
 		
-		super(player, async);
+		super(player, false);
 		
 		this.rank = rank;
 		

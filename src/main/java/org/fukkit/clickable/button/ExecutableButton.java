@@ -102,7 +102,7 @@ public abstract class ExecutableButton extends UniqueItem implements UniqueButto
 				if (item == null)
 					return;
 				
-				if (!similar(item, this))
+				if (!this.similar(item))
 					return;
 				
 				UUID uid = Fukkit.getImplementation().getItemStackUniqueId(item);
@@ -141,7 +141,7 @@ public abstract class ExecutableButton extends UniqueItem implements UniqueButto
 				            if (item == null || item.getType() == Material.AIR)
 				                continue;
 							
-				            if (!similar(item, this))
+				            if (!this.similar(item))
 				                continue;
 				            
 				            UUID uid = Fukkit.getImplementation().getItemStackUniqueId(item);
@@ -173,18 +173,25 @@ public abstract class ExecutableButton extends UniqueItem implements UniqueButto
 	
 	public abstract boolean onExecute(FleXPlayer player, ButtonAction action, Inventory inventory);
 	
-	private static boolean similar(ItemStack item, ItemStack similar) {
+	private boolean similar(ItemStack item) {
 		
-		if (item.getType() != similar.getType())
-			return false;
+		if (item.getType() != this.getType()) {
+			
+			if (this.oldType == null)
+				return false;
+			
+			else if (item.getType() != this.oldType)
+				return false;
+			
+		}
 		
-		if (similar.hasItemMeta()) {
+		if (this.hasItemMeta()) {
 			
 			if (!item.hasItemMeta())
 				return false;
 			
 			ItemMeta meta = item.getItemMeta();
-			ItemMeta match = similar.getItemMeta();
+			ItemMeta match = this.getItemMeta();
 			
 			if (!match.getDisplayName().equals(meta.getDisplayName()))
 				return false;

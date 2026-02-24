@@ -11,7 +11,6 @@ import org.fukkit.consequence.Mute;
 import org.fukkit.consequence.Report;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.history.History;
-import org.fukkit.history.HistoryType;
 
 import io.flex.FleX.Task;
 
@@ -19,7 +18,7 @@ public class PunishmentHistory extends History<Punishment> {
 
 	public PunishmentHistory(FleXHumanEntity player) throws SQLException {
 		
-		super(HistoryType.PUNISHMENTS, player);
+		super(player);
 		
 		try {
 			

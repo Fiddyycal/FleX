@@ -62,7 +62,7 @@ public class BroadcastSubCommand extends AbstractAdminSubCommand {
 									new Variable<String>("%name%", player.getName()),
 									new Variable<String>("%player%", player.getDisplayName()),
 									new Variable<String>("%display%", player.getDisplayName(fp.getTheme(), true)),
-									new Variable<String>("%rank%", fp.getRank().getDisplay(fp.getTheme(), false)),
+									new Variable<String>("%rank%", fp.getRank().getDisplayName(fp.getTheme())),
 									new Variable<String>("%viewers%", "GLOBAL"),
 									new Variable<String>("%message%", message)
 									
@@ -111,7 +111,7 @@ public class BroadcastSubCommand extends AbstractAdminSubCommand {
 					new Variable<String>("%name%", player.getName()),
 					new Variable<String>("%player%", player.getDisplayName()),
 					new Variable<String>("%display%", player.getDisplayName(player.getTheme(), true)),
-					new Variable<String>("%rank%", player.getRank().getDisplay(player.getTheme(), false)),
+					new Variable<String>("%rank%", player.getRank().getDisplayName(player.getTheme())),
 					new Variable<String>("%viewers%", "Global"),
 					new Variable<String>("%flags%", "(default) Global"),
 					new Variable<String>("%message%", message)

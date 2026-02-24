@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -22,9 +21,6 @@ import org.fukkit.consequence.Report;
 import org.fukkit.consequence.gui.SanctionGui;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerHistoryNotLoadedException;
-import org.fukkit.entity.FleXPlayerNotLoadedException;
-import org.fukkit.history.HistoryType;
-import org.fukkit.history.variance.ChatCommandHistory;
 import org.fukkit.history.variance.PunishmentHistory;
 import org.fukkit.theme.Theme;
 
@@ -173,8 +169,8 @@ public abstract class AbstractPunishButton extends ExecutableButton {
 		Set<Punishment> convictions;
 		
 		try {
-
-			PunishmentHistory history = (PunishmentHistory) other.getHistory(HistoryType.PUNISHMENTS);
+			
+			PunishmentHistory history = other.getHistory(PunishmentHistory.class);
 			
 			if (history != null)
 				convictions = history.asMap().entrySet().stream().map(e -> e.getValue()).filter(c -> c.getType() == convictionType).collect(Collectors.toSet());

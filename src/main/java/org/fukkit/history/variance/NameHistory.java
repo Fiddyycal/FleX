@@ -6,22 +6,21 @@ import java.util.stream.Collectors;
 
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.history.History;
-import org.fukkit.history.HistoryType;
 
 public class NameHistory extends History<String> {
 
 	public static final String TABLE_NAME = "flex_history_name";
 	
 	public NameHistory(FleXHumanEntity player) throws SQLException {
-		super(HistoryType.NAMES, player, TABLE_NAME);
+		super(player, TABLE_NAME);
 	}
-
+	
 	@Override
 	public void add(String log) {
 		
-		String test = this.log.values().stream().skip(this.log.size()-1).findFirst().orElse(null);
+	    String last = this.getLastest();
 		
-		if (test == null || !test.equals(log))
+		if (last == null || !last.equals(log))
 			super.add(log);
 		
 	}

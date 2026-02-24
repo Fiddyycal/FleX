@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import org.fukkit.Memory;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.history.History;
-import org.fukkit.history.HistoryType;
 import org.fukkit.reward.Rank;
 
 import io.flex.commons.Nullable;
@@ -17,7 +16,7 @@ public class RankHistory extends History<String> {
 	public static final String TABLE_NAME = "flex_history_rank";
 	
 	public RankHistory(FleXHumanEntity player) throws SQLException {
-		super(HistoryType.RANKS, player, TABLE_NAME);
+		super(player, TABLE_NAME);
 	}
 	
 	/**

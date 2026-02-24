@@ -313,10 +313,16 @@ public class PlayerListeners extends FleXEventListener {
 				
 				world.getOnlinePlayers().remove(player);
 				
-				PlayerData data = world.getPlayerData(player);
+				boolean joinTp = (boolean) Fukkit.getServerHandler().getSetting(NetworkSetting.JOIN_TELEPORT);
 				
-				if (data != null)
-					data.setLastSeen(player.getLocation());
+				if (!joinTp) {
+					
+					PlayerData data = world.getPlayerData(player);
+					
+					if (data != null)
+						data.setLastSeen(player.getLocation());
+					
+				}
 				
 			}
 			

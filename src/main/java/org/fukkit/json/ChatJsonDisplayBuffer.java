@@ -61,7 +61,7 @@ public class ChatJsonDisplayBuffer extends JsonBuffer {
 			
 			new Variable<String>("%player%", player.getName()),
 			new Variable<String>("%display%", player.getDisplayName(theme)),
-			new Variable<String>("%rank%", player.isMasked() ? player.getMask().getDisplay(theme, true) : player.getRank().getDisplay(theme, true)),
+			new Variable<String>("%rank%", player.isMasked() ? player.getMask().getDisplayName(theme) : player.getRank().getDisplayName(theme)),
 			new Variable<String>("%badges%", StringUtils.join(badges, "\n")),
 			
 		};

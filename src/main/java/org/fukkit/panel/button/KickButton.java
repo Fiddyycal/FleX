@@ -5,7 +5,6 @@ import org.fukkit.consequence.Punishment;
 import org.fukkit.consequence.PunishmentType;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerHistoryNotLoadedException;
-import org.fukkit.history.HistoryType;
 import org.fukkit.history.variance.PunishmentHistory;
 import org.fukkit.theme.Theme;
 import org.fukkit.utils.VersionUtils;
@@ -21,7 +20,7 @@ public class KickButton extends AbstractPunishButton {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends Punishment> Set<T> asSet() throws FleXPlayerHistoryNotLoadedException {
-		return (Set<T>) ((PunishmentHistory)this.other.getHistory(HistoryType.PUNISHMENTS)).kickSet();
+		return (Set<T>) this.other.getHistory(PunishmentHistory.class).kickSet();
 	}
 
 }

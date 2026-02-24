@@ -22,7 +22,7 @@ public class ThemeUtils {
 			new Variable<String>("%name%", player.getDisplayName()),
 			new Variable<String>("%player%", player.getName()),
 			new Variable<String>("%display%", player.getDisplayName(theme, ignoreDisguise)),
-			new Variable<String>("%rank%", player.getRank().getDisplay(theme, true)),
+			new Variable<String>("%rank%", player.getRank().getDisplayName(theme)),
 			
 		};
 	}

@@ -15,7 +15,6 @@ import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.clickable.button.ExecutableButton;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerHistoryNotLoadedException;
-import org.fukkit.history.HistoryType;
 import org.fukkit.history.variance.ChatCommandHistory;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
@@ -88,7 +87,7 @@ public class ChatHistoryButton extends ExecutableButton {
 		
 		try {
 			
-			ChatCommandHistory history = other.getHistory(HistoryType.CHAT_AND_COMMANDS);
+			ChatCommandHistory history = other.getHistory(ChatCommandHistory.class);
 			
 			if (history != null)
 				chats = history.asMap();
@@ -133,8 +132,7 @@ public class ChatHistoryButton extends ExecutableButton {
 			
 			Variable<?>[] variables = {
 
-					new Variable<String>("%rank%", other.getRank().getDisplay(theme, true)),
-					new Variable<String>("%role%", other.getRank().getDisplay(theme, false)),
+					new Variable<String>("%rank%", other.getRank().getDisplayName(theme)),
 					new Variable<String>("%player%", other.getDisplayName(theme, true)),
 					new Variable<String>("%display%", other.getDisplayName(theme, true)),
 					new Variable<String>("%name%", other.getName())

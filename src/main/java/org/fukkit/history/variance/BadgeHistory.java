@@ -1,14 +1,13 @@
 package org.fukkit.history.variance;
 
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.fukkit.Memory;
 import org.fukkit.entity.FleXHumanEntity;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.history.History;
-import org.fukkit.history.HistoryType;
 import org.fukkit.reward.Badge;
 import org.fukkit.theme.Theme;
 import org.fukkit.utils.VersionUtils;
@@ -20,7 +19,7 @@ public class BadgeHistory extends History<String> {
 	public static final String TABLE_NAME = "flex_history_badge";
 	
 	public BadgeHistory(FleXHumanEntity player) throws SQLException {
-		super(HistoryType.BADGES, player, TABLE_NAME);
+		super(player, TABLE_NAME);
 	}
 	
 	/**
@@ -34,13 +33,34 @@ public class BadgeHistory extends History<String> {
 	}
 	
 	public Set<Badge> badgeSet() {
-		return this.log.values().stream().map(b -> {
-			
-			String sign = b.substring(2);
-			
-			return Memory.BADGE_CACHE.get(sign.substring(0, sign.indexOf(' ')));
 		
-		}).filter(b -> b != null).collect(Collectors.toSet());
+	    Set<Badge> active = new HashSet<Badge>();
+	    
+	    for (String entry : this.log.values()) {
+	    	
+	        if (entry.length() < 3)
+	        	continue;
+	        
+	        char prefix = entry.charAt(0);
+	        
+	        String sign = entry.substring(2);
+	        String name = sign.substring(0, sign.indexOf(' '));
+	        
+	        Badge badge = Memory.BADGE_CACHE.get(name);
+	        
+	        if (badge == null)
+	        	continue;
+	        
+	        if (prefix == '+')
+	            active.add(badge);
+	            
+	        else if (prefix == '-')
+	            active.remove(badge);
+	        
+	    }
+	    
+	    return active;
+	    
 	}
 	
 	public void onBadgeReceive(Badge badge, @Nullable String reason) {

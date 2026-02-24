@@ -51,7 +51,7 @@ public class Badge extends FleXEventListener implements Cacheable {
 	public String getDescription(Theme theme) {
 		
 		if (this.description.contains("%rank%"))
-			this.description = this.description.replace("%rank%", Memory.RANK_CACHE.get("Owner").getDisplay(theme, false));
+			this.description = this.description.replace("%rank%", Memory.RANK_CACHE.get("Owner").getDisplayName(theme));
 		
 		return theme.format(this.description);
 		

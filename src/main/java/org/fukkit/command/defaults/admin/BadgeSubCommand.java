@@ -4,7 +4,6 @@ import org.bukkit.command.CommandSender;
 import org.fukkit.Fukkit;
 import org.fukkit.Memory;
 import org.fukkit.entity.FleXPlayer;
-import org.fukkit.history.HistoryType;
 import org.fukkit.history.variance.BadgeHistory;
 import org.fukkit.reward.Badge;
 import org.fukkit.theme.Theme;
@@ -65,12 +64,10 @@ public class BadgeSubCommand extends AbstractAdminSubCommand {
 		// TODO
 		player.sendMessage(theme.format("<engine><sc>" + (add ? "Adding badge to" : "Removing badge from") + "<reset> <spc>" + fp.getDisplayName(theme) + "<pp>..."));
 		
-		fp.getOrLoadHistoryAsync(HistoryType.BADGES, history -> {
+		fp.getOrLoadHistoryAsync(BadgeHistory.class, badges -> {
 			
 			if (!player.isOnline())
 				return;
-			
-			BadgeHistory badges = (BadgeHistory) history;
 			
 			boolean exists = badges.badgeSet().contains(badge);
 			

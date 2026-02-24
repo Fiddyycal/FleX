@@ -2,16 +2,18 @@ package io.flex.commons.file;
 
 import static java.util.Objects.requireNonNull;
 
+import io.flex.commons.Nullable;
+
 public class Variable<T> {
 
 	private String variable;
 	private T value;
 	
-	public Variable(String variable, T value) {
+	public Variable(String variable, @Nullable T value) {
 		
 		requireNonNull(variable, "variable must not be null");
 		
-		this.variable = variable != null ? variable : "";
+		this.variable = variable;
 		this.value = value;
 		
 	}

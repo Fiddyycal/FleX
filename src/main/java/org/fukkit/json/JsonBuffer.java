@@ -6,6 +6,8 @@ import java.util.List;
 
 import com.google.gson.JsonArray;
 
+import net.md_5.bungee.api.chat.ClickEvent.Action;
+
 public class JsonBuffer implements CharSequence, Serializable {
 	
 	private static final long serialVersionUID = 6094766172447703133L;
@@ -13,6 +15,22 @@ public class JsonBuffer implements CharSequence, Serializable {
 	private List<JsonComponent> components = new ArrayList<>();
 	
 	private StringBuilder builder = new StringBuilder();
+
+	public JsonBuffer append(String component) {
+		return this.append(new JsonComponent(component));
+	}
+
+	public JsonBuffer append(String component, Action action, String value) {
+		return this.append(new JsonComponent(component).onClick(action, value));
+	}
+
+	public JsonBuffer append(String component, String hover) {
+		return this.append(new JsonComponent(component).onHover(hover));
+	}
+
+	public JsonBuffer append(String component, String hoverValue, net.md_5.bungee.api.chat.ClickEvent.Action action, String clickValue) {
+		return this.append(new JsonComponent(component).onHover(hoverValue).onClick(action, clickValue));
+	}
 
 	public JsonBuffer append(JsonComponent component) {
 		

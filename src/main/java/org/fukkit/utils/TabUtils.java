@@ -61,7 +61,7 @@ public class TabUtils {
 	
 	public static String[] threePartListName(FleXPlayer player, Theme theme) {
 		
-		String rank = player.getRank().getDisplay(theme, false);
+		String rank = player.getRank().getDisplayName(theme);
 		String colors = ChatColor.getLastColors(rank);
 		String display = colors + player.getDisplayName();
 		

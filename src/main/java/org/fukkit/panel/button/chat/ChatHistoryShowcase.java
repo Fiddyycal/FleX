@@ -17,7 +17,6 @@ import org.fukkit.clickable.Menu;
 import org.fukkit.clickable.button.PointlessButton;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerHistoryNotLoadedException;
-import org.fukkit.history.HistoryType;
 import org.fukkit.history.variance.ChatCommandHistory;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
@@ -37,7 +36,7 @@ public class ChatHistoryShowcase extends Menu {
 		
 		try {
 			
-			ChatCommandHistory history = other.getHistory(HistoryType.CHAT_AND_COMMANDS);
+			ChatCommandHistory history = other.getHistory(ChatCommandHistory.class);
 			
 			if (history != null)
 				chats = history.asMap();
@@ -60,8 +59,7 @@ public class ChatHistoryShowcase extends Menu {
 				new Variable<String>("%name%", other.getDisplayName()),
 				new Variable<String>("%player%", name),
 				new Variable<String>("%display%", name),
-				new Variable<String>("%rank%", other.getRank().getDisplay(viewer.getTheme(), true)),
-				new Variable<String>("%role%", other.getRank().getDisplay(viewer.getTheme(), false))
+				new Variable<String>("%rank%", other.getRank().getDisplayName(viewer.getTheme()))
 				
 		};
 		
@@ -108,7 +106,7 @@ public class ChatHistoryShowcase extends Menu {
 		
 		try {
 			
-			ChatCommandHistory history = other.getHistory(HistoryType.CHAT_AND_COMMANDS);
+			ChatCommandHistory history = other.getHistory(ChatCommandHistory.class);
 			
 			if (history != null)
 				all = history.asMap().keySet().stream().sorted().collect(Collectors.toSet());

@@ -1,10 +1,7 @@
 package org.fukkit.reward;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.fukkit.Fukkit;
@@ -18,7 +15,6 @@ import org.fukkit.utils.BukkitUtils;
 
 import io.flex.FleX.Task;
 import io.flex.commons.cache.Cacheable;
-import io.flex.commons.cache.cell.BiCell;
 
 import static java.util.Objects.requireNonNull;
 
@@ -30,7 +26,7 @@ public class Rank extends FleXEventListener implements Cacheable {
 	
 	private String name, abbreviation;
 	
-	private Map<BiCell<String, String>, String> displays = new HashMap<BiCell<String, String>, String>();
+	private Set<RankDisplay> displays = new HashSet<RankDisplay>();
 	
 	private Set<String> permissions = new HashSet<String>();
 	
@@ -70,22 +66,69 @@ public class Rank extends FleXEventListener implements Cacheable {
 		return this.abbreviation;
 	}
 	
-	public String getDisplay(Theme theme, boolean present) {
+	public String getPrefix(Theme theme) {
 		
 	    if (theme == null)
 	    	throw new NullPointerException("theme must not be null");
 	    
-	    Entry<BiCell<String, String>, String> entry = this.displays.entrySet().stream().filter(e -> e.getKey().a().equals(theme.getName()) && e.getKey().b().equals(this.name)).findFirst().orElse(null);
+	    RankDisplay display = null;
 	    
-	    if (entry == null)
-	    	return null;
+	    for (RankDisplay d : this.displays)
+	    	if (d.getTheme() == theme) {
+	    		display = d;
+	    		break;
+	    	}
 	    
-	    String display = entry.getValue();
+	    if (display == null)
+	    	return "";
 	    
-	    if (present && !display.contains(this.name))
-	        display += this.name;
+	    return display.getPrefix() != null ? display.getPrefix() : "";
+		
+	}
+	
+	public String getSuffix(Theme theme) {
+		
+	    if (theme == null)
+	    	throw new NullPointerException("theme must not be null");
 	    
-	    return present ? theme.format(display) : display;
+	    RankDisplay display = null;
+	    
+	    for (RankDisplay d : this.displays)
+	    	if (d.getTheme() == theme) {
+	    		display = d;
+	    		break;
+	    	}
+	    
+	    if (display == null)
+	    	return "";
+	    
+	    return display.getSuffix() != null ? display.getSuffix() : "";
+		
+	}
+	
+	public String getDisplayName(Theme theme) {
+		
+	    if (theme == null)
+	    	throw new NullPointerException("theme must not be null");
+	    
+	    RankDisplay display = null;
+	    
+	    for (RankDisplay d : this.displays)
+	    	if (d.getTheme() == theme) {
+	    		display = d;
+	    		break;
+	    	}
+	    
+	    if (display == null)
+	    	return this.getName();
+	    
+	    String format = display.getDisplay();
+	    String prefix = display.getPrefix();
+	    
+	    if (format == null || format.isEmpty())
+	    	return (prefix != null ? prefix : "") + this.getName();
+	    
+	    return format;
 	    
 	}
 	
@@ -139,44 +182,31 @@ public class Rank extends FleXEventListener implements Cacheable {
 		if (!this.displays.isEmpty())
 			this.displays.clear();
 		
-		YamlConfig rankYml = Fukkit.getResourceHandler().getYaml(Configuration.RANKS);
-		
 		for (Theme theme : Memory.THEME_CACHE) {
 			
 			String writeToPath = "themes" + File.separator + theme.getName();
 			String defaultFromPath = ConfigHelper.assets + "themes" + File.separator;
-			String def = "&f<reset> <reset>";
 			
-			boolean perTheme = rankYml.getBoolean("theme-specific-displays", true);
+			String displayDefault = this.name;
+			String prefixDefault = "&f<reset> <reset>";
+			String suffixDefault = "";
 			
-			YamlConfig themeYml = perTheme ? new YamlConfig(ConfigHelper.plugin_path_absolute + File.separator + writeToPath, "ranks", defaultFromPath + "ranks.yml") : null;
+			YamlConfig themeYml = new YamlConfig(ConfigHelper.plugin_path_absolute + File.separator + writeToPath, "ranks", defaultFromPath + "ranks.yml");
 			
-			if (perTheme) {
+			if (!themeYml.contains(this.name)) {
 				
-				if (!themeYml.contains(this.name)) {
-					themeYml.set(this.name, def);
-					themeYml.save();
-				}
+				themeYml.set(this.name + ".display", displayDefault);
+				themeYml.set(this.name + ".prefix", prefixDefault);
+				themeYml.set(this.name + ".suffix", suffixDefault);
+				themeYml.save();
 				
 			}
 			
-			String rank = perTheme ? themeYml.getString(this.name, def) : rankYml.getString("ranks." + this.name + ".display", def);
+			String display = themeYml.getString(this.name + ".display", displayDefault).replace("%rank%", this.name);
+			String prefix = themeYml.getString(this.name + ".prefix", prefixDefault).replace("%rank%", this.name);
+			String suffix = themeYml.getString(this.name + ".suffix", suffixDefault).replace("%rank%", this.name);
 			
-			this.displays.put(new BiCell<String, String>() {
-
-				private static final long serialVersionUID = 2818779362181280875L;
-
-				@Override
-				public String a() {
-					return theme.getName();
-				}
-
-				@Override
-				public String b() {
-					return Rank.this.name;
-				}
-				
-			}, rank.replace("%rank%", this.name));
+			this.displays.add(new RankDisplay(theme, display, prefix, suffix));
 			
 		}
 		
@@ -205,7 +235,26 @@ public class Rank extends FleXEventListener implements Cacheable {
 	}
 	
 	public String of(Theme theme, String s) {
-		return theme.format(this.getDisplay(theme, false) + s);
+		
+		if (theme == null)
+	    	throw new NullPointerException("theme must not be null");
+	    
+	    RankDisplay display = null;
+	    
+	    for (RankDisplay d : this.displays)
+	    	if (d.getTheme() == theme) {
+	    		display = d;
+	    		break;
+	    	}
+	    
+	    if (display == null)
+	    	return s;
+	    
+	    String prefix = display.getPrefix();
+	    String suffix = display.getSuffix();
+	    
+		return theme.format((prefix != null ? prefix : "") + s + (suffix != null ? suffix : ""));
+		
 	}
 	
 }

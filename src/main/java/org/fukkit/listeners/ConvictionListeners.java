@@ -41,7 +41,6 @@ import org.fukkit.event.consequence.FleXReportEvent;
 import org.fukkit.event.player.FleXPlayerAsyncChatEvent;
 import org.fukkit.event.player.PlayerChangeStateEvent;
 import org.fukkit.handlers.FlowLineEnforcementHandler;
-import org.fukkit.history.HistoryType;
 import org.fukkit.history.variance.ChatCommandHistory;
 import org.fukkit.metadata.FleXFixedMetadataValue;
 import org.fukkit.recording.Frame;
@@ -149,7 +148,7 @@ public class ConvictionListeners extends FleXEventListener {
 			ChatCommandHistory history = null;
 			
 			try {
-				history = player.getHistory(HistoryType.CHAT_AND_COMMANDS);
+				history = player.getHistory(ChatCommandHistory.class);
 			} catch (FleXPlayerHistoryNotLoadedException e) {}
 			
 			long logged = history != null ? history.asMap().entrySet().stream().filter(e -> {

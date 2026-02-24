@@ -17,7 +17,6 @@ import org.fukkit.config.Configuration;
 import org.fukkit.config.YamlConfig;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.FleXEventListener;
-import org.fukkit.history.HistoryType;
 import org.fukkit.history.variance.ChatCommandHistory;
 import org.fukkit.theme.Theme;
 import org.fukkit.theme.ThemeMessage;
@@ -81,7 +80,7 @@ public class ChatListeners extends FleXEventListener {
 			
 		}
 		
-		player.getOrLoadHistoryAsync(HistoryType.CHAT_AND_COMMANDS, history -> ((ChatCommandHistory)history).add(event.getMessage()));
+		player.getOrLoadHistoryAsync(ChatCommandHistory.class, chatAndCommands -> chatAndCommands.add(event.getMessage()));
 		
 		if (player.getRank().getWeight() < this.weight) {
 			

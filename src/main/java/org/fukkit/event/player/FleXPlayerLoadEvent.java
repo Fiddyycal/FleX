@@ -1,5 +1,6 @@
 package org.fukkit.event.player;
 
+import org.bukkit.Bukkit;
 import org.fukkit.entity.FleXPlayer;
 
 /**
@@ -16,7 +17,7 @@ public class FleXPlayerLoadEvent extends FleXPlayerEvent {
 	
 	public FleXPlayerLoadEvent(FleXPlayer player, boolean offline) {
 		
-		super(player, false);
+		super(player, !Bukkit.isPrimaryThread());
 		
 		this.offline = offline || !player.isOnline();
 		

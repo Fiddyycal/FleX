@@ -96,8 +96,7 @@ public class ChatUtils {
 									new Variable<String>("%name%", pl.getDisplayName() + ChatColor.RESET),
 									new Variable<String>("%player%", pl.getName() + ChatColor.RESET),
 									new Variable<String>("%display%", pl.getDisplayName(theme) + ChatColor.RESET),
-									new Variable<String>("%role%", (player.getState() == PlayerState.SPECTATING ? "%dead%" : "") + rank.getDisplay(theme, false) + ChatColor.RESET),
-									new Variable<String>("%rank%", rank.getDisplay(theme, true) + ChatColor.RESET))[0]);
+									new Variable<String>("%rank%", rank.getDisplayName(theme) + ChatColor.RESET))[0]);
 					
 				}
 				
@@ -112,10 +111,9 @@ public class ChatUtils {
 				
 					new Variable<String>("%name%", player.getDisplayName()),
 					new Variable<String>("%player%", player.getName()),
-					new Variable<String>("%role%", rank.getDisplay(theme, false) + ChatColor.RESET),
 					new Variable<String>("%dead%", dead),
 					new Variable<String>("%mode%", mode),
-					new Variable<String>("%rank%", rank.getDisplay(theme, true)),
+					new Variable<String>("%rank%", rank.getDisplayName(theme)),
 					new Variable<String>("%message%", message.replace("\\", "\\\\").replace("\"", "\\\""))
 					
 			};

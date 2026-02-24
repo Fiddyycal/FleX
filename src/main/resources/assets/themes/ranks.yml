@@ -1,15 +1,94 @@
-Probation: '&4&lP&r &7'
-Bot: '&7&lBot&r &7'
-Member: '&7'
-Donor_1: '&7&lGladiator&r &f'
-Donor_2: '&6&lChampion&r &f'
-Donor_3: '&3&lLegend&r &f'
-Donor_4: '&b&lMythic&r &f'
-Donor_5: '&a&lEternal&r &f'
-Map_Maker: '&d&lMap Maker&r &f'
-VIP: '&5&lVIP&r &f'
-Moderator: '&c&lMod&r &f'
-Senior_Moderator: '&4&lSenior Mod&r &f'
-Developer: '&4&lDeveloper&r &f'
-Administrator: '&4&lAdmin&r &f'
-Owner: '&4&lOwner&r &f'
+Probation:
+
+    # What will display infront/behind a players name in chat.
+    # These can be left blank or not set at all.
+    
+    prefix: '&4&lP&r &7'
+    suffix: ''
+    
+    # What will display when this rank is presented.
+    # If this is not set or left blank the rank will display as prefix + name.
+    # If prefix is blank it will just display as the name.
+    
+    display: '&4&lProbation&r'
+    
+    # What will display when this rank is abbreviated.
+    # Abbreviations are used in tab lists and sidebars.
+    
+    abbreviation: 'Muted'
+    
+Bot:
+    display: '&7&lBot&r'
+    prefix: '&7&lBot&r &7'
+    
+Member:
+    prefix: '&7'
+    
+Donor_1:
+    display: '&7&lGladiator&r'
+    prefix: '&7&lGladiator&r &f'
+    abbreviation: Gladiator
+    
+Donor_2:
+    display: '&6&lChampion&r'
+    prefix: '&6&lChampion&r &f'
+    abbreviation: Champion
+    
+Donor_3:
+    display: '&3&lLegend&r'
+    prefix: '&3&lLegend&r &f'
+    abbreviation: Archon
+    
+Donor_4:
+    display: '&b&lMythic&r'
+    prefix: '&b&lMythic&r &f'
+    abbreviation: Archon
+    
+Donor_5:
+    display: '&a&lFabled&r'
+    prefix: '&a&lFabled&r &f'
+    abbreviation: Archon
+    
+Donor_6:
+    display: '&9&lEternal&r'
+    prefix: '&9&lEternal&r &f'
+    abbreviation: Eternal
+    
+Donor_7:
+    display: '&e&lArchon&r'
+    prefix: '&e&lArchon&r &f'
+    abbreviation: Archon
+    
+Map_Maker:
+    display: '&d&lMap Maker&r'
+    prefix: '&d&lMap Maker&r &f'
+    abbreviation: Author
+    
+VIP:
+    display: '&5&lVIP&r'
+    prefix: '&5&lVIP&r &f'
+    
+Moderator:
+    display: '&c&lMod&r'
+    prefix: '&c&lMod&r &f'
+    abbreviation: Mod
+    
+Senior_Moderator:
+    display: '&4&lSenior Mod&r'
+    prefix: '&4&lSr. Mod&r &f'
+    abbreviation: 'Sr.Mod'
+    
+Developer:
+    display: '&4&lDeveloper&r'
+    prefix: '&4&lDeveloper&r &f'
+    abbreviation: Dev
+    
+Administrator:
+    display: '&4&lAdministrator&r'
+    prefix: '&4&lAdmin&r &f'
+    abbreviation: Admin
+    
+Owner:
+    display: '&4&lOwner&r'
+    prefix: '&4&lOwner&r &f'
+    

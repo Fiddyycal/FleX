@@ -15,7 +15,6 @@ import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.clickable.button.ExecutableButton;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerHistoryNotLoadedException;
-import org.fukkit.history.HistoryType;
 import org.fukkit.history.variance.IPHistory;
 import org.fukkit.theme.Theme;
 
@@ -67,7 +66,7 @@ public class IPHistoryButton extends ExecutableButton {
 		
 		try {
 			
-			IPHistory history = other.getHistory(HistoryType.IPS);
+			IPHistory history = other.getHistory(IPHistory.class);
 			
 			if (history != null)
 				ips = history.asMap();

@@ -25,19 +25,15 @@ public abstract class History<T> {
 	
 	private String table;
 	
-	private HistoryType type;
-	
-	public History(HistoryType type, FleXHumanEntity player) throws SQLException {
-		this(type, player, null);
+	public History(FleXHumanEntity player) throws SQLException {
+		this(player, null);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public History(HistoryType type, FleXHumanEntity player, @Nullable String table) throws SQLException {
+	public History(FleXHumanEntity player, @Nullable String table) throws SQLException {
 		
 		if (Bukkit.isPrimaryThread())
 			throw new IllegalStateException("This constructor cannot be called from the primary thread.");
-		
-		this.type = type;
 		
 		this.player = player;
 		
@@ -61,10 +57,6 @@ public abstract class History<T> {
 			e.printStackTrace();
 		}
 		
-	}
-	
-	public HistoryType getType() {
-		return this.type;
 	}
 	
 	public T getLast(int howFar) {
