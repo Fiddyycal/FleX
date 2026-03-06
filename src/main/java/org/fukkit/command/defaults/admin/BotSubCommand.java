@@ -7,14 +7,14 @@ import io.flex.commons.utils.StringUtils;
 public class BotSubCommand extends AbstractAdminSubCommand {
 	
 	public BotSubCommand(AdminCommand command) {
-		super(command, "bot", "flexbot");
+		super(command);
 	}
 
 	@Override
 	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if ((args.length != 1 && args.length != 2) || (!args[0].equalsIgnoreCase("create") && !args[0].equalsIgnoreCase("remove"))) {
-			this.command.usage(sender, "/<command> bot/flexbot <create/remove> <name> [uuid]");
+			this.command.usage(sender, "/<command> bot create <name> [uuid]", "/<command> bot remove <name>");
 			return false;
 		}
 		

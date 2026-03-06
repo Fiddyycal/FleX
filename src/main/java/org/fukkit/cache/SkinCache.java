@@ -16,11 +16,11 @@ import org.fukkit.disguise.FleXSkin.SkinSource;
 import org.fukkit.scoreboard.playerlist.tab.FleXImageSkin;
 
 import io.flex.FleX.Task;
-import io.flex.commons.cache.LinkedCache;
-import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.cache.ConcurrentPerformanceCache;
+import io.flex.commons.sql.SQLRow;
 import io.flex.commons.utils.NumUtils;
 
-public class SkinCache extends LinkedCache<FleXSkin, BufferedImage> {
+public class SkinCache extends ConcurrentPerformanceCache<FleXSkin, String> {
 	
 	private static final long serialVersionUID = -8519315256465075287L;
 	
@@ -34,11 +34,16 @@ public class SkinCache extends LinkedCache<FleXSkin, BufferedImage> {
 	private static final List<String> names = new ArrayList<String>();
 	
 	public SkinCache() {
-		super((s, i) -> s instanceof FleXImageSkin && i == ((FleXImageSkin)s).getImage());
+		super(skin -> skin.toString());
 	}
 	
-	public FleXSkin getByName(String name) {
+	@Override
+	public FleXSkin get(String name) {
 		return this.stream().filter(s -> s.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+	}
+	
+	public FleXImageSkin getByImage(BufferedImage image) {
+		return this.stream().filter(s -> s instanceof FleXImageSkin && image == ((FleXImageSkin)s).getImage()).map(FleXImageSkin.class::cast).findFirst().orElse(null);
 	}
 	
 	public FleXImageSkin getByUniqueId(UUID uuid) {
@@ -70,12 +75,12 @@ public class SkinCache extends LinkedCache<FleXSkin, BufferedImage> {
 			int skip = NumUtils.getRng().getInt(10000, 30000);
 			int limit = 1500; // Make this number higher if players keep getting the same names.
 			
-			Set<SQLRowWrapper> rows = Fukkit.getConnectionHandler().getDatabase().result(
+			Set<SQLRow> rows = Fukkit.getConnectionHandler().getDatabase().result(
 					
-					"WITH ranked AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY signed ORDER BY RAND()) AS rn FROM flex_disguises) " +
+					"WITH ranked AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY signed ORDER BY RAND()) AS rn FROM flex_disguise) " +
 					"SELECT name, signature, value, signed FROM ranked WHERE (signed = TRUE) OR (signed = FALSE AND rn > " + skip + ") ORDER BY signed DESC, RAND() LIMIT " + limit);
 			
-			for (SQLRowWrapper row : rows) {
+			for (SQLRow row : rows) {
 				
 				String name = row.getString("name");
 				String value = row.getString("value");

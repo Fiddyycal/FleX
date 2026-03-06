@@ -13,14 +13,14 @@ import io.flex.commons.utils.ArrayUtils;
 public class BadgeSubCommand extends AbstractAdminSubCommand {
 	
 	public BadgeSubCommand(AdminCommand command) {
-		super(command, "badge", "b");
+		super(command);
 	}
 
 	@Override
 	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length < 3) {
-			this.command.usage(sender, "/<command> badge/b add/remove <player> <badge> [reason]");
+			this.command.usage(sender, "/<command> badge <player> <badge> [reason]");
 			return false;
 		}
 		

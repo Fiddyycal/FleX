@@ -31,7 +31,7 @@ public class ChatUtils {
 		
 		Bukkit.getOnlinePlayers().forEach(p -> {
 			
-			FleXPlayer fp = Fukkit.getPlayerExact(p);
+			FleXPlayer fp = Fukkit.getPlayer(p);
 			
 			if (fp == null || !fp.isOnline())
 				return;

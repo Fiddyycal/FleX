@@ -10,13 +10,13 @@ public class SQLCondition<T> {
 	
 	private boolean caseSensitive, contains;
 	
-	private SQLCondition(String key) {
-		this(key, null);
-	}
-	
-	private SQLCondition(String key, @Nullable T value) {
+	public SQLCondition(String key, @Nullable T value) {
 		this.value = value;
 		this.key = key;
+	}
+	
+	private SQLCondition(String key) {
+		this(key, null);
 	}
 	
 	public static <T> SQLCondition<T> where(String column) {

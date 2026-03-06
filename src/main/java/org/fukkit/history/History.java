@@ -46,11 +46,7 @@ public abstract class History<T> {
 		try {
 			
 			database.getRows(table, SQLCondition.where("uuid").is(this.player.getUniqueId())).forEach(r -> {
-				try {
-					this.log.put(r.getLong("time"), (T) r.get("log"));
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				this.log.put(r.getLong("time"), (T) r.get("log"));
 			});
 			
 		} catch (SQLException e) {

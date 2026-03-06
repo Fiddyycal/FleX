@@ -5,14 +5,14 @@ import org.bukkit.command.CommandSender;
 public class FreezeSubCommand extends AbstractAdminSubCommand {
 	
 	public FreezeSubCommand(AdminCommand command) {
-		super(command, "freeze", "frozen", "pause");
+		super(command);
 	}
 
 	@Override
 	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 
 		if (args.length != 1 && args.length != 2) {
-			this.command.usage(sender, "/<command> freeze/frozen/pause [reason]");
+			this.command.usage(sender, "/<command> freeze [reason]");
 			return false;
 		}
 		

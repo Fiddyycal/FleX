@@ -32,7 +32,7 @@ import io.flex.commons.file.DataFile;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLMap;
-import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.sql.SQLRow;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.FileUtils;
 
@@ -396,7 +396,7 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 		
 		// Need to re-retrieve row because of some internal data changes...
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
-		SQLRowWrapper row = base.getRow("flex_recording", SQLCondition.where("uuid").is(this.name), SQLCondition.where("context").is(this.context.toString()));
+		SQLRow row = base.getRow("flex_recording", SQLCondition.where("uuid").is(this.name), SQLCondition.where("context").is(this.context.toString()));
 		
 		if (row != null) {
 			
@@ -472,7 +472,7 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 				
 				File file = FileUtils.zip(this.data.getParentFile());
 				
-				SQLRowWrapper row = this.getRow();
+				SQLRow row = this.getRow();
 				
 				if (row != null) {
 					
@@ -528,19 +528,19 @@ public abstract class Recording extends BukkitRunnable implements Cacheable {
 		
 	}
 	
-	public SQLRowWrapper getRow() throws SQLException {
+	public SQLRow getRow() throws SQLException {
 		
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
-		SQLRowWrapper row = null;
+		SQLRow row = null;
 		
-		Set<SQLRowWrapper> rows = base.getRows("flex_recording", SQLCondition.where("context").is(this.context.toString()));
+		Set<SQLRow> rows = base.getRows("flex_recording", SQLCondition.where("context").is(this.context.toString()));
 		
 		if (row == null)
 			row = rows.stream().findFirst().orElse(null);
 		
 		if (row == null) {
 			
-			return base.addRow("flex_recording", "context",
+			return base.addRow("flex_recording",
 					
 					SQLMap.of(
 							

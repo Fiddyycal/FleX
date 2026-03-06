@@ -1,8 +1,8 @@
 package org.fukkit.entity;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import org.bukkit.Effect;
@@ -21,7 +21,7 @@ import org.fukkit.history.variance.BadgeHistory;
 import org.fukkit.json.JsonBuffer;
 import org.fukkit.scoreboard.playerlist.ListScore;
 import org.fukkit.scoreboard.playerlist.NameTag;
-import org.fukkit.scoreboard.playerlist.NameBar;
+import org.fukkit.scoreboard.playerlist.SubNameTag;
 import org.fukkit.scoreboard.playerlist.tab.Tablist;
 import org.fukkit.scoreboard.sidebar.Sidebar;
 import org.fukkit.theme.Theme;
@@ -61,9 +61,9 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public NameTag getNameTag(FleXPlayer viewer);
 	
-	public Set<NameTag> getNameTags();
+	public Collection<NameTag> getNameTags();
 	
-	public NameBar getSubNameTag();
+	public SubNameTag getSubNameTag();
 	
 	public ListScore getListbar();
 	
@@ -99,7 +99,7 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public void setTheme(Theme theme);
 	
-	public void setSubNameTag(NameBar namebar);
+	public void setSubNameTag(SubNameTag namebar);
 	
 	public void setListbar(ListScore listbar);
 	
@@ -146,9 +146,11 @@ public interface FleXPlayer extends FleXHumanEntity {
 	
 	public void sendParticle(Location location, Effect effect, int id, int data, float offsetX, float offsetY, float offsetZ, float speed, int particleCount, int radius);
 	
-	public void addNameTag(NameTag nametag);
+	public void addNameTag(NameTag nametag, FleXPlayer viewer);
 	
 	public void removeNameTag(NameTag nametag);
+	
+	public void removeNameTag(FleXPlayer viewer);
     
 	public void removePermission(String permission);
 	
@@ -208,6 +210,14 @@ public interface FleXPlayer extends FleXHumanEntity {
 	public void update();
 	
 	public void clean(CleanType type);
+	
+	public void clearSidebar();
+	
+	public void clearNameTags();
+	
+	public void clearNamebar();
+	
+	public void clearTablist();
 	
 	public void onConnect(Player player);
 	

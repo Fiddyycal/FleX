@@ -126,7 +126,7 @@ public class DisguiseCommand extends FleXCommandAdapter {
 				
 				else {
 					
-					skin = Memory.SKIN_CACHE.getByName(skinName);
+					skin = Memory.SKIN_CACHE.get(skinName);
 					
 					if (skin == null)
 						skin = MojangHelper.getSkin(skinName);

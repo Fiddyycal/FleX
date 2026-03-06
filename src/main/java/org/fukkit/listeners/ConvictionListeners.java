@@ -5,13 +5,10 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.fukkit.Fukkit;
@@ -31,13 +28,13 @@ import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayerHistoryNotLoadedException;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.FleXEventListener;
-import org.fukkit.event.FleXFinalizeEvent;
 import org.fukkit.event.consequence.FleXBanEvent;
 import org.fukkit.event.consequence.FleXConvictEvent;
 import org.fukkit.event.consequence.FleXKickEvent;
 import org.fukkit.event.consequence.FleXMuteEvent;
 import org.fukkit.event.consequence.FleXPreConsequenceEvent;
 import org.fukkit.event.consequence.FleXReportEvent;
+import org.fukkit.event.player.AsyncFleXPlayerPreLoginEvent;
 import org.fukkit.event.player.FleXPlayerAsyncChatEvent;
 import org.fukkit.event.player.PlayerChangeStateEvent;
 import org.fukkit.handlers.FlowLineEnforcementHandler;
@@ -328,42 +325,20 @@ public class ConvictionListeners extends FleXEventListener {
 		
 	}
 	
-	private static boolean allow = false;
-	
-	@EventHandler
-	public void event(FleXFinalizeEvent event)  {
-		allow = true;
-	}
-	
 	@EventHandler(priority = EventPriority.HIGH)
-    public void event(AsyncPlayerPreLoginEvent event) {
+    public void event(AsyncFleXPlayerPreLoginEvent event) {
 		
-		if (!allow) {
+		FleXPlayer player = event.getPlayer();
 		
-			event.setKickMessage(
-					
-					ChatColor.DARK_RED + "" + ChatColor.BOLD + "Server loading" + ChatColor.DARK_GRAY + ChatColor.BOLD + "...\n" +
-					ChatColor.WHITE + "The server is still loading from a scheduled restart: Surefire is stopping all login attempts" + ChatColor.DARK_GRAY + ".\n"
-					+ "\n" +
-					ChatColor.GRAY + "If this persists please contact a staff member" + ChatColor.DARK_GRAY + ".");
-			
-			event.setLoginResult(Result.KICK_OTHER);
-			
-		} else {
-			
-			FleXPlayer player = Fukkit.getPlayer(event.getUniqueId());
-			
-			if (player == null)
-				return;
-			
-			if (!player.isBanned())
-				return;
-			
-			player.getBan().onPreBypassAttempt(player, event);
-			
-		}
+		if (player == null)
+			return;
 		
-		FleXHumanEntity fp = Memory.PLAYER_CACHE.getFromCache(event.getUniqueId());
+		if (!player.isBanned())
+			return;
+		
+		player.getBan().onPreBypassAttempt(player, event);
+		
+		FleXHumanEntity fp = Memory.PLAYER_CACHE.get(event.getUniqueId());
 		
 		if (fp != null)
 			Memory.PLAYER_CACHE.remove(fp);
@@ -373,7 +348,7 @@ public class ConvictionListeners extends FleXEventListener {
 	@EventHandler(priority = EventPriority.HIGH)
     public void event(PlayerJoinEvent event) {
 		
-		FleXPlayer player = Fukkit.getPlayerExact(event.getPlayer());
+		FleXPlayer player = Fukkit.getPlayer(event.getPlayer());
 		
 		if (player == null)
 			return;
@@ -448,7 +423,7 @@ public class ConvictionListeners extends FleXEventListener {
 		if (event.getFrom().getWorld().getUID().equals(event.getTo().getWorld().getUID()))
 			return;
 		
-		FleXPlayer player = Fukkit.getCachedPlayer(event.getPlayer().getUniqueId());
+		FleXPlayer player = Fukkit.getPlayer(event.getPlayer().getUniqueId());
 		
 		if (player == null || player instanceof FleXBot)
 			return;

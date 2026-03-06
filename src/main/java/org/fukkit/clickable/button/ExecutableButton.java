@@ -21,7 +21,9 @@ import org.fukkit.item.UniqueItem;
 
 import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
+import io.flex.commons.Severity;
 import io.flex.commons.cache.Cacheable;
+import io.flex.commons.console.Console;
 import io.flex.commons.utils.ClassUtils;
 
 public abstract class ExecutableButton extends UniqueItem implements UniqueButton, Cacheable {
@@ -146,13 +148,8 @@ public abstract class ExecutableButton extends UniqueItem implements UniqueButto
 				            
 				            UUID uid = Fukkit.getImplementation().getItemStackUniqueId(item);
 				            
-				            if (uid != null && uid.equals(uuid)) {
-								
-				                copy(item, this);
-				                
+				            if (uid != null && uid.equals(uuid))
 				                view.setItem(i, item);
-								
-				            }
 				            
 				        } catch (IndexOutOfBoundsException ignored) {
 				            break;
@@ -172,6 +169,36 @@ public abstract class ExecutableButton extends UniqueItem implements UniqueButto
 	}
 	
 	public abstract boolean onExecute(FleXPlayer player, ButtonAction action, Inventory inventory);
+	
+	@SuppressWarnings("deprecation")
+	private static void copy(ItemStack item, ItemStack with) {
+		
+		item.setType(with.getType());
+		item.setDurability(with.getDurability());
+		item.setAmount(with.getAmount());
+		
+	    try {
+		    item.setData(with.getData());
+	    } catch (IllegalArgumentException ignore) {}
+		
+	    if (with.hasItemMeta())
+		    item.setItemMeta(with.getItemMeta());
+	    	
+	    try {
+	    	
+	    	if (with.getEnchantments() != null)
+	    		item.addUnsafeEnchantments(with.getEnchantments());
+    		
+		} catch (NullPointerException e) {
+			
+			Task.error("Try/Catch", "CraftItemStack threw an NPE adding custom enchantment: " + e.getMessage());
+			Task.error("Try/Catch", "Was the enchantment registered at runtime?");
+			
+			Console.log("Try/Catch", Severity.ERROR, e);
+			
+		}
+	    
+	}
 	
 	private boolean similar(ItemStack item) {
 		
@@ -206,31 +233,6 @@ public abstract class ExecutableButton extends UniqueItem implements UniqueButto
 		
 		return true;
 		
-	}
-	
-	@SuppressWarnings("deprecation")
-	private static void copy(ItemStack item, ItemStack with) {
-		
-		item.setType(with.getType());
-		item.setDurability(with.getDurability());
-		item.setAmount(with.getAmount());
-	    item.setData(with.getData());
-			
-	    if (with.hasItemMeta())
-		    item.setItemMeta(with.getItemMeta());
-	    	
-	    try {
-    		
-	    	 if (with.getEnchantments() != null)
-	 	    	item.addUnsafeEnchantments(with.getEnchantments());
-    		
-		} catch (NullPointerException ignore) {
-			
-			Task.debug("Try/Catch", "CraftItemStack threw an NPE adding custom enchantment: " + ignore.getMessage());
-			Task.debug("Try/Catch", "Is the enchantment registered after JVM runtime?");
-			
-		}
-	    
 	}
 	
 }

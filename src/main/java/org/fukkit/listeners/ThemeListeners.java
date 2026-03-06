@@ -163,7 +163,7 @@ public class ThemeListeners extends FleXEventListener {
 	@EventHandler
 	public void event(PlayerGuiCloseEvent event) {
 		
-		if (Fukkit.getPlayerExact(event.getPlayer()).getTheme() == null)
+		if (Fukkit.getPlayer(event.getPlayer()).getTheme() == null)
 			event.setCancelled(true);
 		
 	}
@@ -171,7 +171,7 @@ public class ThemeListeners extends FleXEventListener {
 	@EventHandler(priority = EventPriority.LOW)
 	public void event(AsyncPlayerChatEvent event) {
 		
-		FleXPlayer player = Fukkit.getPlayerExact(event.getPlayer());
+		FleXPlayer player = Fukkit.getPlayer(event.getPlayer());
 		
 		if (player.getTheme() != null)
 			return;

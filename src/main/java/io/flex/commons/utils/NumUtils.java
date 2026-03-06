@@ -39,22 +39,46 @@ public class NumUtils {
 		
 	}
 	
-    public static boolean canParseAsInt(String arg0) {
-    	try {
-			Integer.parseInt(arg0);
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
+    public static boolean canParseAsNumber(String s) {
+    	
+    	if (canParseAsInt(s) || canParseAsDouble(s))
+    		return true;
+    	
+	    try {
+	    	Long.valueOf(s);
+	        return true;
+	    } catch (NumberFormatException ignored) {}
+	    
+	    try {
+	        Float.valueOf(s);
+	        return true;
+	    } catch (NumberFormatException ignored) {}
+	    
+	    try {
+	        Short.valueOf(s);
+	        return true;
+	    } catch (NumberFormatException ignored) {}
+	    
+	    return false;
+	    
     }
-    
-    public static boolean canParseAsDouble(String arg0) {
-    	try {
-			double d = Double.parseDouble(arg0);
-			return (d == Math.floor(d)) && !Double.isInfinite(d) == false;
-		} catch (Exception e) {
-			return false;
-		}
+	
+    public static boolean canParseAsInt(String s) {
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    public static boolean canParseAsDouble(String s) {
+        try {
+            double d = Double.parseDouble(s);
+            return !Double.isNaN(d) && !Double.isInfinite(d);
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
     
     public static boolean isWithinRange(double input, double number, double deviation) {

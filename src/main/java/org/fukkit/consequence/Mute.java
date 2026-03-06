@@ -12,10 +12,10 @@ import org.fukkit.json.JsonComponent;
 import org.fukkit.listeners.ConvictionListeners;
 import org.fukkit.theme.Theme;
 
-import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.cache.ConcurrentPerformanceCache;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
-import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.sql.SQLRow;
 import io.flex.commons.utils.NumUtils;
 
 import net.md_5.bungee.api.chat.ClickEvent.Action;
@@ -30,12 +30,18 @@ public class Mute extends Punishment {
 	 * @see ConvictionListeners
 	 *
 	 */
-	public static class MuteCache extends LinkedCache<Mute, UUID> {
+	public static class MuteCache extends ConcurrentPerformanceCache<Mute, UUID> {
 		
 		private static final long serialVersionUID = -4132115098896228306L;
 		
 		public MuteCache() {
-			super((mute, uid) -> mute.uuid.equals(uid) && mute.isActive());
+			super(mute -> mute.uuid);
+		}
+		
+		@Override
+		public Mute get(UUID arg0) {
+			Mute mute = super.get(arg0);
+			return mute != null && mute.isActive() ? mute : null;
 		}
 		
 		public Mute getByPlayer(FleXPlayer player) {
@@ -49,7 +55,7 @@ public class Mute extends Punishment {
 			
 			try {
 
-				for (SQLRowWrapper row : database.getRows("flex_punishment", SQLCondition.where("type").is(PunishmentType.MUTE.name()), SQLCondition.where("pardoned").is(false)))
+				for (SQLRow row : database.getRows("flex_punishment", SQLCondition.where("type").is(PunishmentType.MUTE.name()), SQLCondition.where("pardoned").is(false)))
 					this.add(Mute.download(row.getLong("id")));
 				
 			} catch (SQLException e) {

@@ -283,7 +283,7 @@ public abstract class FleXCommandAdapter extends BukkitCommand implements Cachea
 			return false;
 		
 		Player player = sender instanceof Player ? (Player) sender : null;
-		FleXPlayer fp = sender instanceof FleXPlayer ? (FleXPlayer) sender : Fukkit.getPlayerExact(player);
+		FleXPlayer fp = sender instanceof FleXPlayer ? (FleXPlayer) sender : Fukkit.getPlayer(player);
 		
 		if (fp == null)
 			throw new FleXPlayerNotFoundException("There was a problem loading the FleX player wrapper. Cannot use the FleXCommandAdapter until this is addressed.");

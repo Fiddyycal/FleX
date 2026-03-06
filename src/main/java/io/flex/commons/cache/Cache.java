@@ -16,10 +16,10 @@ public interface Cache<E, U> extends Iterable<E>, Serializable {
 	@SuppressWarnings("unchecked")
 	boolean add(E... e);
 	
-	boolean replace(E e, E o);
-	
 	@SuppressWarnings("unchecked")
 	boolean remove(E... o);
+	
+	public E replace(U key, E value);
 	
 	boolean addAll(Collection<? extends E> c);
 	

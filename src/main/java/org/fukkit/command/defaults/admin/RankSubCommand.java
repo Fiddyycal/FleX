@@ -16,14 +16,14 @@ import io.flex.commons.utils.ArrayUtils;
 public class RankSubCommand extends AbstractAdminSubCommand {
 	
 	public RankSubCommand(AdminCommand command) {
-		super(command, "setrank", "giverank", "rank", "r");
+		super(command);
 	}
 
 	@Override
 	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length < 2) {
-			this.command.usage(sender, "/<command> setrank/giverank/rank/r <player> <rank> [reason]");
+			this.command.usage(sender, "/<command> rank <player> <rank> [reason]");
 			return false;
 		}
 		

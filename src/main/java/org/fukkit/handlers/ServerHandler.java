@@ -58,7 +58,7 @@ public class ServerHandler {
 	
 	private WorldSaver saver = new WorldSaver();
 	
-	private SQLDriverType driver = SQLDriverType.SQLITE;
+	private SQLDriverType driver = SQLDriverType.MYSQL;
 	private ServerVersion version = ServerVersion.UNSPECIFIED;
 	
 	private Map<NetworkSetting, Object> settings = new HashMap<NetworkSetting, Object>();
@@ -71,7 +71,7 @@ public class ServerHandler {
 		FileConfiguration sqlConf = Fukkit.getResourceHandler().getYaml(Configuration.SQL).asFileConfiguration();
 		
 		Task.try_(() -> {
-			this.driver = SQLDriverType.valueOf(sqlConf.getString("Driver", SQLDriverType.SQLITE.name()));
+			this.driver = SQLDriverType.valueOf(sqlConf.getString("driver", SQLDriverType.MYSQL.name()));
 		});
 
 		String ver = "Undetected";

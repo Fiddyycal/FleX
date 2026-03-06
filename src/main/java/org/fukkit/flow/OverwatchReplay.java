@@ -18,7 +18,7 @@ import org.fukkit.recording.Replay;
 
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
-import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.sql.SQLRow;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.FileUtils;
 
@@ -57,7 +57,7 @@ public class OverwatchReplay extends Replay {
 		
 		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, report.getPlayer().getUniqueId().toString());
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
-		SQLRowWrapper row = base.getRow("flex_recording", SQLCondition.where("context").is(context.toString()));
+		SQLRow row = base.getRow("flex_recording", SQLCondition.where("context").is(context.toString()));
 		
 		if (row == null)
 			return null;

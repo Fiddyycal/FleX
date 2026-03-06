@@ -3,14 +3,14 @@ package org.fukkit.cache;
 import org.fukkit.reward.Badge;
 
 import io.flex.commons.Tier;
-import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.cache.ConcurrentPerformanceCache;
 
-public class BadgeCache extends LinkedCache<Badge, String> {
+public class BadgeCache extends ConcurrentPerformanceCache<Badge, String> {
 	
-	private static final long serialVersionUID = 1896219879102160101L;
+	private static final long serialVersionUID = -429255877403803619L;
 	
 	public BadgeCache() {
-		super((badge, key) -> badge.name().equalsIgnoreCase(key));
+		super(badge -> badge.name());
 	}
 	
 	public Badge getByName(String name) {

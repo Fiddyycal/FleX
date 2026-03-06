@@ -1,7 +1,7 @@
 package org.fukkit.command.defaults;
 
 import org.bukkit.command.CommandSender;
-import org.fukkit.api.helper.PlayerHelper;
+import org.fukkit.Fukkit;
 import org.fukkit.command.Command;
 import org.fukkit.command.FleXCommandAdapter;
 import org.fukkit.entity.FleXPlayer;
@@ -23,7 +23,7 @@ public class PingCommand extends FleXCommandAdapter {
 			return false;
 		}
 		
-		FleXPlayer fp = args.length == 1 ? PlayerHelper.getPlayer(args[0]) : ((FleXPlayer)sender);
+		FleXPlayer fp = args.length == 1 ? Fukkit.getPlayer(args[0]) : ((FleXPlayer)sender);
 		int ping = fp != null ? fp.getPing() : -1;
 		
 		Theme theme = ((FleXPlayer)sender).getTheme();

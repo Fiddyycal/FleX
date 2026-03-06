@@ -7,14 +7,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.fukkit.Fukkit;
-import org.fukkit.config.Configuration;
-
 import io.flex.FleX;
 import io.flex.FleX.Task;
-import io.flex.commons.Nullable;
 import io.flex.commons.Severity;
-import io.flex.commons.console.Console;
 import io.flex.commons.utils.NumUtils;
 import io.flex.commons.utils.StringUtils;
 
@@ -44,15 +39,34 @@ public class SQLConnection {
 	
 	creation,
 	lifeSpan = 21600000/*6 hours*/; // Lower than typical database timeout (ms).
+
 	
-	private SQLDriverType driver;
-	
-	public SQLConnection(String ip, int port, String database, String username, String password, String sqlite) {
-		this(ip, port, database, username, password, null, null, SQLDriverType.SQLITE, sqlite);
-	}
-	
-	public SQLConnection(String ip, int port, String database, String username, String password, SQLDriverType driver) {
-		this(ip, port, database, username, password, null, null, driver);
+	/**
+	 * 
+     * Attempts to establish a connection to an sql database using the parameters provided.
+     * 
+     * <br>
+     * <br>
+     * 
+     * <b>Note:</b> If you are still not able to connect
+     * using the recommended constructor it could be that you need
+     * to provide an admin and adminPassword as parameters.
+     * 
+     * @param host The host ip of the database.
+     * @param database The database that the given values will attempt to connect to.
+     * @param username {@link DriverManager#getConnection(String, String, String)} username parameter.
+     * @param password {@link DriverManager#getConnection(String, String, String)} password parameter.
+     * 
+     * </br>
+     * </br>
+     * 
+	 * @throws SQLException if initial connection isn't successful.
+     * 
+     * @see {@link DriverManager#getConnection(String url, String username, String password)}
+	 * 
+	 */
+	public SQLConnection(String ip, int port, String database, String username, String password) throws SQLException {
+		this(ip, port, database, username, password, null, null);
 	}
 	
 	/**
@@ -81,129 +95,23 @@ public class SQLConnection {
      * </br>
      * </br>
      * 
-     * @see {@link DriverManager#getConnection(String url, String username, String password)}
-	 * 
-	 */
-	@Deprecated
-	public SQLConnection(String host, String database, String username, String password, String admin, String adminPassword, String sqlite) {
-		this(host.split(":")[0], Integer.parseInt(host.split(":")[1]), database, username, password, admin, adminPassword, SQLDriverType.SQLITE, sqlite);
-	}
-	
-	/**
-	 * 
-     * @deprecated Use the constructor that doesn't use the <code>admin</code>
-     * parameters instead. The use of this constructor is discouraged as it is not
-     * the most trust worthy.
-     * 
-     * </br>
-     * </br>
-     * 
-     * Attempts to establish a connection to an sql database using the parameters provided.
-     * 
-     * <br>
-     * <br>
-     * 
-     * <b>Note:</b> If you are still not able to connect
-     * using the recommended constructor it could be that you need
-     * to provide an admin and adminPassword as parameters.
-     * 
-     * @param host The host ip of the database.
-     * @param database The database that the given values will attempt to connect to.
-     * @param username {@link DriverManager#getConnection(String, String, String)} username parameter.
-     * @param password {@link DriverManager#getConnection(String, String, String)} password parameter.
-     * 
-     * </br>
-     * </br>
+	 * @throws SQLException if initial connection isn't successful.
      * 
      * @see {@link DriverManager#getConnection(String url, String username, String password)}
 	 * 
 	 */
 	@Deprecated
-	public SQLConnection(String host, String database, String username, String password, String admin, String adminPassword, SQLDriverType driver) {
-		this(host.split(":")[0], Integer.parseInt(host.split(":")[1]), database, username, password, admin, adminPassword, driver);
-	}
-	
-	/**
-	 * 
-     * @deprecated Use the constructor that doesn't use the <code>admin</code>
-     * parameters instead. The use of this constructor is discouraged as it is not
-     * the most trust worthy.
-     * 
-     * </br>
-     * </br>
-     * 
-     * Attempts to establish a connection to an sql database using the parameters provided.
-     * 
-     * <br>
-     * <br>
-     * 
-     * <b>Note:</b> If you are still not able to connect
-     * using the recommended constructor it could be that you need
-     * to provide an admin and adminPassword as parameters.
-     * 
-     * @param host The host ip of the database.
-     * @param database The database that the given values will attempt to connect to.
-     * @param username {@link DriverManager#getConnection(String, String, String)} username parameter.
-     * @param password {@link DriverManager#getConnection(String, String, String)} password parameter.
-     * 
-     * </br>
-     * </br>
-     * 
-     * @see {@link DriverManager#getConnection(String url, String username, String password)}
-	 * 
-	 */
-	@Deprecated
-	public SQLConnection(String ip, int port, String database, String user, String password, String admin, String adminPassword, String sqlite) {
-		this(ip, port, database, user, password, admin, adminPassword, SQLDriverType.SQLITE, sqlite);
-	}
-	
-	/**
-	 * 
-     * @deprecated Use the constructor that doesn't use the <code>admin</code>
-     * parameters instead. The use of this constructor is discouraged as it is not
-     * the most trust worthy.
-     * 
-     * </br>
-     * </br>
-     * 
-     * Attempts to establish a connection to an sql database using the parameters provided.
-     * 
-     * <br>
-     * <br>
-     * 
-     * <b>Note:</b> If you are still not able to connect
-     * using the recommended constructor it could be that you need
-     * to provide an admin and adminPassword as parameters.
-     * 
-     * @param host The host ip of the database.
-     * @param database The database that the given values will attempt to connect to.
-     * @param username {@link DriverManager#getConnection(String, String, String)} username parameter.
-     * @param password {@link DriverManager#getConnection(String, String, String)} password parameter.
-     * 
-     * </br>
-     * </br>
-     * 
-     * @see {@link DriverManager#getConnection(String url, String username, String password)}
-	 * 
-	 */
-	@Deprecated
-	public SQLConnection(String ip, int port, String database, String user, String password, String admin, String adminPassword, SQLDriverType driver) {
-		this(ip, port, database, user, password, admin, adminPassword, driver, null);
-	}
-	
-	private SQLConnection(String ip, int port, String database, String user, String password, String admin, String adminPassword, SQLDriverType driver, @Nullable String sqlite) {
+	public SQLConnection(String ip, int port, String database, String username, String password, String admin, String adminPassword) throws SQLException {
 		
         this.ip = ip;
         this.port = String.valueOf(port);
         
         this.database = database;
-        this.username = user;
+        this.username = username;
         this.password = password;
         
         if (sqlite != null)
         	this.sqlite = sqlite.replace(File.separator, "/");
-        
-        this.driver = driver;
         
         if (attempted.contains(this.toString())) {
         	
@@ -213,11 +121,7 @@ public class SQLConnection {
         	
         }
         
-        try {
-			this.connect(this.driver == SQLDriverType.SQLITE);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+        this.connect();
 		
 	}
 	
@@ -225,18 +129,13 @@ public class SQLConnection {
 		this.alternateEncoding = alternateEncoding;
 	}
 	
-	private void connect(boolean lite) throws SQLException {
+	private void connect() throws SQLException {
 		this.creation = System.currentTimeMillis();
-		this.connection = DriverManager.getConnection("jdbc:" + this.driver + ":" + (lite ? "/" : "//") + this.getHost() + "/" + this.database + (lite ? ".db" : "?allowMultiQueries=true&autoReconnect=true" + (this.alternateEncoding ? "&characterEncoding=latin1&useConfigs=maxPerformance" : "")), this.username, this.password);
+		this.connection = DriverManager.getConnection("jdbc:" + SQLDriverType.MYSQL + "://" + this.getHost() + "/" + this.database + "?allowMultiQueries=true&autoReconnect=true" + (this.alternateEncoding ? "&characterEncoding=latin1&useConfigs=maxPerformance" : ""), this.username, this.password);
 	}
 
 	public String getHost() {
-		
-		if (this.driver == SQLDriverType.SQLITE)
-			return this.sqlite;
-		
 		return this.ip + ":" + this.port;
-		
 	}
 
 	public String getIp() {
@@ -306,7 +205,7 @@ public class SQLConnection {
 				
 			}
 			
-			this.connect(this.driver == SQLDriverType.SQLITE);
+			this.connect();
 			
 		} catch (SQLException e) {
 			Task.error("SQL (" + Severity.ERROR.name() + ")", "Failed to open connection: " + e.getMessage());
@@ -318,10 +217,6 @@ public class SQLConnection {
 	void release() {
 		Task.debug("SQL", "Closing connection.");
 		this.available = true;
-	}
-
-	public boolean isEstablished() {
-		return this.connection != null;
 	}
 	
 	public boolean isValid() {
@@ -337,32 +232,23 @@ public class SQLConnection {
 		return this.ip + ":" + this.port + "/" + this.database;
 	}
 	
-	private void testConnection(int attempt) {
+	private void testConnection(int attempt) throws SQLException {
     	
     	int limit = 2;
 		
 		Task.print("SQL", "Attempting initial connection" + (attempt < 0 ? " (Local)" : (attempt > 1 ? " (" + attempt + "/" + limit + ")" + (this.alternateEncoding ? "" : " using alternate encoding") : "")) + "...",
 				
-				"[" + (this.driver == SQLDriverType.SQLITE ? "DRIVE:PATH" : "HOST:PORT") + "/DATABASE] " + this.getHost() + "/" + this.database,
+				"[HOST:PORT/DATABASE] " + this.getHost() + "/" + this.database,
 				"[USER] " + this.username,
 				"[PASSWORD] " + StringUtils.repeat("*", this.password.length()),
-				"[DRIVER] " + this.driver.name());
+				"[DRIVER] " + SQLDriverType.MYSQL.name());
 		
 		if (attempt > 1)
 			this.alternateEncoding = true;
 		
-		if (this.driver == SQLDriverType.SQLITE)
-			try {
-				Class.forName("org.sqlite.JDBC");
-				this.connect(true);
-			} catch (SQLException | ClassNotFoundException e) {
-				Task.error("SQL (" + Severity.EMERG + ")", "An error occurred whilst creating an SQLite database.");
-		    	Console.log("SQL", Severity.EMERG, e);
-			}
-		
-		else try {
+		try {
 			
-			this.connect(false);
+			this.connect();
 			
 		} catch (SQLException e) {
 			
@@ -384,18 +270,8 @@ public class SQLConnection {
 	        
 			Task.error("SQL (" + Severity.NOTICE + ")", "Connection attempt limit met. (" + attempt + "/" + limit + ")");
 	    	Task.error("SQL (" + Severity.NOTICE + ")", "Check your credentials and try again.");
-	    	
-			if (Fukkit.getResourceHandler().getYaml(Configuration.ENGINE).getBoolean("allow-startup-with-sqlite", false)) {
-				
-				Task.print("SQL (" + Severity.NOTICE + ")", "Setting connection driver to SQLITE...");
-		        
-		        this.driver = SQLDriverType.SQLITE;
-		    	
-		    	this.testConnection(-1);
-				
-			} else throw new UnsupportedOperationException("Could not connect to database and sqlite-on-connection-fail is false, please review credentials and try again. Alternatively set sqlite-on-connection-fail to true in the aFleX directory config.yml to allow for server startup with an sqlite local database.");
-	    	
-			return;
+			
+			throw new SQLException("Could not connect to database, please review credentials and firewall rules then try again.");
 			
 		}
 		

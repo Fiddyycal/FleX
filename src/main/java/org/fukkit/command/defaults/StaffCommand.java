@@ -29,7 +29,7 @@ public class StaffCommand extends FleXCommandAdapter {
 		
 		Bukkit.getOnlinePlayers().forEach(p -> {
 			
-			FleXPlayer fp = Fukkit.getPlayerExact(p);
+			FleXPlayer fp = Fukkit.getPlayer(p);
 			
 			if (fp == null)
 				return;

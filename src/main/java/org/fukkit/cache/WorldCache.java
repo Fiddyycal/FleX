@@ -23,17 +23,17 @@ import org.fukkit.world.FleXWorld;
 import org.fukkit.world.FleXWorldCreator;
 
 import io.flex.FleX.Task;
-import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.cache.ConcurrentPerformanceCache;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.FileUtils;
 import io.flex.commons.utils.NumUtils;
 
-public class WorldCache extends LinkedCache<FleXWorld, UUID> {
+public class WorldCache extends ConcurrentPerformanceCache<FleXWorld, UUID> {
 
 	private static final long serialVersionUID = 5475465443410972475L;
 	
 	public WorldCache() {
-		super((world, uuid) -> world.getUniqueId().equals(uuid));
+		super(world -> world.getUniqueId());
 	}
 	
 	public FleXWorld getByName(String name) {

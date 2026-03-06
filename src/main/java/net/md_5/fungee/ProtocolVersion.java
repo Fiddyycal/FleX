@@ -9,7 +9,7 @@ public enum ProtocolVersion {
 	/**
 	 * THE ORDER OF THESE MATTER!!!
 	 */
-	UNSPECIFIED("Unknown", -1),
+	UNSPECIFIED("???", -1),
 	
 	//TODO Could make these more accurate (i.e like 1.17-1.19 (1.8 & 1.7 also done)).
 	
@@ -41,6 +41,7 @@ public enum ProtocolVersion {
 	v1_21_5("1.21.5", 770),
 	v1_21_6("1.21.6", 771),
 	v1_21_8("1.21.8", 772/*1.21.7 & 1.21.8*/),
+	v1_21_11("1.21.11", 774/*1.21.11*/),
 	
 	LATEST(v1_21_8.toString(), v1_21_8.toRecommendedProtocol());
 	

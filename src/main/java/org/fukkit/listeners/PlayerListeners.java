@@ -44,7 +44,6 @@ import org.fukkit.WorldSetting;
 import org.fukkit.Memory.Setting;
 import org.fukkit.ai.AIDriver;
 import org.fukkit.api.helper.DataHelper;
-import org.fukkit.api.helper.PlayerHelper;
 import org.fukkit.clickable.button.ButtonAction;
 import org.fukkit.entity.FleXBot;
 import org.fukkit.entity.FleXHumanEntity;
@@ -52,10 +51,12 @@ import org.fukkit.entity.FleXPlayer;
 import org.fukkit.entity.FleXPlayer.ProxyInfo;
 import org.fukkit.entity.FleXPlayerNotLoadedException;
 import org.fukkit.event.FleXEventListener;
+import org.fukkit.event.FleXFinalizeEvent;
 import org.fukkit.event.hologram.FloatingItemInteractEvent;
 import org.fukkit.event.hologram.HologramInteractEvent;
 import org.fukkit.event.player.FleXPlayerDeathEvent;
 import org.fukkit.event.player.FleXPlayerDisguisedEvent;
+import org.fukkit.event.player.AsyncFleXPlayerPreLoginEvent;
 import org.fukkit.event.player.FleXPlayerConnectEvent;
 import org.fukkit.event.player.FleXPlayerConnectedEvent;
 import org.fukkit.event.player.FleXPlayerMaskEvent;
@@ -74,7 +75,7 @@ import io.flex.commons.Severity;
 import io.flex.commons.console.Console;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
-import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.sql.SQLRow;
 import io.flex.commons.utils.NumUtils;
 import io.netty.channel.ConnectTimeoutException;
 
@@ -85,13 +86,34 @@ import net.md_5.fungee.server.ServerVersion;
 @SuppressWarnings("deprecation")
 public class PlayerListeners extends FleXEventListener {
 
+	private static boolean allow = false;
+	
+	@EventHandler
+	public void event(FleXFinalizeEvent event)  {
+		allow = true;
+	}
+	
 	@EventHandler(priority = EventPriority.LOW)
-	public void event(AsyncPlayerPreLoginEvent event) {
+    public void event(AsyncPlayerPreLoginEvent event) {
+		
+		if (!allow) {
+		
+			event.setKickMessage(
+					
+					ChatColor.DARK_RED + "" + ChatColor.BOLD + "Server loading" + ChatColor.DARK_GRAY + ChatColor.BOLD + "...\n" +
+					ChatColor.WHITE + "The server is still loading from a scheduled restart: Surefire is stopping all login attempts" + ChatColor.DARK_GRAY + ".\n"
+					+ "\n" +
+					ChatColor.GRAY + "If this persists please contact a staff member" + ChatColor.DARK_GRAY + ".");
+			
+			event.setLoginResult(Result.KICK_OTHER);
+			return;
+			
+		}
 		
 		String name = event.getName();
 	    UUID uuid = event.getUniqueId();
 	    
-	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.getFromCache(uuid);
+	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.get(uuid);
 	    
 	    try {
 	    	
@@ -103,7 +125,7 @@ public class PlayerListeners extends FleXEventListener {
 	    	    
 	    	}
 	    	
-	    	Memory.PLAYER_CACHE.add(fp = Fukkit.getPlayerFactory().createFukkitSafe(uuid, name, PlayerState.CONNECTING));
+	    	Memory.PLAYER_CACHE.replace(uuid, fp = Fukkit.getPlayerFactory().createFukkitSafe(uuid, name, PlayerState.CONNECTING));
 	    	
 	        Map<String, String> proxyInfo = DataHelper.getMap("player." + name + ".metadata");
         	
@@ -125,6 +147,14 @@ public class PlayerListeners extends FleXEventListener {
 	        info.setDomain(proxyInfo.get("domain"));
 	        info.setVersion(ProtocolVersion.fromProtocol(Integer.parseInt(proxyInfo.get("version"))));
 	        
+	        /**
+	         * I was advised that async event priorities
+	         * can be called from different threads, so EventPriority.NORMAL
+	         * isn't always after EventPriority.LOW, to ensure that FleXPlayer
+	         * exists during Bukkits only async task, I'm calling my own event.
+	         */
+	        Fukkit.getEventFactory().call(new AsyncFleXPlayerPreLoginEvent(fp, event));
+	        
 	    } catch (Exception e) {
 	    	
 	        disconnect(event, e.getMessage());
@@ -145,7 +175,7 @@ public class PlayerListeners extends FleXEventListener {
 		
 		Player player = event.getPlayer();
 		
-	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.getFromCache(player.getUniqueId());
+	    FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.get(player.getUniqueId());
 	    
 		try {
 			
@@ -279,7 +309,7 @@ public class PlayerListeners extends FleXEventListener {
 				ConnectionHandler connectionHandler = Fukkit.getConnectionHandler();
 				SQLDatabase database = connectionHandler.getDatabase();
 				
-				SQLRowWrapper row = database.getRow("flex_user", SQLCondition.where("uuid").is(player.getUniqueId()));
+				SQLRow row = database.getRow("flex_user", SQLCondition.where("uuid").is(player.getUniqueId()));
 				
 				if (row == null) {
 					
@@ -375,7 +405,7 @@ public class PlayerListeners extends FleXEventListener {
 	@EventHandler(priority = EventPriority.MONITOR)
     public void event(PlayerChangedWorldEvent event) {
 		
-		FleXPlayer player = PlayerHelper.getPlayerSafe(event.getPlayer().getUniqueId());
+		FleXPlayer player = Fukkit.getPlayer(event.getPlayer().getUniqueId());
 		
 		if (player == null)
 			return;
@@ -423,7 +453,7 @@ public class PlayerListeners extends FleXEventListener {
     	if (to.getBlockY() >= 0)
     		return;
     	
-    	FleXPlayer fp = PlayerHelper.getPlayerSafe(player.getUniqueId());
+    	FleXPlayer fp = Fukkit.getPlayer(player.getUniqueId());
     	
     	if (fp == null)
     		return;
@@ -465,7 +495,7 @@ public class PlayerListeners extends FleXEventListener {
     	if (player.hasMetadata("mode.build"))
     		return;
 		
-    	FleXPlayer fp = PlayerHelper.getPlayerSafe(player.getUniqueId());
+    	FleXPlayer fp = Fukkit.getPlayer(player.getUniqueId());
     	
     	if (fp.getState().isImpervious())
     		event.setCancelled(true);
@@ -483,8 +513,8 @@ public class PlayerListeners extends FleXEventListener {
 		
 		if (event.getProjectile() instanceof Arrow == false)
 			return;
-
-		FleXPlayer player = Fukkit.getPlayerExact((Player) event.getEntity());
+		
+		FleXPlayer player = Fukkit.getPlayer((Player)event.getEntity());
 		
 		if (player.getState().isImpervious()) {
 			event.setCancelled(true);
@@ -525,7 +555,7 @@ public class PlayerListeners extends FleXEventListener {
     	if (entity.hasMetadata("mode.build"))
     		return;
     	
-    	FleXPlayer fp = PlayerHelper.getPlayerSafe(entity.getUniqueId());
+    	FleXPlayer fp = Fukkit.getPlayer(entity.getUniqueId());
     	FleXWorld fw = fp != null ? fp.getWorld() : null;
     	
     	boolean cancel = false;
@@ -577,7 +607,7 @@ public class PlayerListeners extends FleXEventListener {
 		if (damager instanceof Projectile && ((Projectile)damager).getShooter() instanceof Entity)
 			damager = (Entity) ((Projectile)damager).getShooter();
 		
-    	FleXPlayer fp = PlayerHelper.getPlayerSafe(entity.getUniqueId());
+    	FleXPlayer fp = Fukkit.getPlayer(entity.getUniqueId());
     	
     	if (fp != null && fp.getState() == PlayerState.SPECTATING && event.getCause() == DamageCause.PROJECTILE) {
 			
@@ -592,7 +622,7 @@ public class PlayerListeners extends FleXEventListener {
 		if (damager.hasMetadata("mode.build"))
 			return;
     	
-    	FleXPlayer other = PlayerHelper.getPlayerSafe(damager.getUniqueId());
+    	FleXPlayer other = Fukkit.getPlayer(damager.getUniqueId());
 		
     	FleXWorld fw = fp != null ? fp.getWorld() : other != null ? other.getWorld() : null;;
     	
@@ -637,7 +667,7 @@ public class PlayerListeners extends FleXEventListener {
 			return;
 		}
 		
-		FleXPlayer fp = Fukkit.getPlayerExact(event.getEntity());
+		FleXPlayer fp = Fukkit.getPlayer(event.getEntity());
 		
 		if (fp == null)
 			return;
@@ -676,7 +706,7 @@ public class PlayerListeners extends FleXEventListener {
     	if (player.hasMetadata("mode.build"))
     		return;
     	
-    	FleXPlayer fp = PlayerHelper.getPlayerSafe(player.getUniqueId());
+    	FleXPlayer fp = Fukkit.getPlayer(player.getUniqueId());
     	
     	if (fp.getState().isImpervious()) {
         	event.setCancelled(true);
@@ -704,7 +734,7 @@ public class PlayerListeners extends FleXEventListener {
     	if (player.hasMetadata("mode.build"))
     		return;
     	
-    	FleXPlayer fp = PlayerHelper.getPlayerSafe(player.getUniqueId());
+    	FleXPlayer fp = Fukkit.getPlayer(player.getUniqueId());
     	
     	if (fp.getState() == PlayerState.SPECTATING) {
         	event.setCancelled(true);
@@ -732,7 +762,7 @@ public class PlayerListeners extends FleXEventListener {
     	if (player.hasMetadata("mode.build"))
     		return;
     	
-    	FleXPlayer fp = PlayerHelper.getPlayerSafe(player.getUniqueId());
+    	FleXPlayer fp = Fukkit.getPlayer(player.getUniqueId());
     	
     	if (fp.getState() == PlayerState.SPECTATING || fp.getState() == PlayerState.INLOBBY) {
         	event.setCancelled(true);
@@ -744,7 +774,7 @@ public class PlayerListeners extends FleXEventListener {
 	@EventHandler(priority = EventPriority.HIGH)
     public void event(PlayerInteractAtEntityEvent event) {
 		
-    	FleXPlayer player = Fukkit.getPlayerExact(event.getPlayer());
+    	FleXPlayer player = Fukkit.getPlayer(event.getPlayer());
     	
     	if (player == null)
     		return;
@@ -783,7 +813,7 @@ public class PlayerListeners extends FleXEventListener {
 	@EventHandler(priority = EventPriority.LOW)
 	public void event(PlayerPickupItemEvent event) {
 		
-    	FleXPlayer player = Fukkit.getPlayerExact(event.getPlayer());
+    	FleXPlayer player = Fukkit.getPlayer(event.getPlayer());
     	
     	if (player == null)
     		return;
@@ -803,7 +833,7 @@ public class PlayerListeners extends FleXEventListener {
 		if (pl.hasMetadata("disguising"))
 			return;
 		
-		FleXPlayer player = Fukkit.getPlayerExact(pl);
+		FleXPlayer player = Fukkit.getPlayer(pl);
 		
 		if (player == null) {
 			disconnect(pl, "FleXPlayer failed to load.");
@@ -861,6 +891,8 @@ public class PlayerListeners extends FleXEventListener {
 			
 		}
 		
+		player.getNameTags().forEach(n -> n.update());
+		
 	}
 	
 	private static void disconnect(AsyncPlayerPreLoginEvent event, String reason) {
@@ -871,7 +903,7 @@ public class PlayerListeners extends FleXEventListener {
 		event.setLoginResult(Result.KICK_OTHER);
 		event.setKickMessage(disconnectMessage(ServerConnectException.SERVER_ERROR + ": " + reason));
 		
-		FleXHumanEntity fp = Memory.PLAYER_CACHE.getFromCache(event.getUniqueId());
+		FleXHumanEntity fp = Memory.PLAYER_CACHE.get(event.getUniqueId());
 		
 		if (fp != null)
 			Memory.PLAYER_CACHE.remove(fp);
@@ -885,7 +917,7 @@ public class PlayerListeners extends FleXEventListener {
 		
 		player.kickPlayer(disconnectMessage(reason));
 		
-		FleXHumanEntity fp = Memory.PLAYER_CACHE.getFromCache(player.getUniqueId());
+		FleXHumanEntity fp = Memory.PLAYER_CACHE.get(player.getUniqueId());
 		
 		if (fp != null)
 			Memory.PLAYER_CACHE.remove(fp);

@@ -134,8 +134,9 @@ public class SQLDataTypeMap {
 	}
 
 	public static Object wrap(String value, int type) {
-
+		
 		Objects.requireNonNull(value, "value must not be null");
+		
 		switch (type) {
 		
 		case Types.CHAR:

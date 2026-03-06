@@ -18,7 +18,7 @@ public class HistoryListeners extends FleXEventListener {
 		if (event.isCancelled())
 			return;
 		
-		FleXPlayer player = Fukkit.getPlayerExact(event.getPlayer());
+		FleXPlayer player = Fukkit.getPlayer(event.getPlayer());
 		
 		Theme theme = player.getTheme();
 		

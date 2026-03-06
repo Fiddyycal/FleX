@@ -50,7 +50,7 @@ import org.fukkit.utils.WorldUtils;
 import io.flex.commons.Nullable;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
-import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.sql.SQLRow;
 import io.flex.commons.utils.FileUtils;
 import io.flex.commons.utils.NumUtils;
 
@@ -120,9 +120,9 @@ public class Replay extends Recording {
 		
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		
-		Set<SQLRowWrapper> rows = context != null ? base.getRows(name, SQLCondition.where("context").is(context.toString())) : base.getRows("flex_recording");
+		Set<SQLRow> rows = context != null ? base.getRows(name, SQLCondition.where("context").is(context.toString())) : base.getRows("flex_recording");
 		
-		SQLRowWrapper row = rows.stream().filter(r -> r != null && r.getString("uuid") != null && r.getString("uuid").contains(name)).findAny().orElse(null);
+		SQLRow row = rows.stream().filter(r -> r != null && r.getString("uuid") != null && r.getString("uuid").contains(name)).findAny().orElse(null);
 		
 		if (row == null)
 			return null;

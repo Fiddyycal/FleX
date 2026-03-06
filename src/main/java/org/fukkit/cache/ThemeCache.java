@@ -16,11 +16,11 @@ import org.fukkit.config.YamlConfig;
 import org.fukkit.theme.Theme;
 
 import io.flex.FleX.Task;
-import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.cache.ConcurrentPerformanceCache;
 import io.flex.commons.file.Language;
 import io.flex.commons.utils.NumUtils;
 
-public class ThemeCache extends LinkedCache<Theme, String> {
+public class ThemeCache extends ConcurrentPerformanceCache<Theme, String> {
 	
 	private static final long serialVersionUID = 9160995157213751252L;
 	
@@ -29,7 +29,7 @@ public class ThemeCache extends LinkedCache<Theme, String> {
 	private Theme defaultTheme;
 	
 	public ThemeCache() {
-		super((theme, name) -> theme.getName().equalsIgnoreCase(name));
+		super(theme -> theme.getName());
 	}
 	
 	public Map<Block, Boolean> getBlocks() {

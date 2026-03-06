@@ -112,7 +112,7 @@ public class ChatListeners extends FleXEventListener {
 		
 		recipients.forEach(p -> {
 			
-			FleXPlayer fp = Fukkit.getPlayerExact(p);
+			FleXPlayer fp = Fukkit.getPlayer(p);
 			
 			if (fp == null)
 				return;

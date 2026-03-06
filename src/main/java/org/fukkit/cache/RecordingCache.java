@@ -4,14 +4,14 @@ import org.fukkit.entity.FleXPlayer;
 import org.fukkit.recording.Recording;
 import org.fukkit.recording.Replay;
 
-import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.cache.ConcurrentPerformanceCache;
 
-public class RecordingCache extends LinkedCache<Recording, String> {
+public class RecordingCache extends ConcurrentPerformanceCache<Recording, String> {
 	
 	private static final long serialVersionUID = 664033333000112820L;
 	
 	public RecordingCache() {
-		super((recording, uid) -> recording.getUniqueId().equalsIgnoreCase(uid));
+		super(recording -> recording.getUniqueId());
 	}
 	
 	public Replay getByWatcher(FleXPlayer player) {

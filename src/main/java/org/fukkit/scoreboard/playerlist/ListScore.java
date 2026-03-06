@@ -41,10 +41,10 @@ public class ListScore implements FleXScoreboard {
 		
 		this.id = StringUtils.generate(11, false).toLowerCase() + "_list";
 		
-		this.objective = this.getScoreboard().getObjective(this.id);
+		this.objective = this.scoreboard.getObjective(this.id);
 		
 		if (this.objective == null)
-			this.objective = this.getScoreboard().registerNewObjective(this.id, "dummy");
+			this.objective = this.scoreboard.registerNewObjective(this.id, "dummy");
 		
 		this.entry = entry;
 		

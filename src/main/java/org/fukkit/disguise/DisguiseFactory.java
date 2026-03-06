@@ -31,22 +31,22 @@ public interface DisguiseFactory {
 	 * @param name The name the flex player will appear to have.
 	 */
 	public void setPlayerName(Player player, String name);
-
+	
 	/**
 	 * Changes the players name to the specified name in the player list for <u>all players</u>, including the player.
 	 * 
 	 * @param player The flex player you want to mask.
 	 * @param name The name the flex player will appear to have.
-	 */
-	public void setPlayerListName(Player player, String name);
+	 *
+	public void setPlayerListName(Player player, String name);*/
 
 	/**
 	 * Changes the players name to the specified name in the player list for <u>the other player</u> specified.
 	 * 
 	 * @param player The flex player you want to mask.
 	 * @param name The name the flex player will appear to have.
-	 */
-	public void setPlayerListName(Player player, Player other, String name);
+	 *
+	public void setPlayerListName(Player player, Player other, String name);*/
 
 	/**
 	 * Changes the players skin to the specified skin for <u>all players</u>, including the player.

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class CollectionUtils {
@@ -26,7 +27,7 @@ public class CollectionUtils {
 	
 	public static Map<String, String> toMap(String s) {
 		
-	    Map<String, String> map = new LinkedHashMap<>();
+	    Map<String, String> map = new LinkedHashMap<String, String>();
 	    
 	    if (s == null)
 	        return map;
@@ -57,7 +58,7 @@ public class CollectionUtils {
 	    
 	}
 	
-	public static Collection<String> toCollection(String s) {
+	public static List<String> toCollection(String s) {
 		
 	    if (s == null || s.equals("[]"))
 	        return new LinkedList<String>();
@@ -68,7 +69,7 @@ public class CollectionUtils {
 	    // This splits each comma with or without a whitespace
 	    String[] parts = s.split("\\s*,\\s*");
 	    
-		/** Arrays asList method is immutable, new ArrayList makes list mutable. */
+		/** new LinkedList makes list mutable. */
 	    return new LinkedList<String>(Arrays.asList(parts));
 	    
 	}

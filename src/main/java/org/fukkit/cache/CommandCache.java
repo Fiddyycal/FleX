@@ -4,14 +4,14 @@ import org.bukkit.command.defaults.BukkitCommand;
 import org.fukkit.Fukkit;
 import org.fukkit.command.FleXCommandAdapter;
 
-import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.cache.ConcurrentPerformanceCache;
 
-public class CommandCache extends LinkedCache<FleXCommandAdapter, String> {
+public class CommandCache extends ConcurrentPerformanceCache<FleXCommandAdapter, String> {
 	
 	private static final long serialVersionUID = -86340809195221360L;
 	
 	public CommandCache() {
-		super((command, name) -> ((BukkitCommand)command).getName().equalsIgnoreCase(name));
+		super(command -> ((BukkitCommand)command).getName());
 	}
 	
 	public FleXCommandAdapter getByAlias(String alias) {

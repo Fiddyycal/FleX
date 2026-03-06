@@ -140,7 +140,7 @@ public class ReplayListeners extends FleXEventListener {
 			return;
 		
 		FleXPlayer player = Fukkit.getPlayer(entity.getUniqueId());
-		FleXPlayer transcript = Fukkit.getCachedPlayer(clicked.getUniqueId());
+		FleXPlayer transcript = Fukkit.getPlayer(clicked.getUniqueId());
 		
 		if (transcript != null) {
 			

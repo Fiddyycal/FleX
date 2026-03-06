@@ -1,7 +1,6 @@
 package org.fukkit.cache;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.ConcurrentModificationException;
 
 import org.bukkit.inventory.Inventory;
@@ -13,10 +12,10 @@ import org.fukkit.clickable.button.ExecutableButton;
 import org.fukkit.entity.FleXPlayer;
 
 import io.flex.FleX.Task;
-import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.cache.ConcurrentPerformanceCache;
 
 @SuppressWarnings("deprecation")
-public class GuiCache extends LinkedCache<Menu, Inventory> {
+public class GuiCache extends ConcurrentPerformanceCache<Menu, Inventory> {
 
 	private static final long serialVersionUID = -9198738498209231101L;
 
@@ -24,7 +23,12 @@ public class GuiCache extends LinkedCache<Menu, Inventory> {
 	//Arrays.asList(gui.asBukkitInventory().getContents()).equals(Arrays.asList(inv.getContents()))
 	
 	public GuiCache() {
-		super((gui, inv) -> gui.asBukkitInventory() == (inv) || gui.asBukkitInventory().equals(inv));
+		super((gui) -> gui.asBukkitInventory());
+	}
+	
+	@Override
+	public Menu get(Inventory arg0) {
+		return this.stream().filter(g -> g.asBukkitInventory() == arg0 || g.asBukkitInventory().equals(arg0)).findFirst().orElse(null);
 	}
 
 	/**
@@ -49,48 +53,15 @@ public class GuiCache extends LinkedCache<Menu, Inventory> {
 	*/
 	
 	@Override
-	public boolean remove(Menu... args) {
-		
-		for (Menu menu : args)
-			menu.getButtons().values().removeIf(b -> {
+	public void onRemove(Menu e) {
+		e.getButtons().values().removeIf(b -> {
+			
+			if (b instanceof ExecutableButton)
+				Memory.BUTTON_CACHE.remove((ExecutableButton)b);
 				
-				if (b instanceof ExecutableButton)
-					Memory.BUTTON_CACHE.remove((ExecutableButton)b);
-					
-				return true;
-				
-			});
-		
-		return super.remove(args);
-		
-	}
-	
-	@Override
-	public boolean removeAll(Collection<? extends Menu> c) {
-		
-		boolean mod = false;
-        
-        for (Menu menu : c)
-        	
-        	if (this.remove(menu))
-        		mod = true;
-        	
-		return mod;
-		
-	}
-	
-	@Override
-	public boolean replace(Menu arg0, Menu arg1) {
-		
-		boolean mod = !this.contains(arg0) || !this.contains(arg1);
-		
-		if (mod) {
-			this.remove(arg0);
-			this.add(arg1);
-		}
-		
-		return mod;
-		
+			return true;
+			
+		});
 	}
 	
 	public Menu getByItemExact(ItemStack itemStack) {

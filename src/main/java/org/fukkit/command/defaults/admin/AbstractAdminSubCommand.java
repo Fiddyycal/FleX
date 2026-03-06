@@ -10,15 +10,8 @@ public abstract class AbstractAdminSubCommand implements Cacheable, TriPredicate
 	
 	protected AdminCommand command;
 	
-	private String[] aliases;
-	
-	public AbstractAdminSubCommand(AdminCommand command, String... aliases) {
+	public AbstractAdminSubCommand(AdminCommand command) {
 		this.command = command;
-		this.aliases = aliases;
-	}
-	
-	public String[] getAliases() {
-		return this.aliases;
 	}
 	
 	@Override

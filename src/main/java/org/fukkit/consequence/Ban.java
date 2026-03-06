@@ -4,17 +4,17 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.UUID;
 
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import org.fukkit.Fukkit;
 import org.fukkit.entity.FleXPlayer;
+import org.fukkit.event.player.AsyncFleXPlayerPreLoginEvent;
 import org.fukkit.listeners.ConvictionListeners;
 import org.fukkit.theme.Theme;
 
-import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.cache.ConcurrentPerformanceCache;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
-import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.sql.SQLRow;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.NumUtils;
 import io.flex.commons.utils.StringUtils;
@@ -29,12 +29,18 @@ public class Ban extends Punishment {
 	 * @see ConvictionListeners
 	 *
 	 */
-	public static class BanCache extends LinkedCache<Ban, UUID> {
+	public static class BanCache extends ConcurrentPerformanceCache<Ban, UUID> {
 		
 		private static final long serialVersionUID = -4132115098896228306L;
 		
 		public BanCache() {
-			super((ban, uid) -> ban.uuid.equals(uid) && ban.isActive());
+			super(ban -> ban.uuid);
+		}
+		
+		@Override
+		public Ban get(UUID arg0) {
+			Ban ban = super.get(arg0);
+			return ban != null && ban.isActive() ? ban : null;
 		}
 		
 		public Ban getByPlayer(FleXPlayer player) {
@@ -48,8 +54,7 @@ public class Ban extends Punishment {
 			
 			try {
 				
-				
-				for (SQLRowWrapper row : database.getRows("flex_punishment", SQLCondition.where("type").is(PunishmentType.BAN.name()), SQLCondition.where("pardoned").is(false)))
+				for (SQLRow row : database.getRows("flex_punishment", SQLCondition.where("type").is(PunishmentType.BAN.name()), SQLCondition.where("pardoned").is(false)))
 					this.add(Ban.download(row.getLong("id")));
 				
 			} catch (SQLException e) {
@@ -125,7 +130,7 @@ public class Ban extends Punishment {
 		this.gtfoAndDontComeBack(false);
 	}
 	
-	public void onPreBypassAttempt(FleXPlayer player, AsyncPlayerPreLoginEvent event) {
+	public void onPreBypassAttempt(FleXPlayer player, AsyncFleXPlayerPreLoginEvent event) {
 		
 		event.setLoginResult(Result.KICK_BANNED);
 		

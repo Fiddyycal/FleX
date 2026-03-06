@@ -1,6 +1,7 @@
 package org.fukkit.command.defaults.admin;
 
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -13,8 +14,6 @@ import org.fukkit.command.GlobalCommand;
 import org.fukkit.command.RestrictCommand;
 import org.fukkit.theme.ThemeMessage;
 
-import io.flex.commons.cache.Cache;
-import io.flex.commons.cache.LinkedCache;
 import io.flex.commons.file.Language;
 import io.flex.commons.file.Variable;
 
@@ -25,36 +24,34 @@ import io.flex.commons.file.Variable;
 @Command(name = "admin", usage = "/<command> <subCommand> [<args>] [-f]")
 public class AdminCommand extends FleXCommandAdapter {
 
-	private static final Cache<AbstractAdminSubCommand, String> sub_command_cache = new LinkedCache<AbstractAdminSubCommand, String>((subCommand, alias) -> {
-		return Arrays.stream(subCommand.getAliases()).anyMatch(a -> alias.equalsIgnoreCase(a));
-	});
+	private static final Map<String, AbstractAdminSubCommand> sub_commands = new HashMap<String, AbstractAdminSubCommand>();
 	
 	public AdminCommand() {
-
-		sub_command_cache.add(new BadgeSubCommand(this));
-		sub_command_cache.add(new RankSubCommand(this));
-		sub_command_cache.add(new DebugSubCommand(this));
-		sub_command_cache.add(new BroadcastSubCommand(this));
-		sub_command_cache.add(new BotSubCommand(this));
-		sub_command_cache.add(new ReplaySubCommand(this));
-		sub_command_cache.add(new FreezeSubCommand(this));
-		sub_command_cache.add(new ShutdownSubCommand(this));
+		
+		sub_commands.put("badge", new BadgeSubCommand(this));
+		sub_commands.put("rank", new RankSubCommand(this));
+		sub_commands.put("debug", new DebugSubCommand(this));
+		sub_commands.put("broadcast", new BroadcastSubCommand(this));
+		sub_commands.put("bot", new BotSubCommand(this));
+		sub_commands.put("replay", new ReplaySubCommand(this));
+		sub_commands.put("freeze", new FreezeSubCommand(this));
+		sub_commands.put("shutdown", new ShutdownSubCommand(this));
 		
 	}
 	
 	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
-		if (args.length == 0 || sub_command_cache.get(args[0]) == null) {
+		if (args.length == 0 || sub_commands.get(args[0].toLowerCase()) == null) {
 			this.usage(sender,
 				
-				"/<command> givebadge/badge/b add/remove <player> <badge> [reason]",
-				"/<command> setrank/giverank/rank/r <player> <rank> [reason]",
-				"/<command> database/configuration <name> [-r, -c, -l]",
-				"/<command> say/broadcast/bc <message> [-g]",
-				"/<command> spawn/create/bot <name> [uuid]",
-				"/<command> replay/playback/play <uid|list>",
-				"/<command> freeze/frozen/pause [reason]",
-				"/<command> shutdown/stop [reason]"
+				"/<command> broadcast/bc/say <message>", // TODO [-g]
+				"/<command> bot create/remove <name> [uuid]",
+				"/<command> badge add/remove <player> <badge> [reason]",
+				"/<command> rank <player> <rank> [reason]",
+				"/<command> database <name> [-r, -c, -l]",
+				"/<command> replay <uid|list>",
+				"/<command> freeze [reason]",
+				"/<command> shutdown [reason]"
 				
 			);
 			return false;
@@ -67,7 +64,10 @@ public class AdminCommand extends FleXCommandAdapter {
 			
 		}
 		
-		return sub_command_cache.get(args[0]).test(sender, args, flags);
+		if (args[0].toLowerCase().equals("say") || args[0].toLowerCase().equals("bc"))
+			args[0] = "broadcast";
+		
+		return sub_commands.get(args[0].toLowerCase()).test(sender, args, flags);
 		
 	}
 	

@@ -17,7 +17,7 @@ import io.flex.commons.Nullable;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLMap;
-import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.sql.SQLRow;
 import io.flex.commons.utils.CollectionUtils;
 
 public abstract class Punishment extends Consequence {
@@ -68,7 +68,7 @@ public abstract class Punishment extends Consequence {
 		
 		Set<Punishment> convictions = new LinkedHashSet<Punishment>();
 		
-		for (SQLRowWrapper row : database.getRows("flex_punishment", SQLCondition.where(outgoing ? "by" : "uuid").is(player.getUniqueId()))) {
+		for (SQLRow row : database.getRows("flex_punishment", SQLCondition.where(outgoing ? "by" : "uuid").is(player.getUniqueId()))) {
 			
 			PunishmentType check = null;
 			
@@ -131,7 +131,7 @@ public abstract class Punishment extends Consequence {
 		System.out.println("test 3");
 		
 		SQLDatabase connection = Fukkit.getConnectionHandler().getDatabase();
-		SQLRowWrapper row = connection.getRow("flex_punishment", SQLCondition.where("id").is(this.reference));
+		SQLRow row = connection.getRow("flex_punishment", SQLCondition.where("id").is(this.reference));
 		
 		row.set("evidence", Arrays.asList(this.evidence = evidence).toString());
 		row.update();
@@ -153,7 +153,7 @@ public abstract class Punishment extends Consequence {
 	public void pardon() throws SQLException {
 
 		SQLDatabase database = Fukkit.getConnectionHandler().getDatabase();
-		SQLRowWrapper row = database.getRow("flex_punishment", SQLCondition.where("id").is(this.reference));
+		SQLRow row = database.getRow("flex_punishment", SQLCondition.where("id").is(this.reference));
 		
 		long until = System.currentTimeMillis();
 		
@@ -172,7 +172,7 @@ public abstract class Punishment extends Consequence {
 		if (!(this.reference > 0))
 			this.reference = database.getTableSize("flex_punishment") + 1;
 		
-		SQLRowWrapper row = database.getRow("flex_punishment", SQLCondition.where("id").is(this.reference));
+		SQLRow row = database.getRow("flex_punishment", SQLCondition.where("id").is(this.reference));
 		
 		if (row != null) {
 			
@@ -213,7 +213,7 @@ public abstract class Punishment extends Consequence {
 	protected void load(long reference) throws SQLException {
 		
 		SQLDatabase connection = Fukkit.getConnectionHandler().getDatabase();
-		SQLRowWrapper row = connection.getRow("flex_punishment", SQLCondition.where("id").is(this.reference = reference));
+		SQLRow row = connection.getRow("flex_punishment", SQLCondition.where("id").is(this.reference = reference));
 		
 		if (row == null)
 			return;

@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -14,7 +15,6 @@ import java.util.function.Consumer;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -54,6 +54,7 @@ import io.flex.commons.console.Console;
 import io.flex.commons.file.DataFile;
 import io.flex.commons.utils.NumUtils;
 import io.flex.commons.utils.StringUtils;
+
 import net.md_5.fungee.server.ServerVersion;
 
 public final class Fukkit extends JavaPlugin {
@@ -370,61 +371,51 @@ public final class Fukkit extends JavaPlugin {
 		return Memory.WORLD_CACHE;
 	}
 	
-	/**
-	 * 
-	 * This will create a new FleXPlayer object and load
-	 * it if no FleXPlayer player object exists in the cache.
-	 * 
-	 * @param name
-	 * @return FleXPlayer object from cache, create new one if player exists but is offline.
-	 */
-	public static FleXPlayer getPlayer(String name) {
-		return (FleXPlayer) (StringUtils.isUUID(name) ? Memory.PLAYER_CACHE.getByUniqueId(UUID.fromString(name)) : Memory.PLAYER_CACHE.getByName(name));
+	public static FleXPlayer getPlayer(String name, boolean ignoreDisguise, boolean loadIfOffline) {
+		
+	    Objects.requireNonNull(name, "name cannot be null");
+	    
+	    UUID uuid = StringUtils.isUUID(name) ? UUID.fromString(name) : null;
+	    
+	    FleXPlayer fp = uuid != null ? (FleXPlayer) Memory.PLAYER_CACHE.getByUniqueId(uuid) : (FleXPlayer) Memory.PLAYER_CACHE.getByName(name, ignoreDisguise);
+	    
+	    if (fp == null && loadIfOffline)
+	        fp = uuid != null ? (FleXPlayer) Memory.PLAYER_CACHE.getFromDatabase(uuid) : (FleXPlayer) Memory.PLAYER_CACHE.getFromDatabase(name);
+	    
+	    return fp;
+	    
 	}
 	
-	/**
-	 * 
-	 * This will create a new FleXPlayer object and load
-	 * it if no FleXPlayer player object exists in the cache.
-	 * 
-	 * @param uuid
-	 * @return FleXPlayer object from cache, create new one if player exists but is offline.
-	 */
+	public static FleXPlayer getPlayer(UUID uuid, boolean loadIfOffline) {
+		
+		Objects.requireNonNull(uuid, "uuid cannot be null");
+		
+		FleXPlayer fp = (FleXPlayer) Memory.PLAYER_CACHE.getByUniqueId(uuid);
+		
+		return fp == null && loadIfOffline ? (FleXPlayer) Memory.PLAYER_CACHE.getFromDatabase(uuid) : fp;
+		
+	}
+	
+	public static FleXPlayer getPlayer(String name, boolean ignoreDisguise) {
+		return getPlayer(name, ignoreDisguise, false);
+	}
+	
+	public static FleXPlayer getPlayer(String name) {
+		return getPlayer(name, false, false);
+	}
+	
 	public static FleXPlayer getPlayer(UUID uuid) {
-		return (FleXPlayer) Memory.PLAYER_CACHE.getByUniqueId(uuid);
+		return getPlayer(uuid, false);
 	}
-
-	/**
-	 * 
-	 * Unlike other player fetching methods this one will NOT
-	 * create a new object and load it if the player is offline.
-	 * 
-	 * @param uuid
-	 * @return FleXPlayer object from cache, null if none exists.
-	 */
-	public static FleXPlayer getCachedPlayer(UUID uuid) {
-		return (FleXPlayer) Memory.PLAYER_CACHE.getFromCache(uuid);
+	
+	public static FleXPlayer getPlayer(HumanEntity player) {
+		return player != null ? (FleXPlayer) Memory.PLAYER_CACHE.get(player.getUniqueId()) : null;
 	}
-
-	public static FleXPlayer getPlayerExact(String name) {
-		
-		Player player = Bukkit.getPlayer(name);
-		
-		if (player != null)
-			return (FleXPlayer) Memory.PLAYER_CACHE.get(player);
-		
-		return (FleXPlayer) Memory.PLAYER_CACHE.getByName(name);
-		
-	}
-
-	public static FleXPlayer getPlayerExact(HumanEntity player) {
-		return (FleXPlayer) Memory.PLAYER_CACHE.get(player);
-	}
-
+	
 	public static void getPlayerAsync(UUID uuid, Consumer<FleXHumanEntity> callback) {
 		Memory.PLAYER_CACHE.getFromDatabaseAsync(uuid, callback);
 	}
-
+	
 	public static void getPlayerAsync(String name, Consumer<FleXHumanEntity> callback) {
 		Memory.PLAYER_CACHE.getFromDatabaseAsync(name, callback);
 	}

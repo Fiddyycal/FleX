@@ -3,24 +3,24 @@ package io.flex.commons.sql;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SQLMap<K, V> extends LinkedHashMap<K, V> {
+public class SQLMap extends LinkedHashMap<String, Object> {
 
 	private static final long serialVersionUID = 2951819978325854299L;
 	
 	@SafeVarargs
-    public static <K, V> SQLMap<K, V> of(Map.Entry<K, V>... entries) {
+    public static SQLMap of(Map.Entry<String, Object>... entries) {
 		
-		SQLMap<K, V> map = new SQLMap<K, V>();
+		SQLMap map = new SQLMap();
         
-        for (Map.Entry<K, V> entry : entries)
+        for (Map.Entry<String, Object> entry : entries)
             map.put(entry.getKey(), entry.getValue());
         
         return map;
         
     }
 
-    public static <K, V> Map.Entry<K, V> entry(K key, V value) {
-        return new LinkedHashMap.SimpleEntry<K, V>(key, value);
+    public static Map.Entry<String, Object> entry(String key, Object value) {
+        return new LinkedHashMap.SimpleEntry<String, Object>(key, value);
     }
 	
 }

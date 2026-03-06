@@ -41,7 +41,7 @@ public class CraftRecordable implements Recordable {
 	
 	@Override
 	public FleXPlayer toPlayer() {
-		return Fukkit.getCachedPlayer(this.uuid);
+		return Fukkit.getPlayer(this.uuid);
 	}
 	
 	public static CraftRecordable of(FleXPlayer player) {

@@ -1,6 +1,5 @@
 package org.fukkit.scoreboard.playerlist;
 
-import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.NameTagVisibility;
 import org.bukkit.scoreboard.Objective;
@@ -17,6 +16,7 @@ import io.flex.commons.utils.StringUtils;
 
 import static org.fukkit.utils.FormatUtils.format;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -25,38 +25,28 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("deprecation")
 public class NameTag implements FleXScoreboard {
-
-	private UUID uuid;
 	
-	private String id;
+	private Map<UUID, TeamEntry> scoreboards = new HashMap<UUID, TeamEntry>();
+
+	private String id, name;
 	
 	private TeamEntry entry;
 	
-	private Map<UUID, TeamEntry> scoreboards = new HashMap<UUID, TeamEntry>();
-	
 	private BukkitRunnable task;
 	
-	public NameTag(FleXPlayer player, String prefix, FleXPlayer... recipients) {
-		this(player, prefix, null, recipients);
+	private FleXPlayer player;
+	
+	public NameTag(String prefix) {
+		this(prefix, null);
 	}
 	
-	public NameTag(FleXPlayer player, String prefix, String suffix, FleXPlayer... recipients) {
-		this(player, new TeamEntry(prefix, suffix), recipients);
+	public NameTag(String prefix, String suffix) {
+		this(new TeamEntry(prefix, suffix));
 	}
 	
-	public NameTag(FleXPlayer player, TeamEntry entry, FleXPlayer... recipients) {
-		
-		this.id = StringUtils.generate(11, false).toLowerCase() + "_tag";
-		
-		this.uuid = player.getUniqueId();
-		
+	public NameTag(TeamEntry entry) {
+		this.id = StringUtils.generate(12, false).toLowerCase() + "_tag";
 		this.entry = entry;
-		
-		if (recipients != null)
-			this.addRecipients(recipients);
-		
-		this.setIntervals(20L);
-		
 	}
 	
 	public String getId() {
@@ -75,8 +65,14 @@ public class NameTag implements FleXScoreboard {
 		return this.entry;
 	}
 	
-	public Set<FleXPlayer> getRecipientsUnsafe() {
-		return this.scoreboards.keySet().stream().map(u -> Fukkit.getPlayer(u)).collect(Collectors.toSet());
+	public Set<FleXPlayer> getRecipients() {
+		return Collections.unmodifiableSet(this.scoreboards.keySet().stream().map(u -> Fukkit.getPlayer(u)).collect(Collectors.toSet()));
+	}
+	
+	public void onAttach(FleXPlayer player) {
+		this.player = player;
+		this.name = player.isDisguised() && player.getDisguise() != null ? player.getDisguise().getName() : player.getName();
+		this.update();
 	}
 	
 	public void setTeamEntry(TeamEntry entry) {
@@ -113,22 +109,13 @@ public class NameTag implements FleXScoreboard {
 			
 			Team team = scoreboard.registerNewTeam(this.id);
 			
-			FleXPlayer player = Fukkit.getPlayer(this.uuid);
-			
-			if (player == null || !player.isOnline()) {
-				
-				this.clear();
-				return;
-				
-			}
-			
 			try {
 				
 				// TODO This is new and not in 1.8 add to CraftFukkit Implementation class
 				//team.setColor(ChatColor.RED);
 				
 				Class.forName("org.bukkit.scoreboard.Team.Option");
-
+				
 				// TODO This is different in 1.8, add to CraftFukkit Implementation class
 				team.setOption(Option.NAME_TAG_VISIBILITY, OptionStatus.ALWAYS);
 				
@@ -136,7 +123,7 @@ public class NameTag implements FleXScoreboard {
 				team.setNameTagVisibility(NameTagVisibility.ALWAYS);
 			}
 			
-			team.addEntry(player.getName());
+			team.addEntry(this.name);
 			
 			TeamEntry entry = this.entry.clone();
 			
@@ -198,21 +185,14 @@ public class NameTag implements FleXScoreboard {
 	@Override
 	public void onTick() {
 		
-		if (Bukkit.getPlayer(this.uuid) == null) {
+		if (this.player == null || !this.player.isOnline()) {
 			
 			this.clear();
 			return;
 			
 		}
 		
-		FleXPlayer player = Fukkit.getPlayer(this.uuid);
-		
-		if (player == null || !player.isOnline()) {
-			
-			this.clear();
-			return;
-			
-		}
+		String name = this.player.isDisguised() && this.player.getDisguise() != null ? this.player.getDisguise().getName() : this.player.getName();
 		
 		if (this.entry.getImpute() != null || this.entry.getAttribute() != null)
 			this.entry.update();
@@ -240,11 +220,28 @@ public class NameTag implements FleXScoreboard {
 				
 				entry.setTeam(null);
 				
+			} else {
+				
+				if (!name.equals(this.name)) {
+					
+					if (!team.hasEntry(name)) {
+						
+						for (String all : team.getEntries())
+					        team.removeEntry(all);
+						
+					    team.addEntry(name);
+					    
+					}
+					
+				}
+				
 			}
 			
 			return remove;
 			
 		});
+		
+		this.name = name;
 		
 	}
 	
@@ -284,6 +281,10 @@ public class NameTag implements FleXScoreboard {
 	@Override
 	public Scoreboard getScoreboard() {
 		throw new UnsupportedOperationException("NameTag uses multiple recipients and cannot return a single Scoreboard.");
+	}
+	
+	public void update() {
+		this.onTick();
 	}
 	
 }

@@ -29,7 +29,7 @@ import io.flex.commons.file.DataFile;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
 import io.flex.commons.sql.SQLMap;
-import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.sql.SQLRow;
 import io.flex.commons.utils.ArrayUtils;
 import io.flex.commons.utils.StringUtils;
 
@@ -149,7 +149,7 @@ public class FlowLineEnforcementHandler {
 		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
 		
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
-		SQLRowWrapper row = this.recordingRow(player);
+		SQLRow row = this.recordingRow(player);
 		
 		long now = System.currentTimeMillis();
 		
@@ -184,9 +184,9 @@ public class FlowLineEnforcementHandler {
 		
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		
-		Set<SQLRowWrapper> rows = base.getRows("flex_recording", SQLCondition.where("context").is(context.toString()));
+		Set<SQLRow> rows = base.getRows("flex_recording", SQLCondition.where("context").is(context.toString()));
 		
-	    for (SQLRowWrapper r : rows) {
+	    for (SQLRow r : rows) {
 	    	
 	        String state = r.getString("state");
 	        
@@ -225,13 +225,13 @@ public class FlowLineEnforcementHandler {
 		
 	}
 	
-	private SQLRowWrapper recordingRow(FleXPlayer player) throws SQLException {
+	private SQLRow recordingRow(FleXPlayer player) throws SQLException {
 		
 		RecordingContext context = RecordingContext.of(RecordingContext.REPORT, player.getUniqueId().toString());
 		
 		SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 		
-		SQLRowWrapper row = base.getRow("flex_recording",
+		SQLRow row = base.getRow("flex_recording",
 				
 				SQLCondition.where("state").is(RecordingState.RECORDING.name()),
 				SQLCondition.where("context").is(context.toString())

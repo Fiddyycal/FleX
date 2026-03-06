@@ -17,19 +17,19 @@ import org.fukkit.utils.BukkitUtils;
 
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
-import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.sql.SQLRow;
 
 public class ReplaySubCommand extends AbstractAdminSubCommand {
 	
 	public ReplaySubCommand(AdminCommand command) {
-		super(command, "replay", "playback", "play");
+		super(command);
 	}
 
 	@Override
 	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length != 1) {
-			this.command.usage(sender, "/<command> replay/playback/play <uid>", "/<command> replay/playback/play list");
+			this.command.usage(sender, "/<command> replay <uid>", "/<command> replay list");
 			return false;
 		}
 		
@@ -51,7 +51,7 @@ public class ReplaySubCommand extends AbstractAdminSubCommand {
 					
 					SQLDatabase base = Fukkit.getConnectionHandler().getDatabase();
 					
-					Set<SQLRowWrapper> rows = base.getRows("flex_recording", Arrays.asList("uuid"), Arrays.asList(SQLCondition.where("state").is("COMPLETE")));
+					Set<SQLRow> rows = base.getRows("flex_recording", Arrays.asList("uuid"), Arrays.asList(SQLCondition.where("state").is("COMPLETE")));
 					
 					if (rows.isEmpty()) {
 						player.sendMessage(theme.format("<engine><success>No replays found<pp>."));
@@ -61,7 +61,7 @@ public class ReplaySubCommand extends AbstractAdminSubCommand {
 					player.sendMessage(theme.format("<engine><display>Replays<pp>:"));
 					
 					// TODO Json message that makes them clickable
-					for (SQLRowWrapper row : rows)
+					for (SQLRow row : rows)
 						player.sendMessage(theme.format("<engine><pc>" + row.getString("uuid")));
 					
 					return;

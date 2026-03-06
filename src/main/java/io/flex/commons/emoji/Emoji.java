@@ -38,7 +38,13 @@ public enum Emoji {
 	WHITE_LARGE_SQUARE("⬜"),
 	BLACK_PARALLELOGRAM("▰"),
 	WHITE_PARALLELOGRAM("▱"),
-	HIGH_VOLTAGE("⚡");
+	HIGH_VOLTAGE("⚡"),
+	
+	// UNTESTED
+	DASH("─"),
+	EU("🇪🇺"),
+	US("🇺🇸"),
+	AU("🇦🇺");
 	
 	private String unicode;
 	

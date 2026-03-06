@@ -144,7 +144,7 @@ public class MojangHelper {
     	
     	try {
         	
-        	FleXPlayer player = uuid != null ? PlayerHelper.getPlayerSafe(uuid) : null;
+        	FleXPlayer player = uuid != null ? Fukkit.getPlayer(uuid) : null;
 			
         	return player.getSkin();
         	

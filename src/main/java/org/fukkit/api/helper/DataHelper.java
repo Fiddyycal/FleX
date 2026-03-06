@@ -115,7 +115,7 @@ public class DataHelper {
 		String list = getString(key);
 		
 		if (list != null)
-			return (List<String>) CollectionUtils.toCollection(list);
+			return CollectionUtils.toCollection(list);
 		
 		return new ArrayList<String>();
 		

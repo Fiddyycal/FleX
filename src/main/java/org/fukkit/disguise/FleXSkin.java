@@ -24,4 +24,7 @@ public interface FleXSkin extends Cacheable {
     
     public SkinSource getSource();
     
+    @Override
+    String toString();
+    
 }

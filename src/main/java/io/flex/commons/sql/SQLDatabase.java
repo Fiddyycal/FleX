@@ -1,6 +1,5 @@
 package io.flex.commons.sql;
 
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -17,22 +16,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.flex.FleX;
 import io.flex.FleX.Task;
 import io.flex.commons.Nullable;
 import io.flex.commons.Severity;
-import io.flex.commons.StopWatch;
 import io.flex.commons.console.Console;
 
 import java.io.File;
@@ -48,38 +43,25 @@ public class SQLDatabase {
 	
 	int port;
 	
-	private String
-	
-	ip, database, username, password, sqlite = FleX.EXE_PATH.replace(File.separator, "/") + "/flex/data/sqlite";
+	private String ip, database, username, password;
 	
 	private Set<SQLConnectionListener> listeners = new HashSet<SQLConnectionListener>();
-	
-	private SQLDriverType driver;
 	
 	private int maxConnections = 15;
 	
 	private final List<SQLConnection> pool = new ArrayList<SQLConnection>();
 	
 	private final ThreadPoolExecutor executor;
-
-	public SQLDatabase(String ip, int port, String database, String username, String password, SQLDriverType driver) {
-		this(ip, port, database, username, password, driver, null);
-	}
 	
-	public SQLDatabase(String ip, int port, String database, String username, String password, @Nullable String sqlite) {
-		this(ip, port, database, username, password, SQLDriverType.SQLITE, sqlite);
-	}
+	private Map<String, SQLTable> schema = new HashMap<String, SQLTable>();
 	
-	private SQLDatabase(String ip, int port, String database, String username, String password, SQLDriverType driver, @Nullable String sqlite) {
-		
-		this.driver = driver;
+	public SQLDatabase(String ip, int port, String database, String username, String password) throws SQLException {
 		
 		this.ip = ip;
 		this.port = port;
 		this.database = database;
 		this.username = username;
 		this.password = password;
-		this.sqlite = sqlite;
 		
 		for (int i = 0; i < this.maxConnections; i++)
 			this.pool.add(this.connect());
@@ -133,19 +115,10 @@ public class SQLDatabase {
 	}
 
 	public String getHost() {
-		
-		if (this.driver == SQLDriverType.SQLITE)
-			return this.sqlite;
-		
 		return this.ip + ":" + this.port;
-		
 	}
 	
-	public SQLDriverType getDriver() {
-		return this.driver;
-	}
-	
-	public SQLConnection open() throws SQLException {
+	private SQLConnection open() throws SQLException {
 		
 	    synchronized(this.pool) {
 			
@@ -175,7 +148,7 @@ public class SQLDatabase {
 	                this.pool.add(connection);
                 	
                 	connection.open();
-                    
+                	
                     return connection;
                     
 	            }
@@ -197,7 +170,42 @@ public class SQLDatabase {
 	    
 	}
 	
-	public void release(SQLConnection connection) {
+	public void open(Consumer<SQLConnection> use) {
+		this.open(use, null);
+	}
+	
+	public void open(Consumer<SQLConnection> use, @Nullable Consumer<SQLException> exception) {
+		
+		SQLConnection connection = null;
+		
+		try {
+			
+			connection = this.open();
+			
+			use.accept(connection);
+			
+		} catch(SQLException e) {
+			
+			if (exception != null)
+				exception.accept(e);
+			
+			else {
+				
+				Task.error("SQL", "An error occurred: " + e.getMessage());
+				Console.log("SQL", Severity.ERROR, e);
+				
+			};
+			
+        } finally {
+        	
+        	if (connection != null)
+        		this.close(connection);
+        	
+        }
+		
+	}
+	
+	private void close(SQLConnection connection) {
 	    synchronized(this.pool) {
 	    	
 	        connection.release();
@@ -207,12 +215,8 @@ public class SQLDatabase {
 	    }
 	}
 	
-	private SQLConnection connect() {Task.debug("SQL", "CONNECT CALLED -> creating new connection. Current pool size: " + pool.size());
-
-		return this.driver == SQLDriverType.SQLITE ?
-				
-				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.sqlite) :
-				new SQLConnection(this.ip, this.port, this.database, this.username, this.password, this.driver);
+	private SQLConnection connect() throws SQLException {
+		return new SQLConnection(this.ip, this.port, this.database, this.username, this.password);
 	}
 	
 	public int getAvailableConnections() {
@@ -247,7 +251,7 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * Async safe.
 	 */
-	public void getRowAsync(String table, Consumer<SQLRowWrapper> callback) throws SQLException {
+	public void getRowAsync(String table, Consumer<SQLRow> callback) throws SQLException {
 		this.queueAsync(() -> this.row(table, null, null), callback);
 	}
 	
@@ -255,7 +259,7 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * Async safe.
 	 */
-	public void getRowsAsync(String table, Consumer<Set<SQLRowWrapper>> callback) throws SQLException {
+	public void getRowsAsync(String table, Consumer<Set<SQLRow>> callback) throws SQLException {
 		this.queueAsync(() -> this.rows(table, -1, null, null), callback);
 	}
 	
@@ -263,7 +267,7 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * Async safe.
 	 */
-	public void getRowAsync(String table, @Nullable SQLCondition<?> condition, Consumer<SQLRowWrapper> callback) throws SQLException {
+	public void getRowAsync(String table, @Nullable SQLCondition<?> condition, Consumer<SQLRow> callback) throws SQLException {
 		this.queueAsync(() -> this.row(table, null, condition != null ? Arrays.asList(condition) : null), callback);
 	}
 	
@@ -271,7 +275,7 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * Async safe.
 	 */
-	public void getRowsAsync(String table, @Nullable SQLCondition<?> condition, Consumer<Set<SQLRowWrapper>> callback) throws SQLException {
+	public void getRowsAsync(String table, @Nullable SQLCondition<?> condition, Consumer<Set<SQLRow>> callback) throws SQLException {
 		this.queueAsync(() -> this.rows(table, -1, null, condition != null ? Arrays.asList(condition) : null), callback);
 	}
 	
@@ -280,7 +284,7 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public SQLRowWrapper getRow(String table, @Nullable String... columns) throws SQLException {
+	public SQLRow getRow(String table, @Nullable String... columns) throws SQLException {
 		return this.queue(() -> this.row(table, columns != null ? Arrays.asList(columns) : null, null));
 	}
 	
@@ -289,7 +293,7 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public SQLRowWrapper getRow(String table, @Nullable SQLCondition<?>... conditions) throws SQLException {
+	public SQLRow getRow(String table, @Nullable SQLCondition<?>... conditions) throws SQLException {
 		return this.queue(() -> this.row(table, null, conditions != null ? Arrays.asList(conditions) : null));
 	}
 	
@@ -298,7 +302,7 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public SQLRowWrapper getRow(String table, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
+	public SQLRow getRow(String table, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
 		return this.queue(() -> this.row(table, columns, conditions));
 	}
 	
@@ -307,7 +311,7 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public SQLRowWrapper getRow(String table) throws SQLException {
+	public SQLRow getRow(String table) throws SQLException {
 		return this.queue(() -> this.row(table, null, null));
 	}
 	
@@ -316,7 +320,7 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public Set<SQLRowWrapper> getRows(String table) throws SQLException {
+	public Set<SQLRow> getRows(String table) throws SQLException {
 		return this.queue(() -> this.rows(table, -1, null, null));
 	}
 	
@@ -325,7 +329,7 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public Set<SQLRowWrapper> getRows(String table, @Nullable String... columns) throws SQLException {
+	public Set<SQLRow> getRows(String table, @Nullable String... columns) throws SQLException {
 		return this.queue(() -> this.rows(table, -1, columns != null ? Arrays.asList(columns) : null, null));
 	}
 	
@@ -334,7 +338,7 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public Set<SQLRowWrapper> getRows(String table, @Nullable SQLCondition<?>... conditions) throws SQLException {
+	public Set<SQLRow> getRows(String table, @Nullable SQLCondition<?>... conditions) throws SQLException {
 		return this.queue(() -> this.rows(table, -1, null, conditions != null ? Arrays.asList(conditions) : null));
 	}
 	
@@ -343,7 +347,7 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public Set<SQLRowWrapper> getRows(String table, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
+	public Set<SQLRow> getRows(String table, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
 		return this.queue(() -> this.rows(table, -1, columns, conditions));
 	}
 
@@ -352,7 +356,7 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public Set<SQLRowWrapper> getRows(String table, int limit, @Nullable SQLCondition<?>... conditions) throws SQLException {
+	public Set<SQLRow> getRows(String table, int limit, @Nullable SQLCondition<?>... conditions) throws SQLException {
 		return this.queue(() -> this.rows(table, limit, null, conditions != null ? Arrays.asList(conditions) : null));
 	}
 	
@@ -361,8 +365,12 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public Set<SQLRowWrapper> getRows(String table, int limit, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
+	public Set<SQLRow> getRows(String table, int limit, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
 		return this.queue(() -> this.rows(table, limit, columns, conditions));
+	}
+	
+	public boolean hasTable(String table) {
+		return this.schema.containsKey(table);
 	}
 	
 	/**
@@ -402,7 +410,7 @@ public class SQLDatabase {
 					} catch (SQLException ignore) {}
 				}
 		        
-				this.release(connection);
+				this.close(connection);
 				
 			}
 			
@@ -439,13 +447,8 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public void createTable(String table, LinkedHashMap<String, SQLDataType> columns) throws SQLException {
-		
-		this.queue(() -> {
-	        this.create(table, null, columns);
-	        return null;
-	    });
-	    
+	public SQLRow addRow(String table, LinkedHashMap<String, Object> entries) throws SQLException {
+		return this.queue(() -> this.add(table, entries));
 	}
 	
 	/**
@@ -453,31 +456,10 @@ public class SQLDatabase {
 	 * Will attempt to open a connection, utilize it, then close the connection.
 	 * @throws SQLException
 	 */
-	public void createTable(String table, @Nullable String primary, LinkedHashMap<String, SQLDataType> columns) throws SQLException {
-		
-		this.queue(() -> {
-	        this.create(table, primary, columns);
-	        return null;
-	    });
-	    
-	}
-	
-	/**
-	 * Connection safe, but may still throw SQLException.
-	 * Will attempt to open a connection, utilize it, then close the connection.
-	 * @throws SQLException
-	 */
-	public SQLRowWrapper addRow(String table, LinkedHashMap<String, Object> entries) throws SQLException {
-		 return this.addRow(table, null, entries);
-	}
-
-	/**
-	 * Connection safe, but may still throw SQLException.
-	 * Will attempt to open a connection, utilize it, then close the connection.
-	 * @throws SQLException
-	 */
-	public SQLRowWrapper addRow(String table, @Nullable String identifier, LinkedHashMap<String, Object> entries) throws SQLException {
-		return this.queue(() -> this.add(table, identifier, entries));
+	public SQLTable addTable(String table, SQLColumn... columns) throws SQLException {
+		SQLTable t = new SQLTable(this, table, columns);
+		this.schema.put(table, t);
+		return t;
 	}
 	
 	/**
@@ -500,12 +482,9 @@ public class SQLDatabase {
 			
 			try {
 				
-				if (this.driver == SQLDriverType.SQLITE)
-					q = q.replace(IDENTIFIER_QUOTE, "");
-				
 				Task.debug("SQL", "Attempting EXECUTE -|- base; " + q);
 				
-				statement = connection.getDriverConnection().prepareStatement(q, this.driver == SQLDriverType.SQLITE ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+				statement = connection.getDriverConnection().prepareStatement(q, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				
 				boolean resultSet = statement.execute();
 				
@@ -532,7 +511,7 @@ public class SQLDatabase {
 					} catch (SQLException ignore) {}
 				}
 		        
-				this.release(connection);
+				this.close(connection);
 					
 			}
 	    	
@@ -561,12 +540,9 @@ public class SQLDatabase {
 			
 			try {
 				
-				if (this.driver == SQLDriverType.SQLITE)
-					q = q.replace(IDENTIFIER_QUOTE, "");
-				
 				Task.debug("SQL", "Attempting UPDATE -> base; " + q);
 				
-				statement = connection.getDriverConnection().prepareStatement(q, this.driver == SQLDriverType.SQLITE ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+				statement = connection.getDriverConnection().prepareStatement(q, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				
 				if (objects != null && objects.length > 0) {
 					for (int i = 0; i < objects.length; i++) {
@@ -602,7 +578,7 @@ public class SQLDatabase {
 					} catch (SQLException ignore) {}
 				}
 		        
-				this.release(connection);
+				this.close(connection);
 					
 			}
 	    	
@@ -619,13 +595,13 @@ public class SQLDatabase {
 	 * @return Number of affected rows.
 	 * @throws SQLException
 	 */
-	public Set<SQLRowWrapper> result(String query, Object... objects) throws SQLException {
+	public Set<SQLRow> result(String query, Object... objects) throws SQLException {
 		
 		return this.queue(() -> {
 
 	    	String q = query;
 	    	
-			Set<SQLRowWrapper> rows = new HashSet<SQLRowWrapper>();
+			Set<SQLRow> rows = new HashSet<SQLRow>();
 			
 		    SQLConnection connection = this.open();
 		    
@@ -633,12 +609,9 @@ public class SQLDatabase {
 			
 			try {
 				
-				if (this.driver == SQLDriverType.SQLITE)
-					q = q.replace(IDENTIFIER_QUOTE, "");
-				
 				Task.debug("SQL", "Attempting RESULT -> base; " + q);
 				
-				statement = connection.getDriverConnection().prepareStatement(q, this.driver == SQLDriverType.SQLITE ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+				statement = connection.getDriverConnection().prepareStatement(q, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				
 				if (objects != null && objects.length > 0) {
 					for (int i = 0; i < objects.length; i++) {
@@ -652,7 +625,6 @@ public class SQLDatabase {
 				}
 				
 				String table = null;
-				String primary = null;
 				
 	        	try (ResultSet result = statement.executeQuery()) {
 	        		
@@ -666,21 +638,15 @@ public class SQLDatabase {
 	    	        
 	    	        if (matcher.find())
 	    	            table = matcher.group(1);
-	    			
-	    	        if (table != null) {
-	    	        	try (ResultSet rs = connection.getDriverConnection().getMetaData().getPrimaryKeys(null, null, table)) {
-	    	        		
-	    		            if (rs.next())
-	    		            	primary = rs.getString("COLUMN_NAME");
-	    		            
-	    		        }
-	    	        }
+	    	        
+	    	        if (table == null)
+	    	        	throw new SQLException("table cannot be null.");
 	    	        
 	    			ResultSetMetaData meta = result.getMetaData();
 	    	        
 	    			while(result.next()) {
 	    				
-	    				Map<String, Object> entries = new HashMap<String, Object>();
+	    				Map<String, Object> entries = new SQLMap();
 	    				
 	    				for (int i = 1; i <= meta.getColumnCount(); i++) {
 	    					
@@ -691,7 +657,12 @@ public class SQLDatabase {
 	    			        
 	    			    }
 	    		        
-	    				rows.add(new SQLRowWrapper(this, table, primary, entries));
+	    				SQLTable t = this.schema.get(table);
+	    				
+	    				if (t == null)
+	    					throw new SQLException("The table '" + table + "' has not yet been defined in the SQLDatabase schema.");
+	    				
+	    				rows.add(new SQLRow(this, t, (SQLMap)entries));
 	    				
 	    			}
 	        		
@@ -713,7 +684,7 @@ public class SQLDatabase {
 					} catch (SQLException ignore) {}
 				}
 		        
-				this.release(connection);
+				this.close(connection);
 					
 			}
 			
@@ -784,7 +755,7 @@ public class SQLDatabase {
 	        
 	    } finally {
 	        
-			this.release(connection);
+			this.close(connection);
 	        
 	    }
 	}
@@ -838,108 +809,11 @@ public class SQLDatabase {
 		
 	}
 	
-	private void create(String table, @Nullable String primary, LinkedHashMap<String, SQLDataType> columns) throws SQLException {
-
-		SQLConnection connection = this.open();
-		
-		PreparedStatement statement = null;
-		
-	    try {
-	    	
-	    	if (columns == null || columns.isEmpty())
-		        throw new SQLException("Column definitions must not be empty.");
-		    
-		    DatabaseMetaData meta = connection.getDriverConnection().getMetaData();
-		    
-	    	Task.debug("SQL", "Creating table " + table + "...");
-	    	
-			StopWatch timer = new StopWatch();
-		    
-			/**
-			 * 
-			 * } catch (SQLException e) {
-			
-					if (!e.getMessage().equals("Table '" + table + "' already exists"))
-						throw e;
-						
-				}
-			 * 
-			 */
-			
-		    try (ResultSet tables = meta.getTables(null, null, table, new String[]{ "TABLE" })) {
-		    	
-		        if (tables.next()) {
-		        	
-			    	Task.debug("SQL", "Returning pre-existing " + table + " table.");
-		            return;
-		            
-		        }
-		        
-		    }
-		    
-			Task.print("SQL", "Builing structured query language table " + table + "...");
-		    
-		    StringBuilder query = new StringBuilder("CREATE TABLE IF NOT EXISTS `" + table + "` (");
-
-		    for (Entry<String, SQLDataType> entry : columns.entrySet()) {
-		    	
-		        String column = entry.getKey();
-		        
-		        SQLDataType type = entry.getValue();
-
-		        query.append(IDENTIFIER_QUOTE + column + IDENTIFIER_QUOTE + " " + type);
-		        
-		        if (type.getLength() > 0)
-		        	query.append("(" + type.getLength() + ")");
-		        
-		        if (primary != null && column.equals(primary))
-			        query.append(" PRIMARY KEY");
-		        
-		        query.append(", ");
-		        
-		    }
-		    
-		    int length = query.length();
-		    
-		    if (query.substring(length - 2).equals(", "))
-		        query.setLength(length - 2);
-		    
-		    query.append(");");
-		    
-			Task.print("SQL", "Attempting CREATE -> base; " + query.toString());
-			
-		    statement = connection.getDriverConnection().prepareStatement(query.toString());
-		    statement.execute();
-			
-			for (SQLConnectionListener listener : this.listeners)
-				listener.onCreate(table);
-		    
-			Task.print("SQL", "Table created. (" + timer.getTime(TimeUnit.MILLISECONDS) + "ms)");
-
-	    } catch (SQLException e) {
-	    	
-	    	Console.log("SQL", Severity.ERROR, e);
-	        throw e;
-	        
-	    } finally {
-	    	
-	    	if (statement != null) {
-				try {
-					statement.close();
-				} catch (SQLException ignore) {}
-			}
-	        
-			this.release(connection);
-				
-		}
-		
-	}
-	
-	private SQLRowWrapper row(String table, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
+	private SQLRow row(String table, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
 		return this.rows(table, 1, columns, conditions).stream().findFirst().orElse(null);
 	}
 	
-	private Set<SQLRowWrapper> rows(String table, int limit, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
+	private Set<SQLRow> rows(String table, int limit, @Nullable List<String> columns, @Nullable List<SQLCondition<?>> conditions) throws SQLException {
 		
 		StringBuilder select = new StringBuilder();
 		
@@ -949,7 +823,7 @@ public class SQLDatabase {
 		
 		StringBuilder query = new StringBuilder("SELECT " + (select.length() > 0 ? select.toString() : "*") + " FROM " + IDENTIFIER_QUOTE + table + IDENTIFIER_QUOTE);
 		
-		Set<SQLRowWrapper> rows = new HashSet<SQLRowWrapper>();
+		Set<SQLRow> rows = new HashSet<SQLRow>();
 		
 		SQLConnection connection = this.open();
 		
@@ -975,25 +849,18 @@ public class SQLDatabase {
 			if (limit > 0)
 				query.append(" LIMIT " + limit);
 			
-			statement = connection.getDriverConnection().prepareStatement(query.toString(), this.driver == SQLDriverType.SQLITE ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			statement = connection.getDriverConnection().prepareStatement(query.toString(), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			
 			for (int i = 0; i < params.size(); i++)
 				bind(statement, i+1, params.get(i));
 			
 		    ResultSet result = statement.executeQuery();
-			
-			String primary = null;
-			
-	        try (ResultSet rs = connection.getDriverConnection().getMetaData().getPrimaryKeys(null, null, table)) {
-	            if (rs.next())
-	            	primary = rs.getString("COLUMN_NAME");
-	        }
 	        
 			ResultSetMetaData meta = result.getMetaData();
 	        
 			while(result.next()) {
 				
-				Map<String, Object> entries = new HashMap<String, Object>();
+				Map<String, Object> entries = new SQLMap();
 				
 				for (int i = 1; i <= meta.getColumnCount(); i++) {
 					
@@ -1004,10 +871,12 @@ public class SQLDatabase {
 			        
 			    }
 				
-				if (primary == null && conditions != null)
-					rows.add(new SQLRowWrapper(this, table, entries, conditions.toArray(new SQLCondition<?>[conditions.size()])));
+				SQLTable t = this.schema.get(table);
 				
-				else rows.add(new SQLRowWrapper(this, table, primary, entries));
+				if (t == null)
+					throw new SQLException("The table '" + table + "' has not yet been defined in the SQLDatabase schema.");
+				
+				rows.add(new SQLRow(this, t, (SQLMap)entries));
 				
 			}
 			
@@ -1025,7 +894,7 @@ public class SQLDatabase {
 	            } catch (SQLException ignore) {}
 	        }
 	        
-			this.release(connection);
+			this.close(connection);
             
 	    }
 		
@@ -1069,7 +938,7 @@ public class SQLDatabase {
 				} catch (SQLException ignore) {}
 			}
 			
-			this.release(connection);
+			this.close(connection);
 			
 		}
 		
@@ -1077,30 +946,24 @@ public class SQLDatabase {
 		
 	}
 	
-	private SQLRowWrapper add(String table, @Nullable String identifier, LinkedHashMap<String, Object> entries) throws SQLException {
-		 
+	private SQLRow add(String table, LinkedHashMap<String, Object> entries) throws SQLException {
+		
 		if (entries == null || entries.isEmpty())
 	        throw new SQLException("Cannot insert an empty row into table " + table + ", please provide values.");
- 
+		
+		SQLTable t = this.schema.get(table);
+		
+		if (t == null)
+			throw new SQLException("The table '" + table + "' has not yet been defined in the SQLDatabase schema.");
+		
 	    SQLConnection connection = this.open();
 	    PreparedStatement statement = null;
- 
+	    
 	    try {
- 
-	        if (identifier == null) {
- 
-	            DatabaseMetaData databaseMeta = connection.getDriverConnection().getMetaData();
- 
-	            try (ResultSet rs = databaseMeta.getPrimaryKeys(null, null, table)) {
-	                if (rs.next())
-	                	identifier = rs.getString("COLUMN_NAME");
-	            }
- 
-	        }
- 
+	    	
 	        List<String> columns = this.columns(table);
- 
-	        Map<String, Object> filtered = new LinkedHashMap<>();
+	        
+	        Map<String, Object> filtered = new SQLMap();
  
 	        for (String col : columns) {
 	        	
@@ -1118,7 +981,7 @@ public class SQLDatabase {
  
 	        if (filtered.isEmpty())
 	            throw new SQLException("No valid columns provided for table " + table + ".");
- 
+	        
 	        StringBuilder query = new StringBuilder("INSERT INTO ").append(IDENTIFIER_QUOTE + table + IDENTIFIER_QUOTE).append(" (");
 	        StringBuilder placeholders = new StringBuilder();
 	        
@@ -1126,33 +989,33 @@ public class SQLDatabase {
 	            query.append(IDENTIFIER_QUOTE + column + IDENTIFIER_QUOTE).append(", ");
 	            placeholders.append("?, ");
 	        }
- 
+	        
 	        query.setLength(query.length() - 2);
 	        placeholders.setLength(placeholders.length() - 2);
- 
+	        
 	        query.append(") VALUES (").append(placeholders).append(")");
- 
+	        
 	        statement = connection.getDriverConnection().prepareStatement(query.toString());
- 
+	        
 	        int index = 1;
- 
+	        
 	        for (Object value : filtered.values()) {
 	            if (value instanceof File) {
- 
+	            	
 	            	File file = (File) value;
- 
+	            	
 	                try (FileInputStream fis = new FileInputStream((File) value)) {
 	                    statement.setBinaryStream(index++, fis, (int) file.length());
 	                } catch (IOException e) {
 						throw new SQLException("Exception occured writing file to database: (" + e.getCause().getClass().getSimpleName() + ") " + e.getMessage());
 					}
- 
+	                
 	            } else statement.setObject(index++, value);
 	        }
 	        
 	        statement.executeUpdate();
- 
-	        return new SQLRowWrapper(this, table, identifier, filtered);
+	        
+	        return new SQLRow(this, t, (SQLMap)filtered);
  
 	    } catch (SQLException e) {
 	    	
@@ -1167,7 +1030,7 @@ public class SQLDatabase {
 	            } catch (SQLException ignore) {}
 	        }
 
-			this.release(connection);
+			this.close(connection);
 	        
 	    }
 	    

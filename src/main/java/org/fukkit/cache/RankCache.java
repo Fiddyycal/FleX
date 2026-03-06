@@ -13,16 +13,16 @@ import org.fukkit.config.Configuration;
 import org.fukkit.config.YamlConfig;
 import org.fukkit.reward.Rank;
 
-import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.cache.ConcurrentPerformanceCache;
 
-public class RankCache extends LinkedCache<Rank, String> {
+public class RankCache extends ConcurrentPerformanceCache<Rank, String> {
 
 	private static final long serialVersionUID = -7517426384280062919L;
 	
 	private Rank def;
 	
 	public RankCache() {
-		super((rank, name) -> rank.getName().equalsIgnoreCase(name));
+		super(rank -> rank.getName());
 	}
 	
 	public Rank getDefaultRank() {

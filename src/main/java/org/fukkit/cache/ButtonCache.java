@@ -9,14 +9,14 @@ import org.fukkit.Fukkit;
 import org.fukkit.Memory;
 import org.fukkit.clickable.button.UniqueButton;
 
-import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.cache.ConcurrentPerformanceCache;
 
-public class ButtonCache extends LinkedCache<UniqueButton, UUID> {
+public class ButtonCache extends ConcurrentPerformanceCache<UniqueButton, UUID> {
 
 	private static final long serialVersionUID = -71037563061932004L;
 
 	public ButtonCache() {
-		super((button, uid) -> button.getUniqueId().equals(uid));
+		super(button -> button.getUniqueId());
 	}
 	
 	public UniqueButton getByItem(ItemStack itemStack) {

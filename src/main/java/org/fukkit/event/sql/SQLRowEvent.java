@@ -1,13 +1,13 @@
 package org.fukkit.event.sql;
 
 import io.flex.commons.sql.SQLDatabase;
-import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.sql.SQLRow;
 
 public class SQLRowEvent extends SQLTableEvent {
 
-	private SQLRowWrapper row;
+	private SQLRow row;
 	
-	public SQLRowEvent(SQLDatabase connection, String table, SQLRowWrapper row) {
+	public SQLRowEvent(SQLDatabase connection, String table, SQLRow row) {
 		
 		super(connection, table);
 		
@@ -15,7 +15,7 @@ public class SQLRowEvent extends SQLTableEvent {
 		
 	}
 	
-	public SQLRowWrapper getRow() {
+	public SQLRow getRow() {
 		return this.row;
 	}
 

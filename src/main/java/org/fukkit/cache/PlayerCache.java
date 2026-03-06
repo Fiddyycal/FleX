@@ -6,9 +6,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.fukkit.Fukkit;
 import org.fukkit.PlayerState;
 import org.fukkit.entity.FleXHumanEntity;
@@ -16,12 +14,12 @@ import org.fukkit.entity.FleXPlayer;
 import org.fukkit.utils.BukkitUtils;
 
 import io.flex.FleX.Task;
-import io.flex.commons.cache.LinkedCache;
+import io.flex.commons.cache.ConcurrentPerformanceCache;
 import io.flex.commons.sql.SQLCondition;
-import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.sql.SQLRow;
 import io.flex.commons.utils.StringUtils;
 
-public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
+public class PlayerCache extends ConcurrentPerformanceCache<FleXHumanEntity, UUID> {
 	
 	private static int members = -1;
 	
@@ -35,7 +33,7 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 				
 				Task.debug("FleX", "Counting members... (async)");
 				
-				Set<SQLRowWrapper> rows = Fukkit.getConnectionHandler().getDatabase().result("SELECT COUNT(*) FROM flex_user");
+				Set<SQLRow> rows = Fukkit.getConnectionHandler().getDatabase().result("SELECT COUNT(*) FROM flex_user");
 				
 				if (!rows.isEmpty())
 					members = rows.stream().findFirst().orElse(null).getInt("COUNT(*)");
@@ -54,9 +52,9 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 	}
 	
 	private static final long serialVersionUID = 898674831597070205L;
-
+	
 	public PlayerCache() {
-		super((fp, player) -> fp.getUniqueId().equals(player.getUniqueId()));
+		super(fp -> fp.getUniqueId());
 	}
 	
 	@Override
@@ -70,15 +68,6 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 		return true;
 	}
 	
-	/**
-	 * Because there will be a lot to go through,
-	 * let's override with something more efficient.
-	 */
-	@Override
-	public FleXHumanEntity get(HumanEntity player) {
-		return player != null ? this.getByUniqueId(player.getUniqueId()) : null;
-	}
-	
 	public void getFromDatabaseAsync(UUID uuid, Consumer<FleXHumanEntity> callback) {
 		BukkitUtils.asyncThread(() -> {
 			
@@ -88,7 +77,7 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 				
 				try {
 					
-					SQLRowWrapper row = Fukkit.getConnectionHandler().getDatabase().getRow("flex_user", SQLCondition.where("uuid").is(uuid));
+					SQLRow row = Fukkit.getConnectionHandler().getDatabase().getRow("flex_user", SQLCondition.where("uuid").is(uuid));
 					
 					if (row != null)
 						player = Fukkit.getPlayerFactory().createFukkitSafe(uuid, row.getString("name"), PlayerState.OFFLINE);
@@ -109,13 +98,13 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 			
 			boolean uid = StringUtils.isUUID(name);
 			
-			FleXHumanEntity player = uid ? this.getByUniqueId(UUID.fromString(name)) : this.getByName(name);
+			FleXHumanEntity player = uid ? this.getByUniqueId(UUID.fromString(name)) : this.getByName(name, true);
 			
 			if (player == null) {
 				
 				try {
 					
-					SQLRowWrapper row = Fukkit.getConnectionHandler().getDatabase().getRow("flex_user", SQLCondition.where(uid ? "uuid" : "name").is(name));
+					SQLRow row = Fukkit.getConnectionHandler().getDatabase().getRow("flex_user", SQLCondition.where(uid ? "uuid" : "name").is(name));
 					
 					if (row != null)
 						player = Fukkit.getPlayerFactory().createFukkitSafe(UUID.fromString(row.getString("uuid")), name, PlayerState.OFFLINE);
@@ -139,13 +128,13 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 		if (StringUtils.isUUID(name))
 			return this.getFromDatabase(UUID.fromString(name));
 		
-		FleXHumanEntity player = this.getByName(name);
+		FleXHumanEntity player = this.getByName(name, true);
 		
 		if (player == null) {
 			
 			try {
 				
-				SQLRowWrapper row = Fukkit.getConnectionHandler().getDatabase().getRow("flex_user", SQLCondition.where("name").is(name));
+				SQLRow row = Fukkit.getConnectionHandler().getDatabase().getRow("flex_user", SQLCondition.where("name").is(name));
 				
 				if (row != null)
 					player = Fukkit.getPlayerFactory().createFukkitSafe(UUID.fromString(row.getString("uuid")), name, PlayerState.OFFLINE);
@@ -171,7 +160,7 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 			
 			try {
 				
-				SQLRowWrapper row = Fukkit.getConnectionHandler().getDatabase().getRow("flex_user", SQLCondition.where("uuid").is(uuid));
+				SQLRow row = Fukkit.getConnectionHandler().getDatabase().getRow("flex_user", SQLCondition.where("uuid").is(uuid));
 				
 				if (row != null)
 					player = Fukkit.getPlayerFactory().createFukkitSafe(uuid, row.getString("name"), PlayerState.OFFLINE);
@@ -186,50 +175,70 @@ public class PlayerCache extends LinkedCache<FleXHumanEntity, HumanEntity> {
 		
 	}
 	
-	public FleXHumanEntity getFromCache(UUID uuid) {
-		return this.stream().filter(p -> p.getUniqueId() != null && p.getUniqueId().equals(uuid)).findFirst().orElse(null);
-	}
-	
 	public FleXHumanEntity getByUniqueId(UUID uuid) {
 		
-		Player player = Bukkit.getPlayer(uuid);
-		FleXHumanEntity pl = null;
+		FleXHumanEntity fh = this.get(uuid);
 		
-		if (player != null)
-			pl = this.getByMeta(player);
-		
-		if (pl == null) {
+		if (fh == null) {
+
+			Player player = Bukkit.getPlayer(uuid);
 			
-			pl = this.getFromCache(uuid);
+			if (player != null)
+				fh = this.getByMeta(player);
 			
-			if (pl != null && player != null && player.isOnline() && player.isValid() && pl.getState() != PlayerState.DISCONNECTING)
-				player.setMetadata("flex.player", new FixedMetadataValue(Fukkit.getInstance(), pl));
-				
 		}
 		
-		return pl;
+		return fh;
 		
 	}
 	
-	public FleXHumanEntity getByName(String name) {
+	public FleXHumanEntity getByName(String name, boolean ignoreDisguise) {
 		
-		Player player = Bukkit.getPlayer(name);
-		FleXHumanEntity pl = null;
-		
-		if (player != null)
-			pl = this.getByMeta(player);
-		
-		if (pl == null) {
-			
-			pl = this.stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
-			
-			if (pl != null && player != null && player.isOnline() && pl.getState() != PlayerState.DISCONNECTING)
-				player.setMetadata("flex.player", new FixedMetadataValue(Fukkit.getInstance(), pl));
-				
-		}
-		
-		return pl;
-		
+	    FleXHumanEntity fh = null;
+	    
+	    for (FleXHumanEntity human : this) {
+	    	
+	        if (!ignoreDisguise && human instanceof FleXPlayer) {
+	        	
+	            FleXPlayer fp = (FleXPlayer) human;
+	            
+	            if (fp.isDisguised() && fp.getDisguise() != null && fp.getDisguise().getName().equalsIgnoreCase(name)) {
+
+	                fh = human;
+	                break;
+	            }
+	            
+	        }
+	        
+	        if (human.getName().equalsIgnoreCase(name)) {
+	        	
+	            if (human instanceof FleXPlayer) {
+	            	
+	                FleXPlayer fp = (FleXPlayer) human;
+	                
+	                if (!ignoreDisguise && fp.isDisguised() && fp.getDisguise() != null && !fp.getDisguise().getName().equalsIgnoreCase(name))
+	                    continue;
+	                
+	            }
+	            
+	            fh = human;
+	            break;
+	            
+	        }
+	        
+	    }
+	    
+	    if (fh == null) {
+	    	
+	        Player player = Bukkit.getPlayer(name);
+	        
+	        if (player != null)
+	            fh = this.getByMeta(player);
+	        
+	    }
+	    
+	    return fh;
+	    
 	}
 	
 	public FleXPlayer getByMeta(Player player) {

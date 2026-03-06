@@ -6,8 +6,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
+import org.fukkit.Fukkit;
 import org.fukkit.PlayerState;
-import org.fukkit.api.helper.PlayerHelper;
 import org.fukkit.command.Command;
 import org.fukkit.command.FleXCommandAdapter;
 import org.fukkit.command.GlobalCommand;
@@ -31,8 +31,8 @@ public class TeleportCommand extends FleXCommandAdapter {
 			return false;
 		}
 		
-		FleXPlayer teleport = args.length == 2 ? PlayerHelper.getPlayer(args[0]) : ((FleXPlayer)sender);
-		FleXPlayer fp = args.length == 2 ? PlayerHelper.getPlayer(args[1]) : PlayerHelper.getPlayer(args[0]);
+		FleXPlayer teleport = args.length == 2 ? Fukkit.getPlayer(args[0]) : ((FleXPlayer)sender);
+		FleXPlayer fp = args.length == 2 ? Fukkit.getPlayer(args[1]) : Fukkit.getPlayer(args[0]);
 		
 		if (teleport == null) {
 			this.playerNotFound(sender, args[0]);

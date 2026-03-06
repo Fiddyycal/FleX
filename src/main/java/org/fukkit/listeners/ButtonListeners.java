@@ -59,7 +59,7 @@ public class ButtonListeners extends FleXEventListener {
 					if (player == null || !player.isOnline())
 						return;
 					
-					Fukkit.getPlayerExact(event.getPlayer()).openMenu(gui, true);
+					Fukkit.getPlayer(event.getPlayer()).openMenu(gui, true);
 					
 				});
 				
@@ -167,7 +167,7 @@ public class ButtonListeners extends FleXEventListener {
 		
 		ExecutableButton button = (ExecutableButton) butt;
 		
-		FleXPlayer player = Fukkit.getPlayerExact((Player)entity);
+		FleXPlayer player = Fukkit.getPlayer((Player)entity);
 		
 		ButtonAction action = this.change(click);
 		

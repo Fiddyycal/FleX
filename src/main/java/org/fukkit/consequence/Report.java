@@ -18,7 +18,7 @@ import org.fukkit.world.FleXWorld;
 import io.flex.commons.Nullable;
 import io.flex.commons.sql.SQLCondition;
 import io.flex.commons.sql.SQLDatabase;
-import io.flex.commons.sql.SQLRowWrapper;
+import io.flex.commons.sql.SQLRow;
 
 public class Report extends Punishment {
 	
@@ -44,7 +44,7 @@ public class Report extends Punishment {
 		
 		Set<Report> convictions = new LinkedHashSet<Report>();
 		
-		for (SQLRowWrapper row : database.getRows("flex_punishment", conditions)) {
+		for (SQLRow row : database.getRows("flex_punishment", conditions)) {
 			
 			PunishmentType check = null;
 			

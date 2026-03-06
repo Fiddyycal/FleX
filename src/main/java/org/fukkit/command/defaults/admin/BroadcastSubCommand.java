@@ -6,7 +6,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.metadata.MetadataValue;
 import org.fukkit.Fukkit;
-import org.fukkit.api.helper.PlayerHelper;
 import org.fukkit.entity.FleXPlayer;
 import org.fukkit.event.player.FleXPlayerBroadcastEvent;
 import org.fukkit.metadata.FleXFixedMetadataValue;
@@ -18,7 +17,7 @@ import io.flex.commons.utils.StringUtils;
 public class BroadcastSubCommand extends AbstractAdminSubCommand {
 	
 	public BroadcastSubCommand(AdminCommand command) {
-		super(command, "say", "broadcast", "bc");
+		super(command);
 	}
 
 	@Override
@@ -55,7 +54,7 @@ public class BroadcastSubCommand extends AbstractAdminSubCommand {
 						
 						Bukkit.getOnlinePlayers().stream().forEach(p -> {
 							
-							FleXPlayer fp = PlayerHelper.getPlayerSafe(p.getUniqueId());
+							FleXPlayer fp = Fukkit.getPlayer(p.getUniqueId());
 							
 							fp.sendMessage(ThemeMessage.BROADCAST_MESSAGE.format(player.getTheme(), player.getLanguage(),
 									
@@ -122,7 +121,7 @@ public class BroadcastSubCommand extends AbstractAdminSubCommand {
 			
 		}
 		
-		this.command.usage(sender, "/<command> say <confirm/dismiss>", "/<command> say <message> [-g]");
+		this.command.usage(sender, "/<command> broadcast/bc/say <message> [-g]", "/<command> broadcast/bc/say <confirm/dismiss>");
 		return false;
 		
 	}

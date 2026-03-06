@@ -7,14 +7,14 @@ import io.flex.commons.utils.ArrayUtils;
 public class DebugSubCommand extends AbstractAdminSubCommand {
 	
 	public DebugSubCommand(AdminCommand command) {
-		super(command, "debug", "bug");
+		super(command);
 	}
 
 	@Override
 	public boolean perform(CommandSender sender, String[] args, String[] flags) {
 		
 		if (args.length != 1) {
-			this.command.usage(sender, "/<command> database/configuration <name> [-l, -r, -c]");
+			this.command.usage(sender, "/<command> database <name> [-l, -r, -c]");
 			return false;
 		}
 		

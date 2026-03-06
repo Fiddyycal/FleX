@@ -19,7 +19,7 @@ import org.fukkit.scoreboard.entry.TeamEntry;
 import io.flex.commons.utils.StringUtils;
 
 @SuppressWarnings("deprecation")
-public class NameBar implements FleXScoreboard {
+public class SubNameTag implements FleXScoreboard {
 
 	private UUID uuid;
 	
@@ -46,7 +46,7 @@ public class NameBar implements FleXScoreboard {
 	 * @param entry What does the the peripheral tree see underneath all the recipients names.
 	 * @param recipients Who does the peripheral tree see using this namebar.
 	 */
-	public NameBar(FleXPlayer player, String suffix, Function<FleXPlayer, Integer> score) {
+	public SubNameTag(FleXPlayer player, String suffix, Function<FleXPlayer, Integer> score) {
 		this(player, new TeamEntry(suffix), score);
 	}
 
@@ -63,7 +63,7 @@ public class NameBar implements FleXScoreboard {
 	 * @param entry What does the the peripheral tree see underneath all the recipients names.
 	 * @param recipients Who does the peripheral tree see using this namebar.
 	 */
-	public NameBar(FleXPlayer player, TeamEntry entry, Function<FleXPlayer, Integer> score) {
+	public SubNameTag(FleXPlayer player, TeamEntry entry, Function<FleXPlayer, Integer> score) {
 		
 		this.id = StringUtils.generate(11, false).toLowerCase() + "_name";
 		
@@ -134,7 +134,7 @@ public class NameBar implements FleXScoreboard {
 			
 			@Override
 			public void run() {
-				NameBar.this.onTick();
+				SubNameTag.this.onTick();
 			}
 			
 		};

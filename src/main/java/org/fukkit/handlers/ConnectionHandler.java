@@ -1,9 +1,7 @@
 package org.fukkit.handlers;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
 
 import org.bukkit.Bukkit;
 import org.fukkit.Fukkit;
@@ -18,15 +16,13 @@ import org.fukkit.history.variance.IPHistory;
 import org.fukkit.history.variance.NameHistory;
 import org.fukkit.history.variance.RankHistory;
 
-import io.flex.FleX;
 import io.flex.FleX.Task;
 import io.flex.commons.Severity;
 import io.flex.commons.console.Console;
 import io.flex.commons.socket.DataServer;
 import io.flex.commons.sql.SQLDatabase;
+import io.flex.commons.sql.SQLColumn;
 import io.flex.commons.sql.SQLDataType;
-import io.flex.commons.sql.SQLDriverType;
-import io.flex.commons.sql.SQLMap;
 
 public class ConnectionHandler {
 	
@@ -44,7 +40,6 @@ public class ConnectionHandler {
 		@SuppressWarnings("deprecation")
 		YamlConfig sql = Fukkit.getResourceHandler().getYaml(Configuration.SQL);
 		
-		String driver = sql.getString("Driver", SQLDriverType.MYSQL.name());
 		String hostname = sql.getString("Credentials.Host", "localhost");
 		
 		int port = sql.getInt("Credentials.Port", 3306);
@@ -54,21 +49,8 @@ public class ConnectionHandler {
 		String password = sql.getString("Credentials.Password", "foobar");
 		
 		try {
-			
-			SQLDriverType type = SQLDriverType.valueOf(driver);
-			
-			if (type == SQLDriverType.SQLITE && sql.contains("SQLite-Path")) {
 				
-				String path = sql.getString("SQLite-Path", FleX.EXE_PATH + "/flex/data/sqlite");
-				
-				path = path.replace("${server_absolute_path}", FleX.EXE_PATH);
-				path = path.replace("${volumes_absolute_path}", new File(FleX.EXE_PATH).getParentFile().getAbsolutePath());
-				
-				this.database = new SQLDatabase(hostname, port, database, username, password, path);
-				
-			}
-				
-			else this.database = new SQLDatabase(hostname, port, database, username, password, SQLDriverType.valueOf(driver));
+			this.database = new SQLDatabase(hostname, port, database, username, password);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -79,61 +61,60 @@ public class ConnectionHandler {
 		
 		try {
 			
-			LinkedHashMap<String, SQLDataType> columns = new LinkedHashMap<String, SQLDataType>();
+			this.database.addTable("flex_user",
+					
+					SQLColumn.of("uuid", SQLDataType.VARCHAR, 36).primary(),
+					SQLColumn.of("name", SQLDataType.VARCHAR, 16),
+					SQLColumn.of("version", SQLDataType.INT),
+					SQLColumn.of("domain", SQLDataType.VARCHAR, 255),
+					SQLColumn.of("currency", SQLDataType.BIGINT),
+					SQLColumn.of("play_time", SQLDataType.BIGINT),
+					SQLColumn.of("last_seen", SQLDataType.BIGINT),
+					SQLColumn.of("rank", SQLDataType.VARCHAR, 36),
+					SQLColumn.of("badge", SQLDataType.VARCHAR, 36),
+					SQLColumn.of("theme", SQLDataType.VARCHAR, 36),
+					SQLColumn.of("language", SQLDataType.VARCHAR, 36),
+					SQLColumn.of("skin", SQLDataType.TEXT))
 			
-			columns.put("uuid", SQLDataType.VARCHAR);
-			columns.put("name", SQLDataType.VARCHAR);
-			columns.put("version", SQLDataType.INT);
-			columns.put("domain", SQLDataType.VARCHAR);
-			columns.put("currency", SQLDataType.BIGINT);
-			columns.put("play_time", SQLDataType.BIGINT);
-			columns.put("last_seen", SQLDataType.BIGINT);
-			columns.put("rank", SQLDataType.VARCHAR);
-			columns.put("badge", SQLDataType.VARCHAR);
-			columns.put("theme", SQLDataType.VARCHAR);
-			columns.put("language", SQLDataType.VARCHAR);
-			columns.put("skin", SQLDataType.TEXT);
+			.createIfNotExists();
 			
-			this.database.createTable("flex_user", "uuid", columns);
+			this.database.addTable("flex_punishment",
+					
+					SQLColumn.of("id", SQLDataType.BIGINT).primary().autoIncrement(),
+					SQLColumn.of("uuid", SQLDataType.VARCHAR, 36),
+					SQLColumn.of("by", SQLDataType.VARCHAR, 36),
+					SQLColumn.of("time", SQLDataType.VARCHAR, 255),
+					SQLColumn.of("until", SQLDataType.BIGINT),
+					SQLColumn.of("type", SQLDataType.VARCHAR, 36),
+					SQLColumn.of("reason", SQLDataType.VARCHAR, 255),
+					SQLColumn.of("evidence", SQLDataType.VARCHAR, 255),
+					SQLColumn.of("ip", SQLDataType.BOOLEAN),
+					SQLColumn.of("silent", SQLDataType.BOOLEAN),
+					SQLColumn.of("pardoned", SQLDataType.BOOLEAN))
 			
-			columns.clear();
-			columns.put("id", SQLDataType.BIGINT);
-			columns.put("uuid", SQLDataType.VARCHAR);
-			columns.put("by", SQLDataType.VARCHAR);
-			columns.put("time", SQLDataType.BIGINT);
-			columns.put("until", SQLDataType.BIGINT);
-			columns.put("type", SQLDataType.VARCHAR);
-			columns.put("reason", SQLDataType.VARCHAR);
-			columns.put("evidence", SQLDataType.VARCHAR);
-			columns.put("ip", SQLDataType.BOOLEAN);
-			columns.put("silent", SQLDataType.BOOLEAN);
-			columns.put("pardoned", SQLDataType.BOOLEAN);
+			.createIfNotExists();
 			
-			this.database.createTable("flex_punishment", "id", columns);
+			this.database.addTable("flex_disguise",
+					
+					SQLColumn.of("name", SQLDataType.VARCHAR, 32).primary(),
+					SQLColumn.of("signature", SQLDataType.TEXT),
+					SQLColumn.of("value", SQLDataType.TEXT),
+					SQLColumn.of("signed", SQLDataType.BOOLEAN))
 			
-			columns.clear();
-			columns.put("name", SQLDataType.VARCHAR);
-			columns.put("signature", SQLDataType.TEXT);
-			columns.put("value", SQLDataType.TEXT);
+			.createIfNotExists();
 			
-			this.database.createTable("flex_disguises", columns);
+			this.database.addTable("flex_recording",
+					
+					SQLColumn.of("uuid", SQLDataType.VARCHAR, 32),
+					SQLColumn.of("context", SQLDataType.VARCHAR, 255).primary(),
+					SQLColumn.of("time", SQLDataType.BIGINT),
+					SQLColumn.of("duration", SQLDataType.BIGINT),
+					SQLColumn.of("state", SQLDataType.VARCHAR, 16),
+					SQLColumn.of("world", SQLDataType.VARCHAR, 32),
+					SQLColumn.of("players", SQLDataType.VARCHAR, 2550),
+					SQLColumn.of("data", SQLDataType.BLOB))
 			
-			columns.clear();
-			columns.put("uuid", SQLDataType.VARCHAR);
-			columns.put("context", SQLDataType.VARCHAR);
-			columns.put("time", SQLDataType.VARCHAR);
-			columns.put("duration", SQLDataType.INTEGER);
-			columns.put("state", SQLDataType.VARCHAR);
-			columns.put("world", SQLDataType.VARCHAR);
-			columns.put("players", SQLDataType.VARCHAR);
-			columns.put("data", SQLDataType.BLOB);
-			
-			this.database.createTable("flex_recording", columns);
-			
-			try {
-				this.database.execute("ALTER TABLE flex_recording MODIFY COLUMN data LONGBLOB");
-				this.database.execute("ALTER TABLE flex_recording MODIFY players VARCHAR(2550)");
-			} catch (Exception ignore) {}
+			.createIfNotExists();
 			
 			this.createHistoryTable(BadgeHistory.TABLE_NAME);
 			this.createHistoryTable(ChatCommandHistory.TABLE_NAME);
@@ -185,11 +166,11 @@ public class ConnectionHandler {
 	
 	private void createHistoryTable(String table) throws SQLException {
 		
-		this.database.createTable(table, SQLMap.of(
+		this.database.addTable(table,
 				
-				SQLMap.entry("uuid", SQLDataType.VARCHAR),
-				SQLMap.entry("time", SQLDataType.BIGINT),
-				SQLMap.entry("log", SQLDataType.VARCHAR)));
+				SQLColumn.of("uuid", SQLDataType.VARCHAR).primary(),
+				SQLColumn.of("time", SQLDataType.BIGINT),
+				SQLColumn.of("log", SQLDataType.VARCHAR, 255));
 		
 	}
 	
